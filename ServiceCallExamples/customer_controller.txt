@@ -1,0 +1,113 @@
+----------- getCustomers() -----------------
+
+Request URL
+
+http://localhost:8080/api/customers?limit=12
+
+Response Body
+
+{
+  "data": [
+    {
+      "id": {
+        "entityType": "CUSTOMER",
+        "id": "fa386390-0fdd-11ea-b852-37722cd69450"
+      },
+      "createdTime": 1574725664841,
+      "additionalInfo": {
+        "description": "Just another dummy character for testing purposes"
+      },
+      "country": "Portugal",
+      "state": "Reguengos de Monsaraz",
+      "city": "Campinho",
+      "address": "Rua Nossa Senhora Das Dores 20",
+      "address2": null,
+      "zip": "7200",
+      "phone": "+351 266 589 354",
+      "email": "rdlalmeida@gmail.com",
+      "title": "Mr Ricardo Lopes",
+      "tenantId": {
+        "entityType": "TENANT",
+        "id": "863ae890-0ad9-11ea-8001-3975f352e04e"
+      },
+      "name": "Mr Ricardo Lopes"
+    },
+    {
+      "id": {
+        "entityType": "CUSTOMER",
+        "id": "3360f510-0fde-11ea-b852-37722cd69450"
+      },
+      "createdTime": 1574725760737,
+      "additionalInfo": {
+        "description": "The loud mouth of rebounds or whatever he calls himself"
+      },
+      "country": "United States",
+      "state": "Alabama",
+      "city": "Mobile",
+      "address": "Dirtiest road in the county, 23",
+      "address2": null,
+      "zip": "12364",
+      "phone": "+1 256 366 421",
+      "email": "charles.sir@nba.us",
+      "title": "Mr Charles Barkley",
+      "tenantId": {
+        "entityType": "TENANT",
+        "id": "863ae890-0ad9-11ea-8001-3975f352e04e"
+      },
+      "name": "Mr Charles Barkley"
+    }
+  ],
+  "nextPageLink": null,
+  "hasNext": false
+}
+
+http://localhost:8080/api/customers?textSearch=asasa&idOffset=fa386390-0fdd-11ea-b852-3&textOffset=asadsda&limit=12
+
+
+{
+  "data": [
+    {
+      "id": {
+        "entityType": "DEVICE",
+        "id": "b0a36900-ef67-11e9-967c-c326e44c6228"
+      },
+      "createdTime": 1571156423568,
+      "additionalInfo": null,
+      "tenantId": {
+        "entityType": "TENANT",
+        "id": "bbcd7e20-ef66-11e9-967c-c326e44c6228"
+      },
+      "customerId": {
+        "entityType": "CUSTOMER",
+        "id": "ade9cd50-0bad-11ea-a17e-77a2b980ac65"
+      },
+      "name": "Thermometer A-1",
+      "type": "Thermometer",
+      "label": "East window"
+    },
+    {
+      "id": {
+        "entityType": "DEVICE",
+        "id": "c4f98e70-ef67-11e9-967c-c326e44c6228"
+      },
+      "createdTime": 1571156457687,
+      "additionalInfo": null,
+      "tenantId": {
+        "entityType": "TENANT",
+        "id": "bbcd7e20-ef66-11e9-967c-c326e44c6228"
+      },
+      "customerId": {
+        "entityType": "CUSTOMER",
+        "id": "ade9cd50-0bad-11ea-a17e-77a2b980ac65"
+      },
+      "name": "Thermometer A-2",
+      "type": "Thermometer",
+      "label": "North Window"
+    }
+  ],
+  "nextPageLink": null,
+  "hasNext": false
+}
+
+
+http://localhost:8080/api/customer/ade9cd50-0bad-11ea-a17e-77a2b980ac65/devices?type=Thermome&textSearch=asad&idOffset=863ae890-0ad9-11ea-8001-3975f352e04e&textOffset=sdsdsd&limit=12

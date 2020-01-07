@@ -1,0 +1,76 @@
+curl -X POST --header 'Content-Type:application/json' --header 'Accept:application/json' -d '{"username":"rdl.almeida@campus.fct.unl.pt", "password":"ambiosensing2019"}' 'http://localhost:8080/api/auth/login'
+
+curl -X POST --header 'Content-Type:application/json' --header 'X_Authorization: Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJyZGwuYWxtZWlkYUBjYW1wdXMuZmN0LnVubC5wdCIsInNjb3BlcyI6WyJSRUZSRVNIX1RPS0VOIl0sInVzZXJJZCI6ImViYTE3MzQwLWVmNjYtMTFlOS05NjdjLWMzMjZlNDRjNjIyOCIsImlzUHVibGljIjpmYWxzZSwiaXNzIjoidGhpbmdzYm9hcmQuaW8iLCJqdGkiOiI3OTY5MzczMS02OGQ0LTRmMzctOTJmYS05NTM1NjE0OGI2ZmIiLCJpYXQiOjE1NzE0MTA1NjIsImV4cCI6MTU3MjAxNTM2Mn0._TPudMyMQi7m4AvQnHm1aTKdDq76m6YwablyupBE940ugGt-Q1-5DjWCP_41IKVbBFq_KVyCoIgwt5lO7F_zuQ' -d '{"username":"rdl.almeida@campus.fct.unl.pt", "password":"ambiosensing2019"}' 'http://localhost:8080/api/auth/login'
+
+curl -X GET --header 'Accept: application/json' --header 'X-Authorization: Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJyZGwuYWxtZWlkYUBjYW1wdXMuZmN0LnVubC5wdCIsInNjb3BlcyI6WyJURU5BTlRfQURNSU4iXSwidXNlcklkIjoiZWJhMTczNDAtZWY2Ni0xMWU5LTk2N2MtYzMyNmU0NGM2MjI4IiwiZmlyc3ROYW1lIjoiUmljYXJkbyIsImxhc3ROYW1lIjoiQWxtZWlkYSIsImVuYWJsZWQiOnRydWUsImlzUHVibGljIjpmYWxzZSwidGVuYW50SWQiOiJiYmNkN2UyMC1lZjY2LTExZTktOTY3Yy1jMzI2ZTQ0YzYyMjgiLCJjdXN0b21lcklkIjoiMTM4MTQwMDAtMWRkMi0xMWIyLTgwODAtODA4MDgwODA4MDgwIiwiaXNzIjoidGhpbmdzYm9hcmQuaW8iLCJpYXQiOjE1NzE3NTQ5MTUsImV4cCI6MTU3MTc2MzkxNX0.29NlyiSubUQ-BWItYE4S8Fk-QzaTbsOLLb9HY3DxA2h3ZTJewzqssLdE0E_Dieyc_xN8mF3sWAcqKcisjc62uw' 'http://localhost:8080/api/device/types'
+
+curl -X POST --header 'Content-Type:application/json' --header 'X-Authorization: Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJyZGwuYWxtZWlkYUBjYW1wdXMuZmN0LnVubC5wdCIsInNjb3BlcyI6WyJURU5BTlRfQURNSU4iXSwidXNlcklkIjoiZWJhMTczNDAtZWY2Ni0xMWU5LTk2N2MtYzMyNmU0NGM2MjI4IiwiZmlyc3ROYW1lIjoiUmljYXJkbyIsImxhc3ROYW1lIjoiQWxtZWlkYSIsImVuYWJsZWQiOnRydWUsImlzUHVibGljIjpmYWxzZSwidGVuYW50SWQiOiJiYmNkN2UyMC1lZjY2LTExZTktOTY3Yy1jMzI2ZTQ0YzYyMjgiLCJjdXN0b21lcklkIjoiMTM4MTQwMDAtMWRkMi0xMWIyLTgwODAtODA4MDgwODA4MDgwIiwiaXNzIjoidGhpbmdzYm9hcmQuaW8iLCJpYXQiOjE1NzE3NTQ5MTUsImV4cCI6MTU3MTc2MzkxNX0.29NlyiSubUQ-BWItYE4S8Fk-QzaTbsOLLb9HY3DxA2h3ZTJewzqssLdE0E_Dieyc_xN8mF3sWAcqKcisjc62uw' -d 'refreshToken: eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJyZGwuYWxtZWlkYUBjYW1wdXMuZmN0LnVubC5wdCIsInNjb3BlcyI6WyJSRUZSRVNIX1RPS0VOIl0sInVzZXJJZCI6ImViYTE3MzQwLWVmNjYtMTFlOS05NjdjLWMzMjZlNDRjNjIyOCIsImlzUHVibGljIjpmYWxzZSwiaXNzIjoidGhpbmdzYm9hcmQuaW8iLCJqdGkiOiI3ZDUzMjRiMC1hZGQyLTQ1YTgtYjk5ZS1lYjVjODc2YzA0OGIiLCJpYXQiOjE1NzE3NTQ5MTUsImV4cCI6MTU3MjM1OTcxNX0.9G00RC0QLppVDvdtJ9oWXA6b9Z9bEXaWffz9rUYUYp46kLE_UBciPIpeK3KnqtgHqDLS0gxH0wt63wTdiUj_zg' 'http://localhost:8080/api/auth/token'
+
+{"token":"eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJyZGwuYWxtZWlkYUBjYW1wdXMuZmN0LnVubC5wdCIsInNjb3BlcyI6WyJURU5BTlRfQURNSU4iXSwidXNlcklkIjoiZWJhMTczNDAtZWY2Ni0xMWU5LTk2N2MtYzMyNmU0NGM2MjI4IiwiZmlyc3ROYW1lIjoiUmljYXJkbyIsImxhc3ROYW1lIjoiQWxtZWlkYSIsImVuYWJsZWQiOnRydWUsImlzUHVibGljIjpmYWxzZSwidGVuYW50SWQiOiJiYmNkN2UyMC1lZjY2LTExZTktOTY3Yy1jMzI2ZTQ0YzYyMjgiLCJjdXN0b21lcklkIjoiMTM4MTQwMDAtMWRkMi0xMWIyLTgwODAtODA4MDgwODA4MDgwIiwiaXNzIjoidGhpbmdzYm9hcmQuaW8iLCJpYXQiOjE1NzE0MTA1NjIsImV4cCI6MTU3MTQxOTU2Mn0.LsrMGEtPX7PuxbeDEPQp9JFUbU2OW-u3kt3o8AZxDxcwDbOaveAmTh6rkt-GInL7dP5vD4LRbBkxtOIzg5ZuyA","refreshToken":"eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJyZGwuYWxtZWlkYUBjYW1wdXMuZmN0LnVubC5wdCIsInNjb3BlcyI6WyJSRUZSRVNIX1RPS0VOIl0sInVzZXJJZCI6ImViYTE3MzQwLWVmNjYtMTFlOS05NjdjLWMzMjZlNDRjNjIyOCIsImlzUHVibGljIjpmYWxzZSwiaXNzIjoidGhpbmdzYm9hcmQuaW8iLCJqdGkiOiI3OTY5MzczMS02OGQ0LTRmMzctOTJmYS05NTM1NjE0OGI2ZmIiLCJpYXQiOjE1NzE0MTA1NjIsImV4cCI6MTU3MjAxNTM2Mn0._TPudMyMQi7m4AvQnHm1aTKdDq76m6YwablyupBE940ugGt-Q1-5DjWCP_41IKVbBFq_KVyCoIgwt5lO7F_zuQ"}
+
+
+curl -X POST --header 'Content-Type:application/json' --header 'X-Authorization: Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJyZGwuYWxtZWlkYUBjYW1wdXMuZmN0LnVubC5wdCIsInNjb3BlcyI6WyJURU5BTlRfQURNSU4iXSwidXNlcklkIjoiZWJhMTczNDAtZWY2Ni0xMWU5LTk2N2MtYzMyNmU0NGM2MjI4IiwiZmlyc3ROYW1lIjoiUmljYXJkbyIsImxhc3ROYW1lIjoiQWxtZWlkYSIsImVuYWJsZWQiOnRydWUsImlzUHVibGljIjpmYWxzZSwidGVuYW50SWQiOiJiYmNkN2UyMC1lZjY2LTExZTktOTY3Yy1jMzI2ZTQ0YzYyMjgiLCJjdXN0b21lcklkIjoiMTM4MTQwMDAtMWRkMi0xMWIyLTgwODAtODA4MDgwODA4MDgwIiwiaXNzIjoidGhpbmdzYm9hcmQuaW8iLCJpYXQiOjE1NzE0MTA1NjIsImV4cCI6MTU3MTQxOTU2Mn0.LsrMGEtPX7PuxbeDEPQp9JFUbU2OW-u3kt3o8AZxDxcwDbOaveAmTh6rkt-GInL7dP5vD4LRbBkxtOIzg5ZuyA' -d '{"refreshToken":"eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJyZGwuYWxtZWlkYUBjYW1wdXMuZmN0LnVubC5wdCIsInNjb3BlcyI6WyJSRUZSRVNIX1RPS0VOIl0sInVzZXJJZCI6ImViYTE3MzQwLWVmNjYtMTFlOS05NjdjLWMzMjZlNDRjNjIyOCIsImlzUHVibGljIjpmYWxzZSwiaXNzIjoidGhpbmdzYm9hcmQuaW8iLCJqdGkiOiI3OTY5MzczMS02OGQ0LTRmMzctOTJmYS05NTM1NjE0OGI2ZmIiLCJpYXQiOjE1NzE0MTA1NjIsImV4cCI6MTU3MjAxNTM2Mn0._TPudMyMQi7m4AvQnHm1aTKdDq76m6YwablyupBE940ugGt-Q1-5DjWCP_41IKVbBFq_KVyCoIgwt5lO7F_zuQ"}' 'http://localhost:8080/api/auth/token'
+
+Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJyZGwuYWxtZWlkYUBjYW1wdXMuZmN0LnVubC5wdCIsInNjb3BlcyI6WyJURU5BTlRfQURNSU4iXSwidXNlcklkIjoiZWJhMTczNDAtZWY2Ni0xMWU5LTk2N2MtYzMyNmU0NGM2MjI4IiwiZmlyc3ROYW1lIjoiUmljYXJkbyIsImxhc3ROYW1lIjoiQWxtZWlkYSIsImVuYWJsZWQiOnRydWUsImlzUHVibGljIjpmYWxzZSwidGVuYW50SWQiOiJiYmNkN2UyMC1lZjY2LTExZTktOTY3Yy1jMzI2ZTQ0YzYyMjgiLCJjdXN0b21lcklkIjoiMTM4MTQwMDAtMWRkMi0xMWIyLTgwODAtODA4MDgwODA4MDgwIiwiaXNzIjoidGhpbmdzYm9hcmQuaW8iLCJpYXQiOjE1NzE0MTA1NjIsImV4cCI6MTU3MTQxOTU2Mn0.LsrMGEtPX7PuxbeDEPQp9JFUbU2OW-u3kt3o8AZxDxcwDbOaveAmTh6rkt-GInL7dP5vD4LRbBkxtOIzg5ZuyA
+
+Refresh token: Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJyZGwuYWxtZWlkYUBjYW1wdXMuZmN0LnVubC5wdCIsInNjb3BlcyI6WyJSRUZSRVNIX1RPS0VOIl0sInVzZXJJZCI6ImViYTE3MzQwLWVmNjYtMTFlOS05NjdjLWMzMjZlNDRjNjIyOCIsImlzUHVibGljIjpmYWxzZSwiaXNzIjoidGhpbmdzYm9hcmQuaW8iLCJqdGkiOiI3OTY5MzczMS02OGQ0LTRmMzctOTJmYS05NTM1NjE0OGI2ZmIiLCJpYXQiOjE1NzE0MTA1NjIsImV4cCI6MTU3MjAxNTM2Mn0._TPudMyMQi7m4AvQnHm1aTKdDq76m6YwablyupBE940ugGt-Q1-5DjWCP_41IKVbBFq_KVyCoIgwt5lO7F_zuQ
+
+
+Thermometer A1 access token: 2JhT1dKaOy4KFccqBc7d
+curl -v -X POST -d "{\"temperature\":60.5}" http://localhost:8080/api/v1/2JhT1dKaOy4KFccqBc7d/telemetry --header "Content-Type:application/json"
+curl -v -X POST -d "{\"temperature\":  36}" http://localhost:8080/api/v1/2JhT1dKaOy4KFccqBc7d/telemetry --header "Content-Type:application/json"
+
+b0a36900-ef67-11e9-967c-c326e44c6228
+
+curl -X POST --header 'Content-Type: application/json' --header 'Accept: application/json' --header 'X-Authorization: Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJyZGwuYWxtZWlkYUBjYW1wdXMuZmN0LnVubC5wdCIsInNjb3BlcyI6WyJURU5BTlRfQURNSU4iXSwidXNlcklkIjoiZWJhMTczNDAtZWY2Ni0xMWU5LTk2N2MtYzMyNmU0NGM2MjI4IiwiZmlyc3ROYW1lIjoiUmljYXJkbyIsImxhc3ROYW1lIjoiQWxtZWlkYSIsImVuYWJsZWQiOnRydWUsImlzUHVibGljIjpmYWxzZSwidGVuYW50SWQiOiJiYmNkN2UyMC1lZjY2LTExZTktOTY3Yy1jMzI2ZTQ0YzYyMjgiLCJjdXN0b21lcklkIjoiMTM4MTQwMDAtMWRkMi0xMWIyLTgwODAtODA4MDgwODA4MDgwIiwiaXNzIjoidGhpbmdzYm9hcmQuaW8iLCJpYXQiOjE1NzE0MTQyODEsImV4cCI6MTU3MTQyMzI4MX0.QehNVa_36oYIRr8jb6fqYN4M4DEXIRc0oosB255QNhCeq3RoCJXz6bb1nfa3B1wUdQOFGLqOXcwrWeBE3hcDNw' -d '{"deviceTypes": ["*"], "parameters": {"entityId": {"entityType": "TENANT","id": "*"},"rootId": "*","rootType": "TENANT","direction": "FROM","relationTypeGroup": "COMMON","maxLevel": 0,"fetchLastLevelOnly": true},"relationType": "*"}' 'http://localhost:8080/api/devices'
+
+{
+  "deviceTypes": [
+    "string"
+  ],
+  "parameters": {
+    "entityId": {
+      "entityType": "TENANT",
+      "id": "string"
+    },
+    "rootId": "string",
+    "rootType": "TENANT",
+    "direction": "FROM",
+    "relationTypeGroup": "COMMON",
+    "maxLevel": 0,
+    "fetchLastLevelOnly": true
+  },
+  "relationType": "string"
+}
+
+ ADMIN CONTROLLER METHODS 
+ 
+############################################################################### #################################################################################
+
+################################################################### ADMIN CONTROLLER METHODS ####################################################################
+# ----------------------------------------------------------------- ADMIN CONTROLLER METHODS --------------------------------------------------------------------
+
+
+Thermometer A1 id = 1e9ef67b0a36900967cc326e44c6228
+Thermometer A2 id = 1e9ef67c4f98e70967cc326e44c6228
+
+
+{
+	"token": None,
+	"refreshToken": None
+}
+
+
+{"token":"eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJyZGwuYWxtZWlkYUBjYW1wdXMuZmN0LnVubC5wdCIsInNjb3BlcyI6WyJURU5BTlRfQURNSU4iXSwidXNlcklkIjoiZWJhMTczNDAtZWY2Ni0xMWU5LTk2N2MtYzMyNmU0NGM2MjI4IiwiZmlyc3ROYW1lIjoiUmljYXJkbyIsImxhc3ROYW1lIjoiQWxtZWlkYSIsImVuYWJsZWQiOnRydWUsImlzUHVibGljIjpmYWxzZSwidGVuYW50SWQiOiJiYmNkN2UyMC1lZjY2LTExZTktOTY3Yy1jMzI2ZTQ0YzYyMjgiLCJjdXN0b21lcklkIjoiMTM4MTQwMDAtMWRkMi0xMWIyLTgwODAtODA4MDgwODA4MDgwIiwiaXNzIjoidGhpbmdzYm9hcmQuaW8iLCJpYXQiOjE1NzE3NTQ5MTUsImV4cCI6MTU3MTc2MzkxNX0.29NlyiSubUQ-BWItYE4S8Fk-QzaTbsOLLb9HY3DxA2h3ZTJewzqssLdE0E_Dieyc_xN8mF3sWAcqKcisjc62uw",
+
+"refreshToken":"eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJyZGwuYWxtZWlkYUBjYW1wdXMuZmN0LnVubC5wdCIsInNjb3BlcyI6WyJSRUZSRVNIX1RPS0VOIl0sInVzZXJJZCI6ImViYTE3MzQwLWVmNjYtMTFlOS05NjdjLWMzMjZlNDRjNjIyOCIsImlzUHVibGljIjpmYWxzZSwiaXNzIjoidGhpbmdzYm9hcmQuaW8iLCJqdGkiOiI3ZDUzMjRiMC1hZGQyLTQ1YTgtYjk5ZS1lYjVjODc2YzA0OGIiLCJpYXQiOjE1NzE3NTQ5MTUsImV4cCI6MTU3MjM1OTcxNX0.9G00RC0QLppVDvdtJ9oWXA6b9Z9bEXaWffz9rUYUYp46kLE_UBciPIpeK3KnqtgHqDLS0gxH0wt63wTdiUj_zg"}
+
+# HOW TO USE THE REFRESH TOKEN TO RETRIEVE A NEW AUTHORIZATION TOKEN
+curl -X POST --header 'Content-Type:application/json' --header 'X-Authorization: Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJyZGwuYWxtZWlkYUBjYW1wdXMuZmN0LnVubC5wdCIsInNjb3BlcyI6WyJURU5BTlRfQURNSU4iXSwidXNlcklkIjoiZWJhMTczNDAtZWY2Ni0xMWU5LTk2N2MtYzMyNmU0NGM2MjI4IiwiZmlyc3ROYW1lIjoiUmljYXJkbyIsImxhc3ROYW1lIjoiQWxtZWlkYSIsImVuYWJsZWQiOnRydWUsImlzUHVibGljIjpmYWxzZSwidGVuYW50SWQiOiJiYmNkN2UyMC1lZjY2LTExZTktOTY3Yy1jMzI2ZTQ0YzYyMjgiLCJjdXN0b21lcklkIjoiMTM4MTQwMDAtMWRkMi0xMWIyLTgwODAtODA4MDgwODA4MDgwIiwiaXNzIjoidGhpbmdzYm9hcmQuaW8iLCJpYXQiOjE1NzE3NTQ5MTUsImV4cCI6MTU3MTc2MzkxNX0.29NlyiSubUQ-BWItYE4S8Fk-QzaTbsOLLb9HY3DxA2h3ZTJewzqssLdE0E_Dieyc_xN8mF3sWAcqKcisjc62uw' -d '{"refreshToken":"eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJyZGwuYWxtZWlkYUBjYW1wdXMuZmN0LnVubC5wdCIsInNjb3BlcyI6WyJSRUZSRVNIX1RPS0VOIl0sInVzZXJJZCI6ImViYTE3MzQwLWVmNjYtMTFlOS05NjdjLWMzMjZlNDRjNjIyOCIsImlzUHVibGljIjpmYWxzZSwiaXNzIjoidGhpbmdzYm9hcmQuaW8iLCJqdGkiOiI3ZDUzMjRiMC1hZGQyLTQ1YTgtYjk5ZS1lYjVjODc2YzA0OGIiLCJpYXQiOjE1NzE3NTQ5MTUsImV4cCI6MTU3MjM1OTcxNX0.9G00RC0QLppVDvdtJ9oWXA6b9Z9bEXaWffz9rUYUYp46kLE_UBciPIpeK3KnqtgHqDLS0gxH0wt63wTdiUj_zg"}' 'http://localhost:8080/api/auth/token'
+
+
+var msg = { temperature: +(Math.random()*5 + 25).toFixed(1)};
+var metadata = { data: 40 };
+var msgType = "POST_TELEMETRY_REQUEST";
+
+return { msg: msg, metadata: metadata, msgType: msgType };

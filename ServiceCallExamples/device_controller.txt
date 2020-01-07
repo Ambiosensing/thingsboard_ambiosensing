@@ -1,0 +1,149 @@
+-------------------------------- getTenantDevices (/api/tenant/devices{?type, textSearch, idOffset, textOffset, limit}) --------------------------
+NEEDS ADMIN AUTH TOKEN!
+limit parameter is the only one required (int)
+
+curl -X GET --header 'Accept: application/json' --header 'X-Authorization: Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJyZGwuYWxtZWlkYUBjYW1wdXMuZmN0LnVubC5wdCIsInNjb3BlcyI6WyJURU5BTlRfQURNSU4iXSwidXNlcklkIjoiZDNkZWIzYjAtMGFkOS0xMWVhLTgwMDEtMzk3NWYzNTJlMDRlIiwiZmlyc3ROYW1lIjoiUmljYXJkbyIsImxhc3ROYW1lIjoiQWxtZWlkYSIsImVuYWJsZWQiOnRydWUsImlzUHVibGljIjpmYWxzZSwidGVuYW50SWQiOiI4NjNhZTg5MC0wYWQ5LTExZWEtODAwMS0zOTc1ZjM1MmUwNGUiLCJjdXN0b21lcklkIjoiMTM4MTQwMDAtMWRkMi0xMWIyLTgwODAtODA4MDgwODA4MDgwIiwiaXNzIjoidGhpbmdzYm9hcmQuaW8iLCJpYXQiOjE1NzQxNzY1NjYsImV4cCI6MTU3NDE4NTU2Nn0.oLlca1ujLdms9DSP6ZQM1qz5j7EZp_GcXe5sXVzOeEdxvL5ZASPyqfTpc3DkWDCFcO4T-GxKdeGkbNX257DJpA' 'http://localhost:8080/api/tenant/devices?limit=3'
+
+Response:
+{
+  "data": [
+    {
+      "id": {
+        "entityType": "DEVICE",
+        "id": "00b3e7c0-0ada-11ea-8001-3975f352e04e"
+      },
+      "createdTime": 1574174201916,
+      "description": null,
+      "tenantId": {
+        "entityType": "TENANT",
+        "id": "863ae890-0ad9-11ea-8001-3975f352e04e"
+      },
+      "customerId": {
+        "entityType": "CUSTOMER",
+        "id": "13814000-1dd2-11b2-8080-808080808080"
+      },
+      "name": "Thermometer A-1",
+      "type": "thermometer",
+      "label": "North Window"
+    },
+    {
+      "id": {
+        "entityType": "DEVICE",
+        "id": "08f28040-0ada-11ea-8001-3975f352e04e"
+      },
+      "createdTime": 1574174215748,
+      "description": null,
+      "tenantId": {
+        "entityType": "TENANT",
+        "id": "863ae890-0ad9-11ea-8001-3975f352e04e"
+      },
+      "customerId": {
+        "entityType": "CUSTOMER",
+        "id": "13814000-1dd2-11b2-8080-808080808080"
+      },
+      "name": "Thermometer A-2",
+      "type": "thermometer",
+      "label": "East window"
+    }
+  ],
+  "nextPageLink": null,
+  "hasNext": false
+}
+
+
+
+
+{
+  "data": [
+    {
+      "id": {
+        "entityType": "DEVICE",
+        "id": "b0a36900-ef67-11e9-967c-c326e44c6228"
+      },
+      "createdTime": 1571156423568,
+      "additionalInfo": null,
+      "tenantId": {
+        "entityType": "TENANT",
+        "id": "bbcd7e20-ef66-11e9-967c-c326e44c6228"
+      },
+      "customerId": {
+        "entityType": "CUSTOMER",
+        "id": "13814000-1dd2-11b2-8080-808080808080"
+      },
+      "name": "Thermometer A-1",
+      "type": "Thermometer",
+      "label": "East window"
+    },
+    {
+      "id": {
+        "entityType": "DEVICE",
+        "id": "c4f98e70-ef67-11e9-967c-c326e44c6228"
+      },
+      "createdTime": 1571156457687,
+      "additionalInfo": null,
+      "tenantId": {
+        "entityType": "TENANT",
+        "id": "bbcd7e20-ef66-11e9-967c-c326e44c6228"
+      },
+      "customerId": {
+        "entityType": "CUSTOMER",
+        "id": "13814000-1dd2-11b2-8080-808080808080"
+      },
+      "name": "Thermometer A-2",
+      "type": "Thermometer",
+      "label": "North Window"
+    },
+    {
+      "id": {
+        "entityType": "DEVICE",
+        "id": "05e36890-f1cd-11e9-bad3-8bf59b1f7ad1"
+      },
+      "createdTime": 1571419848089,
+      "additionalInfo": {
+        "description": "A device to measure water consumption"
+      },
+      "tenantId": {
+        "entityType": "TENANT",
+        "id": "bbcd7e20-ef66-11e9-967c-c326e44c6228"
+      },
+      "customerId": {
+        "entityType": "CUSTOMER",
+        "id": "13814000-1dd2-11b2-8080-808080808080"
+      },
+      "name": "Water Meter A1",
+      "type": "water-meter",
+      "label": "WMA1"
+    },
+    {
+      "id": {
+        "entityType": "DEVICE",
+        "id": "12f55b10-f1cd-11e9-bad3-8bf59b1f7ad1"
+      },
+      "createdTime": 1571419870017,
+      "additionalInfo": {
+        "description": "A device to measure water consumption"
+      },
+      "tenantId": {
+        "entityType": "TENANT",
+        "id": "bbcd7e20-ef66-11e9-967c-c326e44c6228"
+      },
+      "customerId": {
+        "entityType": "CUSTOMER",
+        "id": "13814000-1dd2-11b2-8080-808080808080"
+      },
+      "name": "Water Meter A2",
+      "type": "water-meter",
+      "label": "WMA2"
+    }
+  ],
+  "nextPageLink": null,
+  "hasNext": false
+}
+
+http://localhost:8080/api/tenant/devices?type=Thermometer&limit=10
+type search field: relates to the device type ('Thermometer', 'Water Meter' and so on)
+
+http://localhost:8080/api/tenant/devices?textSearch=Thermometer%20A-1&limit=10
+
+The most complex service call of them all
+http://localhost:8080/api/tenant/devices?type=Thermometer&textSearch=East%20window&idOffset=b0a36900-ef67-11e9-967c-c3&textOffset=Ricardo%20Almeida&limit=10

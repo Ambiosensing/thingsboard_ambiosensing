@@ -1,0 +1,50 @@
+PostgreSQL DB
+user: postgres
+password: ambiosensing2019
+Listen port: 5432
+host: http://localhost
+
+(use pgAdmin App to start Postgres SQL server and access its interface through http://localhost:51739)
+
+MySQL Database
+user: ambiosensing
+password: ambiosensing2019
+listen port: 3306
+host: http://localhost
+
+(use MySQL Workbench or PyCHarm's database connection interface to connect and configure the database more easily)
+
+-------------------------------------------------------------------------------------------------------------------
+ThingsBoard Interface:
+LOCAL INSTALLATION
+host: http://localhost:8080
+* If page is unavailable, check if thingsboard service is running
+* If not, open a terminal (cmd or powershell) and run: $ net start thingsboard
+
+Administrator user:
+user: sysadmin@thingsboard.org
+password: sysadmin
+
+Tenant administrator
+user: rdl.almeida@campus.fct.unl.pt
+password: ambiosensing2019
+
+-------------------------------------------------------------------------------------------------------------------
+REMOTE INSTALLATION
+host: http://62.48.174.118:5044
+
+Administrator user: (NOTE: The guys forgot to change this during install! Major security flaw since this login data is available in any ThingsBoard tutorial out there!)
+user: sysadmin@thingsboard.org
+password: sysadmin
+
+Tenant administrator
+user: rdl.almeida@campus.fct.unl.pt
+password: ambiosensing2019
+
+-------------------------------------------------------------------------------------------------------------------
+TEMPERATURE GENERATOR RANDOM TEMP CODE
+var msg = { temperature: +(Math.random()*5 +25).toFixed(1) };
+var metadata = { data: 40 }
+var msgType = "POST_TELEMETRY_REQUEST"
+
+return { msg:msg, metadata: metadata, msgType: msgType }

@@ -1,0 +1,195 @@
+#------------------------------------ THINGSBOARD BACKEND - EMPTY AUTHORIZATION TOKENS (FOR TESTING) ------------------------------------------------------------------------------------
+{
+	'token': None,
+	'refreshToken': None
+}
+#----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+#------------------------------------ THINGSBOARD BACKEND - BOTH token AND refreshToken ARE EXPIRED (FOR TESTING - NON ADMIN USER) ------------------------------------------------------
+{
+	'token': 'eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJyZGwuYWxtZWlkYUBjYW1wdXMuZmN0LnVubC5wdCIsInNjb3BlcyI6WyJURU5BTlRfQURNSU4iXSwidXNlcklkIjoiZWJhMTczNDAtZWY2Ni0xMWU5LTk2N2MtYzMyNmU0NGM2MjI4IiwiZmlyc3ROYW1lIjoiUmljYXJkbyIsImxhc3ROYW1lIjoiQWxtZWlkYSIsImVuYWJsZWQiOnRydWUsImlzUHVibGljIjpmYWxzZSwidGVuYW50SWQiOiJiYmNkN2UyMC1lZjY2LTExZTktOTY3Yy1jMzI2ZTQ0YzYyMjgiLCJjdXN0b21lcklkIjoiMTM4MTQwMDAtMWRkMi0xMWIyLTgwODAtODA4MDgwODA4MDgwIiwiaXNzIjoidGhpbmdzYm9hcmQuaW8iLCJpYXQiOjE1NzE0MTA1NjIsImV4cCI6MTU3MTQxOTU2Mn0.LsrMGEtPX7PuxbeDEPQp9JFUbU2OW-u3kt3o8AZxDxcwDbOaveAmTh6rkt-GInL7dP5vD4LRbBkxtOIzg5ZuyA',
+	'refreshToken': 'eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJyZGwuYWxtZWlkYUBjYW1wdXMuZmN0LnVubC5wdCIsInNjb3BlcyI6WyJSRUZSRVNIX1RPS0VOIl0sInVzZXJJZCI6ImViYTE3MzQwLWVmNjYtMTFlOS05NjdjLWMzMjZlNDRjNjIyOCIsImlzUHVibGljIjpmYWxzZSwiaXNzIjoidGhpbmdzYm9hcmQuaW8iLCJqdGkiOiI3OTY5MzczMS02OGQ0LTRmMzctOTJmYS05NTM1NjE0OGI2ZmIiLCJpYXQiOjE1NzE0MTA1NjIsImV4cCI6MTU3MjAxNTM2Mn0._TPudMyMQi7m4AvQnHm1aTKdDq76m6YwablyupBE940ugGt-Q1-5DjWCP_41IKVbBFq_KVyCoIgwt5lO7F_zuQ'
+}
+#----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+#------------------------------------ THINGSBOARD BACKEND - BOTH token AND refreshToken ARE EXPIRED (FOR TESTING - ADMIN USER) ------------------------------------------------------
+{
+	'token': 'eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJzeXNhZG1pbkB0aGluZ3Nib2FyZC5vcmciLCJzY29wZXMiOlsiU1lTX0FETUlOIl0sInVzZXJJZCI6IjgwYmE0YmEwLWY1YjEtMTFlOS04OGIwLTExMTAzODdhNzkzYyIsImVuYWJsZWQiOnRydWUsImlzUHVibGljIjpmYWxzZSwidGVuYW50SWQiOiIxMzgxNDAwMC0xZGQyLTExYjItODA4MC04MDgwODA4MDgwODAiLCJjdXN0b21lcklkIjoiMTM4MTQwMDAtMWRkMi0xMWIyLTgwODAtODA4MDgwODA4MDgwIiwiaXNzIjoidGhpbmdzYm9hcmQuaW8iLCJpYXQiOjE1NzE4NTc4NDYsImV4cCI6MTU3MTg2Njg0Nn0.XiBpGXKnRtYmTRhnT3F85LjPGYF7tL3PONV59yVWh5EdmdPja-ScMfqseUIrJRsZGXLS37eyultwB0NFQz2hDA',
+	'refreshToken': 'eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJzeXNhZG1pbkB0aGluZ3Nib2FyZC5vcmciLCJzY29wZXMiOlsiUkVGUkVTSF9UT0tFTiJdLCJ1c2VySWQiOiI4MGJhNGJhMC1mNWIxLTExZTktODhiMC0xMTEwMzg3YTc5M2MiLCJpc1B1YmxpYyI6ZmFsc2UsImlzcyI6InRoaW5nc2JvYXJkLmlvIiwianRpIjoiYWM1ODRiMGItNTYxZS00ZThiLTk1Y2QtZmRlYWE0ZjdhODYzIiwiaWF0IjoxNTcxODU3ODQ2LCJleHAiOjE1NzI0NjI2NDZ9.t3ybhKsGiBcVGI1cF7jhh4Fgg9pBILlV5F1EebfArKM1HqICA5dMFCoXp-sbkO_ul8lK0uz4Vn_TI9uVS8uoZA'
+}
+#----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+Thermometer A-1 ID: 168ad860-f5b3-11e9-97ed-cb366a497c88 type: DEVICE
+
+curl -v -X GET http://localhost:8080/api/plugins/telemetry/DEVICE/168ad860-f5b3-11e9-97ed-cb366a497c88/keys/timeseries --header "Content-type:application/json" --header "X-Authorization: Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJyZGwuYWxtZWlkYUBjYW1wdXMuZmN0LnVubC5wdCIsInNjb3BlcyI6WyJURU5BTlRfQURNSU4iXSwidXNlcklkIjoiZDQ3YzcxZTAtZjViMi0xMWU5LTk3ZWQtY2IzNjZhNDk3Yzg4IiwiZmlyc3ROYW1lIjoiUmljYXJkbyIsImxhc3ROYW1lIjoiQWxtZWlkYSIsImVuYWJsZWQiOnRydWUsImlzUHVibGljIjpmYWxzZSwidGVuYW50SWQiOiJjOGVlODc1MC1mNWIyLTExZTktOTdlZC1jYjM2NmE0OTdjODgiLCJjdXN0b21lcklkIjoiMTM4MTQwMDAtMWRkMi0xMWIyLTgwODAtODA4MDgwODA4MDgwIiwiaXNzIjoidGhpbmdzYm9hcmQuaW8iLCJpYXQiOjE1NzE4NzM2MzksImV4cCI6MTU3MTg4MjYzOX0.OogXv_V3bQ3vMdF16KPrb66iuZv8Zw17GupliWIFJWowwkxhuIoTKShYyYH4Tn_ZfdTilAkdAYI8KPtEBHqsmA"
+
+05ed9c40-f5b3-11e9-97ed-cb366a497c88
+
+1e9f5b3168ad86097edcb366a497c88 - deviceID of one of the thermometers
+1e9f5b3168ad86097edcb366a497c88 - id from 'device' where name='Thermometer A-1'
+168ad860-f5b3-11e9-97ed-cb366a497c88 - deviceID of Thermometer A-1 from ThingsBoard web interface (http://localhost:8080)
+yqxRLmVqopBCuSRm1XIT - access token of Thermometer A-1 from ThingsBoard web interface (http://localhost:8080)
+
+Tenant id = eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJyZGwuYWxtZWlkYUBjYW1wdXMuZmN0LnVubC5wdCIsInNjb3BlcyI6WyJURU5BTlRfQURNSU4iXSwidXNlcklkIjoiZDQ3YzcxZTAtZjViMi0xMWU5LTk3ZWQtY2IzNjZhNDk3Yzg4IiwiZmlyc3ROYW1lIjoiUmljYXJkbyIsImxhc3ROYW1lIjoiQWxtZWlkYSIsImVuYWJsZWQiOnRydWUsImlzUHVibGljIjpmYWxzZSwidGVuYW50SWQiOiJjOGVlODc1MC1mNWIyLTExZTktOTdlZC1jYjM2NmE0OTdjODgiLCJjdXN0b21lcklkIjoiMTM4MTQwMDAtMWRkMi0xMWIyLTgwODAtODA4MDgwODA4MDgwIiwiaXNzIjoidGhpbmdzYm9hcmQuaW8iLCJpYXQiOjE1NzE5MjIzMTYsImV4cCI6MTU3MTkzMTMxNn0.ELK0enHLOTWjDMYV1ntOacgGKkxHNqL62WT8GGiKCbdx8vXCgxSQ6MePTV4yNMZwhP8c1_ZQ-wPlV5Opg4KlqQ
+Admin id = 
+
+----------------------------- STANDARD AUTH_TOKEN FILE CONTENTS (EMPTY) ---------------
+{
+	'admin':
+	{
+	    'token': None,
+	    'refreshToken': None
+	},
+	'regular':
+	{
+	    'token': None,
+	    'refreshToken': None
+	}
+}
+
+---------------------------- AUTH_TOKEN FILE CONTENTS WITH EXPIRED AUTHORIZATION TOKEN (ADMIN + REGULAR) BUT VALID REFRESH TOKEN (ADMIN + REGULAR)
+{
+	'admin':
+	{
+		'token': 'eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJzeXNhZG1pbkB0aGluZ3Nib2FyZC5vcmciLCJzY29wZXMiOlsiU1lTX0FETUlOIl0sInVzZXJJZCI6IjgwYmE0YmEwLWY1YjEtMTFlOS04OGIwLTExMTAzODdhNzkzYyIsImVuYWJsZWQiOnRydWUsImlzUHVibGljIjpmYWxzZSwidGVuYW50SWQiOiIxMzgxNDAwMC0xZGQyLTExYjItODA4MC04MDgwODA4MDgwODAiLCJjdXN0b21lcklkIjoiMTM4MTQwMDAtMWRkMi0xMWIyLTgwODAtODA4MDgwODA4MDgwIiwiaXNzIjoidGhpbmdzYm9hcmQuaW8iLCJpYXQiOjE1NzE4NTc4NDYsImV4cCI6MTU3MTg2Njg0Nn0.XiBpGXKnRtYmTRhnT3F85LjPGYF7tL3PONV59yVWh5EdmdPja-ScMfqseUIrJRsZGXLS37eyultwB0NFQz2hDA',
+		'refreshToken': 'eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJzeXNhZG1pbkB0aGluZ3Nib2FyZC5vcmciLCJzY29wZXMiOlsiUkVGUkVTSF9UT0tFTiJdLCJ1c2VySWQiOiI4MGJhNGJhMC1mNWIxLTExZTktODhiMC0xMTEwMzg3YTc5M2MiLCJpc1B1YmxpYyI6ZmFsc2UsImlzcyI6InRoaW5nc2JvYXJkLmlvIiwianRpIjoiNzlhYzk0NWEtYmJhYS00M2ViLTg0MDQtYjJlNWJkYmIxN2IyIiwiaWF0IjoxNTcxOTQ2NzMwLCJleHAiOjE1NzI1NTE1MzB9.gpsYu77-5VR5T9FC6K9tk5AbhVptjKRnhKaKPKcyf5hOsdFn5RcjdciE0z_gGielSWTbcMwwJTnK2EvkaXwj6g'
+	},
+	'regular': 
+	{
+		'token': 'eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJyZGwuYWxtZWlkYUBjYW1wdXMuZmN0LnVubC5wdCIsInNjb3BlcyI6WyJURU5BTlRfQURNSU4iXSwidXNlcklkIjoiZWJhMTczNDAtZWY2Ni0xMWU5LTk2N2MtYzMyNmU0NGM2MjI4IiwiZmlyc3ROYW1lIjoiUmljYXJkbyIsImxhc3ROYW1lIjoiQWxtZWlkYSIsImVuYWJsZWQiOnRydWUsImlzUHVibGljIjpmYWxzZSwidGVuYW50SWQiOiJiYmNkN2UyMC1lZjY2LTExZTktOTY3Yy1jMzI2ZTQ0YzYyMjgiLCJjdXN0b21lcklkIjoiMTM4MTQwMDAtMWRkMi0xMWIyLTgwODAtODA4MDgwODA4MDgwIiwiaXNzIjoidGhpbmdzYm9hcmQuaW8iLCJpYXQiOjE1NzE0MTA1NjIsImV4cCI6MTU3MTQxOTU2Mn0.LsrMGEtPX7PuxbeDEPQp9JFUbU2OW-u3kt3o8AZxDxcwDbOaveAmTh6rkt-GInL7dP5vD4LRbBkxtOIzg5ZuyA',
+		'refreshToken': 'eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJyZGwuYWxtZWlkYUBjYW1wdXMuZmN0LnVubC5wdCIsInNjb3BlcyI6WyJSRUZSRVNIX1RPS0VOIl0sInVzZXJJZCI6ImQ0N2M3MWUwLWY1YjItMTFlOS05N2VkLWNiMzY2YTQ5N2M4OCIsImlzUHVibGljIjpmYWxzZSwiaXNzIjoidGhpbmdzYm9hcmQuaW8iLCJqdGkiOiIzNmI3M2VmMC01ODY3LTRkYTktYmQwOC1iM2Y2ZjI1NGI4MDEiLCJpYXQiOjE1NzE5NDY3MzAsImV4cCI6MTU3MjU1MTUzMH0.lyTZNnNNrsMX6fxCwOCsp8-RAqPhj8HiQR5N07ffONMUN4djHv-x-BJ1ylV4ke4b9glCKgmWzQRoyEJhBuDkJA'
+	}
+
+}
+
+-------------------------------- 24-10-2019:21:01 REQUEST --------------------------
+(Use it to try out expired tokens)
+{
+	'admin':
+	{
+		'token': 'eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJzeXNhZG1pbkB0aGluZ3Nib2FyZC5vcmciLCJzY29wZXMiOlsiU1lTX0FETUlOIl0sInVzZXJJZCI6IjgwYmE0YmEwLWY1YjEtMTFlOS04OGIwLTExMTAzODdhNzkzYyIsImVuYWJsZWQiOnRydWUsImlzUHVibGljIjpmYWxzZSwidGVuYW50SWQiOiIxMzgxNDAwMC0xZGQyLTExYjItODA4MC04MDgwODA4MDgwODAiLCJjdXN0b21lcklkIjoiMTM4MTQwMDAtMWRkMi0xMWIyLTgwODAtODA4MDgwODA4MDgwIiwiaXNzIjoidGhpbmdzYm9hcmQuaW8iLCJpYXQiOjE1NzE5NDczMzIsImV4cCI6MTU3MTk1NjMzMn0.NIzX6O6B3mz24PuZrdHRey7FW2URFH-_9oeFYlS-2o6QiYJLCrb9aLOwsvjFG4GT6yQAJyeGDIvfqapZgO55aw', 
+		'refreshToken': 'eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJzeXNhZG1pbkB0aGluZ3Nib2FyZC5vcmciLCJzY29wZXMiOlsiUkVGUkVTSF9UT0tFTiJdLCJ1c2VySWQiOiI4MGJhNGJhMC1mNWIxLTExZTktODhiMC0xMTEwMzg3YTc5M2MiLCJpc1B1YmxpYyI6ZmFsc2UsImlzcyI6InRoaW5nc2JvYXJkLmlvIiwianRpIjoiMzMzYTliMWItYzAwNi00NGE5LWFkZjItMzcxNjZlN2UyMWIyIiwiaWF0IjoxNTcxOTQ3MzMyLCJleHAiOjE1NzI1NTIxMzJ9.pnqjfUl4SaKyqdxE5qAd-OFyxDxFb2JiUdkUTAOAzfoGPeINE1rTdZRx9JQRT-VcQCsVsc-RiHoPah3ZDj6grg'
+	},
+	'regular': 
+	{
+		'token': 'eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJyZGwuYWxtZWlkYUBjYW1wdXMuZmN0LnVubC5wdCIsInNjb3BlcyI6WyJURU5BTlRfQURNSU4iXSwidXNlcklkIjoiZDQ3YzcxZTAtZjViMi0xMWU5LTk3ZWQtY2IzNjZhNDk3Yzg4IiwiZmlyc3ROYW1lIjoiUmljYXJkbyIsImxhc3ROYW1lIjoiQWxtZWlkYSIsImVuYWJsZWQiOnRydWUsImlzUHVibGljIjpmYWxzZSwidGVuYW50SWQiOiJjOGVlODc1MC1mNWIyLTExZTktOTdlZC1jYjM2NmE0OTdjODgiLCJjdXN0b21lcklkIjoiMTM4MTQwMDAtMWRkMi0xMWIyLTgwODAtODA4MDgwODA4MDgwIiwiaXNzIjoidGhpbmdzYm9hcmQuaW8iLCJpYXQiOjE1NzE5NDczMzIsImV4cCI6MTU3MTk1NjMzMn0.09xm0e1ea9YmNTMO2V4JoKZ0BzBFxnq8Z1Q5uiJyRbLs21_H8czl497oNLBKRuDM7QVhmz8_FlgVhkRdIDW1zw', 
+		'refreshToken': 'eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJyZGwuYWxtZWlkYUBjYW1wdXMuZmN0LnVubC5wdCIsInNjb3BlcyI6WyJSRUZSRVNIX1RPS0VOIl0sInVzZXJJZCI6ImQ0N2M3MWUwLWY1YjItMTFlOS05N2VkLWNiMzY2YTQ5N2M4OCIsImlzUHVibGljIjpmYWxzZSwiaXNzIjoidGhpbmdzYm9hcmQuaW8iLCJqdGkiOiJlNDI5MTczYS0yZDhjLTQwOWUtODA4Zi1lYTFhMmRkZDczYzAiLCJpYXQiOjE1NzE5NDczMzIsImV4cCI6MTU3MjU1MjEzMn0.MNUVd2QNNqzZu-zTIQITkLlJQMUIcnNbh_s14DOnHNzUH_baeh0sCglpwkQuXcfU7_xOv3bzy8aQM2-WjUUhew'
+	}
+
+}
+
+-------------------------------- getDeviceTypes (/api/device/types) --------------------------
+curl -X GET --header 'Accept: application/json' --header 'X-Authorization: Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJyZGwuYWxtZWlkYUBjYW1wdXMuZmN0LnVubC5wdCIsInNjb3BlcyI6WyJURU5BTlRfQURNSU4iXSwidXNlcklkIjoiZDNkZWIzYjAtMGFkOS0xMWVhLTgwMDEtMzk3NWYzNTJlMDRlIiwiZmlyc3ROYW1lIjoiUmljYXJkbyIsImxhc3ROYW1lIjoiQWxtZWlkYSIsImVuYWJsZWQiOnRydWUsImlzUHVibGljIjpmYWxzZSwidGVuYW50SWQiOiI4NjNhZTg5MC0wYWQ5LTExZWEtODAwMS0zOTc1ZjM1MmUwNGUiLCJjdXN0b21lcklkIjoiMTM4MTQwMDAtMWRkMi0xMWIyLTgwODAtODA4MDgwODA4MDgwIiwiaXNzIjoidGhpbmdzYm9hcmQuaW8iLCJpYXQiOjE1NzQxNzY1NjYsImV4cCI6MTU3NDE4NTU2Nn0.oLlca1ujLdms9DSP6ZQM1qz5j7EZp_GcXe5sXVzOeEdxvL5ZASPyqfTpc3DkWDCFcO4T-GxKdeGkbNX257DJpA' 'http://localhost:8080/api/device/types'
+
+Response:
+[
+  {
+    "tenantId": {
+      "entityType": "TENANT",
+      "id": "863ae890-0ad9-11ea-8001-3975f352e04e"
+    },
+    "entityType": "DEVICE",
+    "type": "thermometer"
+  }
+]
+
+-------------------------------- getTenantDevice (/api/tenant/devices{?deviceName}) --------------------------
+curl -X GET --header 'Accept: application/json' --header 'X-Authorization: Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJyZGwuYWxtZWlkYUBjYW1wdXMuZmN0LnVubC5wdCIsInNjb3BlcyI6WyJURU5BTlRfQURNSU4iXSwidXNlcklkIjoiZDNkZWIzYjAtMGFkOS0xMWVhLTgwMDEtMzk3NWYzNTJlMDRlIiwiZmlyc3ROYW1lIjoiUmljYXJkbyIsImxhc3ROYW1lIjoiQWxtZWlkYSIsImVuYWJsZWQiOnRydWUsImlzUHVibGljIjpmYWxzZSwidGVuYW50SWQiOiI4NjNhZTg5MC0wYWQ5LTExZWEtODAwMS0zOTc1ZjM1MmUwNGUiLCJjdXN0b21lcklkIjoiMTM4MTQwMDAtMWRkMi0xMWIyLTgwODAtODA4MDgwODA4MDgwIiwiaXNzIjoidGhpbmdzYm9hcmQuaW8iLCJpYXQiOjE1NzQxNzY1NjYsImV4cCI6MTU3NDE4NTU2Nn0.oLlca1ujLdms9DSP6ZQM1qz5j7EZp_GcXe5sXVzOeEdxvL5ZASPyqfTpc3DkWDCFcO4T-GxKdeGkbNX257DJpA' 'http://localhost:8080/api/tenant/devices?deviceName=Thermometer%20A-1'
+
+deviceName = Thermometer A-1
+
+Response:
+{
+  "id": {
+    "entityType": "DEVICE",
+    "id": "00b3e7c0-0ada-11ea-8001-3975f352e04e"
+  },
+  "createdTime": 1574174201916,
+  "description": null,
+  "tenantId": {
+    "entityType": "TENANT",
+    "id": "863ae890-0ad9-11ea-8001-3975f352e04e"
+  },
+  "customerId": {
+    "entityType": "CUSTOMER",
+    "id": "13814000-1dd2-11b2-8080-808080808080"
+  },
+  "name": "Thermometer A-1",
+  "type": "thermometer",
+  "label": "North Window"
+}
+
+
+
+-------------------------------- getTenants (/api/tenants{?textSearch, idOffset, textOffset, limit}) -------------------------
+NEEDS ADMIN AUTH TOKEN!
+limit parameter is the only one required
+
+curl -X GET --header 'Accept: application/json' --header 'X-Authorization: Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJzeXNhZG1pbkB0aGluZ3Nib2FyZC5vcmciLCJzY29wZXMiOlsiU1lTX0FETUlOIl0sInVzZXJJZCI6IjMzN2QxZDgwLTBhZDktMTFlYS04NWE5LWUxOWQxNmQ4NzljYiIsImVuYWJsZWQiOnRydWUsImlzUHVibGljIjpmYWxzZSwidGVuYW50SWQiOiIxMzgxNDAwMC0xZGQyLTExYjItODA4MC04MDgwODA4MDgwODAiLCJjdXN0b21lcklkIjoiMTM4MTQwMDAtMWRkMi0xMWIyLTgwODAtODA4MDgwODA4MDgwIiwiaXNzIjoidGhpbmdzYm9hcmQuaW8iLCJpYXQiOjE1NzQxODM5ODEsImV4cCI6MTU3NDE5Mjk4MX0._MXD5KTvKAsRHAJB_yn_0SOaX7iRWhC16zq95zAquFYxDIfaLP6Mpv1xjcpDT7wP90iO8P20Sldxkv8l039Dqw' 'http://localhost:8080/api/tenants?limit=10'
+
+/api/tenants?textSearch=Mr%20Ricardo%20Almeida&idOffset=863ae890-0ad9-11ea-8001-3975f352&textOffset=askaj&limit=10'
+http://localhost:8080/api/tenants?textSearch=Mr%20-%21%22%23%24%25%26%2F%28%29%3D%3F%C2%AB%C2%BB&idOffset=863ae890-0ad9-11ea-8001-3975f352e04e&textOffset=,%3B.%3A-_%C2%BA%C2%AA%C2%B4%60%2B%2A&limit=10
+
+URL service endpoint
+/api/tenants?textSearch=%21%22%23%24%24%28%3D%22%28%2F%3D%29%22%2F%29%28%22%2F%22%23%23%21&idOffset=863ae890-0ad9-11ea-8001-3&textOffset=,%3B.%3A-_%C2%BA%C2%AA%C2%B4%60%2B%2A&limit=10
+/api/tenants?testSearch=%21%22%23%24%24%28%3D%22%28%2F%3D%29%22%2F%29%28%22%2F%22%23%23%21&idOffset=863ae890-0ad9-11ea-8001-3&textOffset=%2C%3B.%3A-_%C2%BA%C2%AA%C2%B4%60%2B%2A&limit=5
+
+
+Request Headers
+
+Response:
+{
+  "data": [
+    {
+      "id": {
+        "entityType": "TENANT",
+        "id": "863ae890-0ad9-11ea-8001-3975f352e04e"
+      },
+      "createdTime": 1574173996441,
+      "description": null,
+      "country": "Portugal",
+      "state": "Setúbal",
+      "city": "Caparica",
+      "address": "Faculdade de Ciências e Tecnologia - Monte da Caparica",
+      "address2": null,
+      "zip": "2628",
+      "phone": null,
+      "email": "rdl.almeida@campus.fct.unl.pt",
+      "title": "Mr Ricardo Almeida",
+      "region": "Global",
+      "name": "Mr Ricardo Almeida"
+    },
+    {
+      "id": {
+        "entityType": "TENANT",
+        "id": "46a695e0-0af1-11ea-8001-3975f352e04e"
+      },
+      "createdTime": 1574184197694,
+      "description": null,
+      "country": "United States",
+      "state": "Alabama",
+      "city": "Montgomery",
+      "address": "600 Dexter Ave",
+      "address2": null,
+      "zip": "36104",
+      "phone": "+1 334 242 3935",
+      "email": "parks.rosa@civilrightsfight.org",
+      "title": "Ms Rosa Parks",
+      "region": "Global",
+      "name": "Ms Rosa Parks"
+    }
+  ],
+  "nextPageLink": null,
+  "hasNext": false
+}
+INSERT INTO thingsboard_tenants_table (entityType, id, createdTime, description, country, state, city, address, address2, zip, phone, email, title, region, name)
+    VALUES ('TENANT', '863ae890-0ad9-11ea-8001-3975f352e04e', '2019-11-01 12:12:11', NULL, 'Portugal', 'Setúbal','Caparica','Faculdade de Ciências e Tecnologia - Monte da Caparica',NULL,'2628',NULL,'rdl.almeida@campus.fct.unl.pt','Mr Ricardo Almeida', 'Global','Mr Ricardo Almeida');
+
+UPDATE thingsboard_tenants_table SET (entityType = 'TENANT', id = '863ae890-0ad9-11ea-8001-3975f352e04e', createdTime = '2019-11-01 12:12:11', description = NULL, country = 'Portugal', state = 'Setúbal', city = 'Caparica', address = 'Faculdade de Ciências e Tecnologia - Monte da Caparica', address2 = NULL, zip = '2628', phone =  NULL, email = 'rdl.almeida@campus.fct.unl.pt', title = 'Mr Ricardo Almeida', region = 'Global', name ='Mr Ricardo Almeida') WHERE entity_type = 'TENANT';
+
+UPDATE thingsboard_tenants_table SET entityType = 'DEVICE', id = '863ae810-0ad9-12ea-8001-3975f352e04e', createdTime = '2018-12-01 13:12:11', description = NULL, country = 'China', state = 'Shangai', city = 'Shangai', address = 'Some chainese characters that I dont know', address2 = NULL, zip = '1234', phone =  NULL, email = 'rdl.almeida@china.ch', title = 'Mr Ricardo Almeida', region = 'Globalist', name ='Mr Ricardo Lopes Almeida' WHERE entityType = 'TENANT';
+
+SELECT CURSOR OUTCOME (tuple with just the results, in the same order as the column_list - no column names though
+(7989.83, datetime.datetime(2019, 11, 8, 16, 25, 30), 8374.16, 7906.11, -354.607, -4.24962, 16727.7, -52.2527, 18036000.0, 21000000.0)

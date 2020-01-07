@@ -1,0 +1,1 @@
+2020-01-07 17:09:12 ERROR      [mysql_utils.py:mysql_database.python_database_modules.mysql_utils:270] The input provided (1578416811358) has the wrong data type expected (not a <class 'int'>). type(1578416811358) = <class 'str'>.

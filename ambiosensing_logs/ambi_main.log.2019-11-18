@@ -1,0 +1,5 @@
+2019-11-18 18:54:52 DEBUG      [__init__.py:__main__:15] This is a DEBUG message
+2019-11-18 18:54:52 INFO       [__init__.py:__main__:16] This is an INFO message
+2019-11-18 18:54:52 WARNING    [__init__.py:__main__:17] This is a WARNING message
+2019-11-18 18:54:52 ERROR      [__init__.py:__main__:18] This is an ERROR message
+2019-11-18 18:54:52 CRITICAL   [__init__.py:__main__:19] This is a CRITICAL message
