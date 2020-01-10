@@ -3,7 +3,7 @@
 import utils
 import ambi_logger
 import traceback
-import config
+import proj_config
 import mysql.connector as mysqlc
 from mysql.connector.errors import Error
 import datetime
@@ -56,7 +56,7 @@ def connect_db(database_name):
 
     try:
         utils.validate_input_type(database_name, str)
-        connection_dict = config.mysql_db_access
+        connection_dict = proj_config.mysql_db_access
     except utils.InputValidationException as ive:
         connect_log.error(ive.message)
         raise ive
@@ -85,7 +85,7 @@ def connect_db(database_name):
         raise MySQLDatabaseException(message=error_msg)
 
 
-def get_table_columns(database, table_name):
+def get_table_columns(database_name, table_name):
     """This method does a simple SELECT query to the database for just the columns names in a given table. This is particular useful for building INSERT and UPDATE statements that require a specification of these elements on the
     statements
     @:param database (str) - The name of the database to connect to
@@ -98,20 +98,26 @@ def get_table_columns(database, table_name):
     get_table_log = ambi_logger.get_logger(__name__)
 
     try:
-        utils.validate_input_type(database, str)
+        utils.validate_input_type(database_name, str)
         utils.validate_input_type(table_name, str)
 
-        cnx = connect_db(database)
+        cnx = connect_db(database_name=database_name)
         select_cursor = cnx.cursor(buffered=True)
 
-        sql_select = """SELECT * FROM """ + str(table_name) + ";"
+        sql_select = """SHOW COLUMNS FROM """ + str(table_name) + """;"""
         select_cursor.execute(sql_select)
         # Executing a SQL statement using the cursor object yields all sorts of useful information. For this particular case I'm interested in the cursor.column_names parameter, which is a n member tuple, n = number of columns in the
         # table targeted by the statement, in which each tuple element is the name of the column in position i. From there is just a matter of casting that parameter into a list (its a direct operation and, overall,
         # I find lists way more friendly to operate than tuples, but that's subjective) and return it back to the caller
-        result_list = list(select_cursor.column_names)
+        result_list = list(select_cursor.fetchall())
 
-        return result_list
+        # The result list is a list of tuples containing the following details: (column_name, data_type, accepts_NULL_values, default_value). Obviously I'm only interested in the column names. So retrieve all the index 0 elements of the tuple list
+        # to the return list
+        return_list = []
+        for tuples in result_list:
+            return_list.append(tuples[0])
+
+        return return_list
 
     except utils.InputValidationException as ive:
         get_table_log.error(__name__)
@@ -340,3 +346,54 @@ def run_sql_statement(cursor, sql_statement, data_tuple=()):
         raise MySQLDatabaseException(message=e.msg, error_code=e.errno, sqlstate=e.sqlstate)
 
     return cursor
+
+
+def validate_database_table_name(table_name):
+    """This simple method receives a name of a table and validates it by executing a SQL statement in the default database to retrieve all of its tables and then checks if the table name in the input does match any of the returned values.
+    @:param table_name (str) - The name of the database table whose existence is to be verified
+    @:raise utils.InputValidationException - If the inputs fail initial validation
+    @:raise MySQLDatabaseException - If any error occur while executing database bounded operations or if the table name was not found among the list of database tables retrieved
+    @:return True (bool) - If table_name is among the database tables list"""
+
+    validate_db_table_log = ambi_logger.get_logger(__name__)
+
+    # Validate the input
+    utils.validate_input_type(table_name, str)
+
+    # Get the default database name
+    database_name = proj_config.mysql_db_access['database']
+    # Create the database interface elements
+    cnx = connect_db(database_name=database_name)
+    select_cursor = cnx.cursor(buffered=True)
+
+    # Prepare the SQL statement
+    sql_select = """SHOW TABLES FROM """ + str(database_name) + """;"""
+
+    # And execute it
+    select_cursor = run_sql_statement(select_cursor, sql_select, ())
+
+    # Check the data integrity first
+    if not select_cursor.rowcount:
+        error_msg = "The SQL statement '{0}' didn't return any results! Exiting...".format(str(select_cursor.statement))
+        validate_db_table_log.error(error_msg)
+        select_cursor.close()
+        cnx.close()
+        raise MySQLDatabaseException(message=error_msg)
+    # If results were gotten
+    else:
+        # Grab the first one
+        result = select_cursor.fetchone()
+
+        # And run the next loop until all results were checked (result would be set to None once all the data retrieved from the database is exhausted)
+        while result:
+            # If a match is found
+            if result == table_name:
+                # Return the response immediately
+                return True
+            # Otherwise
+            else:
+                # Grab the next one and run another iteration of this
+                result = select_cursor.fetchone()
+
+        # If I got here it means none of the results matched the table_name provided. Nothing more to do than to inform that the table name is not valid
+        raise MySQLDatabaseException(message="The table provided '{0}' is not among the current database tables!".format(str(table_name)))

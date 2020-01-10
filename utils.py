@@ -1,9 +1,10 @@
 import requests
 import ast
-import config
+import proj_config
+import user_config
 import traceback
-from ThingsBoard_REST_API import admin_controller as ac
-from ThingsBoard_REST_API import device_controller as dc
+from ThingsBoard_REST_API import tb_admin_controller as ac
+from ThingsBoard_REST_API import tb_device_controller as dc
 import ambi_logger
 import logging
 
@@ -145,7 +146,7 @@ def get_new_session_token(connection_dict):
     try:
         response = requests.post(url=con_url, data=con_data, headers=con_headers)
     except (requests.ConnectionError, requests.ConnectTimeout):
-        error_msg = "Unable to establish a connection with {0}. Exiting...".format(str(str(config.thingsboard_host) + ":" + str(config.thingsboard_port)))
+        error_msg = "Unable to establish a connection with {0}. Exiting...".format(str(str(user_config.thingsboard_host) + ":" + str(user_config.thingsboard_port)))
         gnst_log.error(error_msg)
         raise AuthenticationException(error_msg)
 
@@ -160,10 +161,10 @@ def get_new_session_token(connection_dict):
     return ast.literal_eval(response.text)
 
 
-def refresh_authorization_tokens(admin):
+def refresh_authorization_tokens(admin=False):
     """ This method simply does a call to the get_new_session_token to get a new set of fresh authorization and refresh tokens from the server.
      This is just to abstract the following code a bit more since I've realised that I'm calling the aforementioned method all the time
-     @:param admin - a boolean indicating if the tokens to be refreshed are for an admin profile (admin=True) or a regular profile(admin=False)
+     @:param admin - a boolean indicating if the tokens to be refreshed are for an admin profile (admin=True) or a regular profile(admin=False). Default option is always 'regular user' (admin=False)
      @:raise AuthenticationException - if the admin argument is empty or not a boolean
      @:return a dictionary with a fresh set of authorization and refresh tokens
      {
@@ -180,9 +181,9 @@ def refresh_authorization_tokens(admin):
         raise ive
 
     if admin:
-        return get_new_session_token(config.thingsboard_admin)
+        return get_new_session_token(user_config.thingsboard_admin)
     else:
-        return get_new_session_token(config.thingsboard_tenant)
+        return get_new_session_token(user_config.thingsboard_regular)
 
 
 def validate_connection_dict(connection_dict):
@@ -229,7 +230,7 @@ def get_auth_token(admin=False):
     respectively.
     2. Based on the argument flag 'admin', i.e., if admin=True, use the 'admin' credentials otherwise (default being admin=False) use the 'regular' credentials.
      Start by checking if there's any tokens whatsoever in the file. If:
-        2.1. There are no credentials in the auth_token file :Simplest solution: call for a new set of credentials for the role indicated, write them on the
+        2.1. There are no credentials in the auth_token file: Simplest solution: call for a new set of credentials for the role indicated, write them on the
         auth_token file and return the authorization credential back to the user
         2.2. There's a pair of credentials stored in the file. From here:
             2.2.1 Check if the authorization token is still valid by calling a simple GET service (getDeviceTypes for a regular user, checkUpdates for the admin
@@ -240,10 +241,8 @@ def get_auth_token(admin=False):
                                 Update the auth_token file with the new pair and return the fresh authorization token to the user
                     2.2.1.2.2 - HTTP 401 - The refresh token as expired also. From here all one can do is to generate a fresh pair of authorization and refresh
                     token from scratch (basically providing the access
-                                credentials again to the ThingsBoard server. The method for this is quite straight forward and returns a pair of fresh
-                                authorization and refresh tokens. Update the auth_token file
-                                and return the valid authorization token beck to the user.
-
+                    credentials again to the ThingsBoard server. The method for this is quite straight forward and returns a pair of fresh
+                    authorization and refresh tokens. Update the auth_token file and return the valid authorization token beck to the user.
     @:param admin - Set this optional flag to True if the set of credentials to be used in the token operations are from the administrator user. By default
     it is going to use the regular (tenant) user instead
     @:return a valid authorization token and, if needed, updates the auth_token file with fresh tokens
@@ -252,15 +251,13 @@ def get_auth_token(admin=False):
     # The faithful logger
     auth_log = ambi_logger.get_logger(__name__)
 
-    # Start by retrieving the storage file into a python file object. The argument 'r+' means open the file in <path> for read and write (I've purposely
-    # indicated no append action on writing - that would be the a+ argument - so any writing actions are going to overwrite whatever is in the file initially.
+    # Start by retrieving the storage file into a python file object. The argument 'r' means open the file in <path> for read only.
     try:
         # Try to open the file first, looking out for a possible non-existent file (that's why the Python gods invented the Exceptions)
-        auth_file = open(config.auth_token_path, "r")
+        auth_file = open(proj_config.auth_token_path, "r")
 
         # Read the file contents at once into a list of strings, one per file line. This instruction needs to be inside the try statement because it only makes
-        # sense to do this if the file was open successfully. If not, the
-        # proper Exception is raised and this instruction is bypassed as intended
+        # sense to do this if the file was open successfully. If not, the proper Exception is raised and this instruction is bypassed as intended
         auth_file_contents = auth_file.read()
 
         # Finally, the data on this file is ready for an almost direct conversion to a dictionary. This conversion in python may be tricky but the
@@ -272,10 +269,10 @@ def get_auth_token(admin=False):
             # config file
             auth_data = ast.literal_eval(auth_file_contents.replace("\n", "").replace("\t", ""))
         except SyntaxError:
-            auth_log.warning("Mal formed or empty auth_token file detected. Resetting auth_token info...")
+            auth_log.warning("Malformed or empty auth_token file detected. Resetting auth_token info...")
             # From here there's no point in rewriting the auth_token file since its going to happen later on eventually. So, the best course of action is
             # to set the auth_data structure to the standard empty auth dictionary that's set in the config file.
-            auth_data = config.auth_data
+            auth_data = proj_config.auth_data
 
         # Also, there's a small possibility that the contents of the auth_token were parsed successfully, just not to the expected structure (not a dict). In
         # that case, force the auth_data from config on the local auth_data again
@@ -287,16 +284,16 @@ def get_auth_token(admin=False):
             # Log the message
             auth_log.warning(ive.message + " Resetting...")
             # And revert the auth_data object to its standard format
-            auth_data = config.auth_data
+            auth_data = proj_config.auth_data
 
     except FileNotFoundError:
         auth_log.warning("No file found in config.auth_token_path. Creating a new one from scratch")
         # If no file was found, use the open command on the config.auth_token_path variable to force the creation of a new one (the 'x' argument ensures that)
-        auth_file = open(config.auth_token_path, "x")
+        auth_file = open(proj_config.auth_token_path, "x")
         # The file is currently empty and there's little use for it right now. But the open command over the config.auth_token_path is usable again. Since this
         # file is going to be close anyway later on (to be opened again in
         # write-truncate mode after), there's nothing more to do but to update the auth_data variable with the necessary config.auth_data info.
-        auth_data = config.auth_data
+        auth_data = proj_config.auth_data
 
     # The authentication dictionary should have only two entries named 'auth_token' and 'refresh_token', regardless of their associated values.
     # Check the dictionary consistency before going any further.
@@ -308,10 +305,10 @@ def get_auth_token(admin=False):
         # dictionary. Instead of complaining, since it all goes to the same place its more useful to simply reset the auth_data variable to the standard empty
         # authorization dictionary in the config file and let this method take care of the rest regarding the absence of tokens in it
         auth_log.warning(ae.message + " Resetting auth_data structure...")
-        auth_data = config.auth_data
+        auth_data = proj_config.auth_data
 
     # Now I should have a well formed authentication dictionary in auth_data. From here, the simplest approach is to do 2 branches: one for the admin case
-    # (admin=True) and the default (admin=False) for the regular user I can do the following statements in peace because the precious call to the
+    # (admin=True) and the default (admin=False) for the regular user. I can do the following statements in peace because the precious call to the
     # check_auth_dict already made sure that the two key at the auth_data level 1 are indeed 'admin' and 'regular'.
     # Check the 'check_auth_dict' implementation for more details.
     if admin:
@@ -319,13 +316,8 @@ def get_auth_token(admin=False):
     else:
         auth_dict = auth_data['regular']
 
-    # The following conditional statements are to return all valid responses in a 'result' variable (only one 'result' attribution should occur in the following
-    # lines). Because python allows me to declare variables on the spot, this flexibility sometimes can result in unexpected errors if the variable consistency
-    # fails somewhere in the code that is supposed to build it (that's what debugging is for). To catch any case of this happening, the simplest way is to
-    # declare the variable with a different type at this point, and then re-check it later on against the initial type attributed. For example, I'm going to set
-    # the variable 'result' as a boolean initially but, if the code works as expected, it should be re-cast to a dictionary later on. I can use this to detect
-    # holes in the logic implemented bellow:
-    result = False
+    # Initialize the result variable where I'm going to, eventually, save my authorization token. This is not required per se, just a good programming strategy (as well as checking if the result variable was casted out of None before using it)
+    result = None
 
     # Case 1: There's no authorization token associated yet (auth_data["auth_token"] == None). There's no point in trying to use a refresh token, even if one
     # is found in the auth_token file, given that the request for
@@ -442,7 +434,7 @@ def get_auth_token(admin=False):
     # Start by closing the auth_file that is currently open just for reading
     auth_file.close()
 
-    # At this point I expect my 'result' not to be a boolean anymore and a dictionary instead (type(result) = dict). I'm going to check against both cases
+    # At this point I expect my 'result' not to be 'None' anymore and a dictionary instead (type(result) = dict). I'm going to check against both cases
     # regardless (call me paranoid...)
     if not result:
         error_msg = "No valid dictionary obtained!"
@@ -457,9 +449,8 @@ def get_auth_token(admin=False):
 
     # Now re-open it but with writing privileges (For security reasons, I think, python requires this if you want to replace the whole file with new content,
     # i.e., not appending existing content
-    auth_file = open(config.auth_token_path, 'w')
-    # The rest is somewhat obvious (NOTE: The replace actions on the following command are computationally useless - they serve just to keep the auth_token
-    # file more 'human readable')
+    auth_file = open(proj_config.auth_token_path, 'w')
+    # The rest is somewhat obvious
     # Also, I'm going to replace only the tokens that were updates. Luckily, the use of the admin flag in the context of this method simplifies this greatly:
     if admin:
         auth_data['admin'] = result
@@ -648,7 +639,7 @@ def build_service_calling_info(auth_token, service_endpoint):
             "Accept": "application/json",
             "X-Authorization": "Bearer " + str(auth_token)
         },
-        "url": str(config.thingsboard_host) + ":" + str(config.thingsboard_port) + service_endpoint
+        "url": str(user_config.thingsboard_host) + ":" + str(user_config.thingsboard_port) + service_endpoint
     }
 
 
@@ -713,7 +704,7 @@ def check_auth_token_type(auth_token):
 
     # Open the auth_token file
     try:
-        auth_file = open(config.auth_token_path, 'r')
+        auth_file = open(proj_config.auth_token_path, 'r')
     except FileNotFoundError as fne:
         check_auth_log.error(fne.strerror)
         raise fne
@@ -806,25 +797,19 @@ def extract_all_keys_from_dictionary(input_dictionary, current_key_list, extract
     return current_key_list
 
 
-def extract_all_values_from_dictionary(input_dictionary, current_value_list, extract_val_logger=None):
-    """This method is but the counterpart of the extract_all_keys_from_dictionary one. Same principle, same reason and same logic: I need an expanded list of all the values in a given dictionary which, in the considered case,
-    can have multiple levels, i.e., values that are dictionaries. The most efficient way to get all values of a dictionary into a linear data type, such as a list, is by employing recursivity to explore all dictionary levels
-    @:param input_dictionary (dict) - The dictionary whose keys I want to extract
+def extract_all_key_value_pairs_from_dictionary(input_dictionary, current_value_list):
+    """This method is but the counterpart of the extract_all_keys_from_dictionary one. Same principle, same reason and almost same logic: I need an expanded list of all the values in a given dictionary which, in the considered case,
+    can have multiple levels, i.e., values that are dictionaries. The most efficient way to get all values of a dictionary into a linear data type, such as a list, is by employing recursivity to explore all dictionary levels. But in this case,
+    the return element is going to be a list of tuples, in the format (key, value), because this method is going to be used to populate database tables where the keys of the input dictionary were used to name the database columns verbatim
+    @:param input_dictionary (dict) - The dictionary whose keys values pair I want to extract
     @:param current_value_list (list) - The list of values gathered so far. Since I'm calling this method recursively, I need to provide the state of the process to the next iteration of the method. The current_value_list list is going to be use
     for just that
-    @:param extract_val_logger (logging.logger) - The main logger for this method. To avoid having to create a new one every time this method calls itself, I'm setting it by default to None for the first run of the method, so that it can be
-    created but only on the first iteration. Subsequent iterations send this object on the recursive call.
-    @:return current_value_list (list) - A list with all the values obtained in this analysis (can be returned for good or sent to another iteration of this method to gather more elements from a deeper level dictionary)
+    @:return current_value_list (list of tuple) - A list with all the values obtained in this analysis (can be returned for good or sent to another iteration of this method to gather more elements from a deeper level dictionary) with all the pairs
+    key-value pair extracted
     @:raise utils.InputValidationException - If an input argument fails its data type validation
-    @:raise Exception - For any other errors"""
+    """
 
-    # Check if the logger exists, i.e, if the current run is the first one or if I'm in a recursive call
-    if not extract_val_logger:
-        # Logger is still None. Create it then
-        extract_val_logger = ambi_logger.get_logger(__name__)
-    else:
-        # Otherwise, validate its type
-        validate_input_type(extract_val_logger, logging.Logger)
+    extract_val_logger = ambi_logger.get_logger(__name__)
 
     # Validate the input dict and the current_value list then
     try:
@@ -841,10 +826,10 @@ def extract_all_values_from_dictionary(input_dictionary, current_value_list, ext
         # If a sub dictionary is detected
         if type(input_dictionary[key]) == dict:
             # Call this function again with the sub dictionary instead
-            extract_all_values_from_dictionary(input_dictionary[key], current_value_list, extract_val_logger)
+            extract_all_key_value_pairs_from_dictionary(input_dictionary[key], current_value_list)
         # Otherwise, just keep appending values to the current_value_list
         else:
-            current_value_list.append(input_dictionary[key])
+            current_value_list.append((key, input_dictionary[key]))
 
     # Once the for is done, I'm also too. Send the list back
     return current_value_list
@@ -912,7 +897,7 @@ def compare_sets(set1, set2):
     """I needed to create this method to deal with the myriad of problems that I've encountered when comparing datasets from different sources (different databases in this case) while trying to assert their equality. Python does offer some
     powerful tool in that matter (perhaps too powerful given this case) but they turned out to be too 'strict' in some cases, resulting in unexpected False comparisons when the de-facto elements were the same. The problem arises when one of the
     databases decides to return an int number cast as a string while the other sends the same number, from the same record and under the same column, but as an int type instead of a string. In python 123 != '123' and so that is enough to
-    invalidate the whole operation. Given the impositions of Pyhton, I reckon that the best approach is to do a item by item comparison with both items cast to str (string) before. This is because a str cast on an string doesn't do anything (as
+    invalidate the whole operation. Given the impositions of Python, I reckon that the best approach is to do a item by item comparison with both items cast to str (string) before. This is because a str cast on an string doesn't do anything (as
     expected) but any other data type do has a str 'version'. In other words, every datatype in Python can be cast as a string but not every string can be casted as something else (doing int('123Ricardo456') raises an ValueError Exception)
     @:param set1 (list) - One of the sets of results to be compared
     @:param set2 (list) - The other set to be compared with set1

@@ -29,6 +29,10 @@ Tenant administrator
 user: rdl.almeida@campus.fct.unl.pt
 password: ambiosensing2019
 
+Customer user
+user: rdlalmeida@gmail.com
+password: ambiosensing2019
+
 -------------------------------------------------------------------------------------------------------------------
 REMOTE INSTALLATION
 host: http://62.48.174.118:5044

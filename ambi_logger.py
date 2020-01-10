@@ -3,7 +3,7 @@
 import logging
 import sys
 from logging.handlers import TimedRotatingFileHandler
-import config
+import proj_config
 import utils
 import os
 
@@ -17,7 +17,7 @@ def get_console_handler():
     # Get an instance of the class and point it to the standard output channel (console)
     console_handler = logging.StreamHandler(sys.stdout)
     # And force the data to be formatted according to the rules in the string FORMATTER (in the config file)
-    console_handler.setFormatter(config.LOG_FORMATTER)
+    console_handler.setFormatter(proj_config.LOG_FORMATTER)
 
     return console_handler
 
@@ -35,10 +35,10 @@ def get_file_handler(file_location=None):
     if file_location:
         file_handler = TimedRotatingFileHandler(file_location, when="midnight", interval=1, backupCount=5)
     else:
-        file_handler = TimedRotatingFileHandler(config.LOG_FILE_LOCATION, when="midnight", interval=1, backupCount=5)
+        file_handler = TimedRotatingFileHandler(proj_config.LOG_FILE_LOCATION, when="midnight", interval=1, backupCount=5)
 
     # Set the standard format to the log messages
-    file_handler.setFormatter(config.LOG_FORMATTER)
+    file_handler.setFormatter(proj_config.LOG_FORMATTER)
 
     return file_handler
 

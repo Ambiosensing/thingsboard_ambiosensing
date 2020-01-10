@@ -1,11 +1,11 @@
 """ Place holder for methods related to the interface between the MySQL database (MySQL internal Ambiosensing database) and the data obtained from service calls placed to the API group device-controller"""
 
 import ambi_logger
-import config
+import proj_config
 import utils
 from mysql_database.python_database_modules import database_table_updater
-from ThingsBoard_REST_API import device_controller
-from ThingsBoard_REST_API import telemetry_controller
+from ThingsBoard_REST_API import tb_device_controller
+from ThingsBoard_REST_API import tb_telemetry_controller
 
 
 def update_devices_table(customer_name=False):
@@ -25,7 +25,7 @@ def update_devices_table(customer_name=False):
     update_devices_log = ambi_logger.get_logger(__name__)
 
     # Get the base response using just tenant data
-    tenant_response = device_controller.getTenantDevices(limit=limit)
+    tenant_response = tb_device_controller.getTenantDevices(limit=limit)
 
     # Translate the stuff that comes from the ThingsBoard API as PostGres-speak to Python-speak before forwarding the data
     tenant_response_dict = eval(utils.translate_postgres_to_python(tenant_response.text))
@@ -37,6 +37,7 @@ def update_devices_table(customer_name=False):
     # Extract the device data to a list
     tenant_device_list = tenant_response_dict['data']
 
+    customer_device_list = None
     # Check if its possible to use the customer data too to retrieve customer associated devices
     if customer_name:
         # Validate it first
@@ -47,7 +48,7 @@ def update_devices_table(customer_name=False):
             raise ive
 
         # Input validated. Proceed to query the API using the same limit
-        customer_response = device_controller.getCustomerDevices(customer_name=customer_name, limit=limit)
+        customer_response = tb_device_controller.getCustomerDevices(customer_name=customer_name, limit=limit)
 
         # Translate it to Python and cast the response to a dictionary
         customer_response_dict = eval(utils.translate_postgres_to_python(customer_response.text))
@@ -94,9 +95,9 @@ def update_devices_table(customer_name=False):
         # returned from the previous API call. This method, if correctly call, returns a single string with the name that the PostGres database from the API side is using to store the device data. It is not optimal to create a single table with
         # just a column with this data (or even with two additional entityType and entityId) when I can simply add a new one to the existing thingsboard_devices_table and place a call at this point to the other API service that returns just that
         # and concatenate it to the existing data dictionary. The thingsboard_devices_table already has an 'extra' column names timeseriesKey at the end to include this element so now its just a matter of putting it into the dictionary to return.
-        timeseries_key = telemetry_controller.getTimeseriesKeys(device['id']['entityType'], device['id']['id'])
+        timeseries_key = tb_telemetry_controller.getTimeseriesKeys(device['id']['entityType'], device['id']['id'])
 
         # Add an extra entry to the device dictionary to be used on the database population operation
         device['timeseriesKey'] = timeseries_key
         # Done. Carry on with the database stuff
-        database_table_updater.insert_table_data(device, config.mysql_db_tables[module_table_key])
+        database_table_updater.insert_table_data(device, proj_config.mysql_db_tables[module_table_key])

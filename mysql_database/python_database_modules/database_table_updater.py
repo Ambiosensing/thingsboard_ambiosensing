@@ -2,7 +2,7 @@
 updated existing ones or do nothing in case the data received is identical to an existing record
 """
 
-import config
+import proj_config
 import utils
 from mysql_database.python_database_modules import mysql_utils
 import ambi_logger
@@ -25,7 +25,9 @@ def insert_table_data(data_dict, table_name, data_validated=False):
     @:raise utils.InputValidationException - If the data type of any of the inputs doesn't match the expected type
     @:raise mysql_utils.MySQLDatabaseException - If error occur during the database access.
     """
+
     insert_log = ambi_logger.get_logger(__name__)
+
     if not data_validated:
         # Proceed with the validation of the data sets
         validate_data_dictionary(data_dict, table_name)
@@ -45,7 +47,8 @@ def insert_table_data(data_dict, table_name, data_validated=False):
             insert_log.warning("The current data dictionary does not have a 'createdTime' key. Moving on...")
 
     # Get a database connection
-    cnx = mysql_utils.connect_db(config.mysql_db_access['database'])
+    database_name = proj_config.mysql_db_access['database']
+    cnx = mysql_utils.connect_db(database_name)
 
     # And grab a cursor object, this one to be used for SELECTs (There's no reason why I couldn't use to do INSERT/UPDATEs with it too, but experience with this connector tells me that this approach is way more secure towards avoiding nasty bugs
     # at the expense of very little memory cost
@@ -72,22 +75,63 @@ def insert_table_data(data_dict, table_name, data_validated=False):
 
     # Grab the list of values in the data dictionary too. I'm going to need that plenty going forward. The function writen for that effect mimics the key extractor one in the sense that it uses recursivity to process multi-level dictionaries and
     # returns the data in the same order in which is written, a fundamental assumption in these method since I'm not verifying that at any point (not sure if its even possible though)
-    data_value_list = utils.extract_all_values_from_dictionary(data_dict, [])
+    data_pairs_list = utils.extract_all_key_value_pairs_from_dictionary(data_dict, [])
 
-    # The simplest (and expected) of cases: there's nothing yet in the database with this id string
+    # Start preparing the INSERT operation then. But first do a quick data consistency check before: grab all the columns from the table that I'm about to write to and check if 1. both lists have the same length and, if so,
+    # all the first elements of the tuples in the data_pair_list match up with the column names that can be retrieved with the mysql_utils.get_table_columns() method.
+    db_column_list = mysql_utils.get_table_columns(database_name, table_name)
+
+    if len(db_column_list) != len(data_pairs_list):
+        error_msg = "The number of key-values obtained from the data dictionary ({0}) doesn't the database table {1}.{2} columns ({3). Cannot continue..."\
+            .format(str(len(data_pairs_list)), str(database_name), str(table_name), str(len(db_column_list)))
+        insert_log.error(error_msg)
+        select_cursor.close()
+        cnx.close()
+        raise utils.InputValidationException(message=error_msg)
+
+    # Use the next for loop to validate the data structures further and also to extract the tuple elements into two lists that then can be use directly to construct the sql statement
+    # Create the lists first
+    dict_column_list = []
+    value_list = []
+    # Before running this logic, there's a nagging issue with a key in the data dictionary. Depending on if there's data inserted into the 'description' field that is OPTIONAL in literally every form available in the ThingsBoard platform (every
+    # element creation - tenant, device, asset, etc - has this field that can or not be filled (99% of the cases is left blank). I've done an extensive rant on this issue in the comments of the utils.extract_all_keys_from_dictionary() method (the
+    # one that has to deal with this... thing), but long story short: if the field is empty, the data dictionary comes back with an 'additionalInfo' key set to None (or NULL. Doesn't matter really), but if something is added to this parameter,
+    # than the dictionary comes back with a 'additionalInfo': {'description': <some string>}, i.e., with a freakin dictionary inside a dictionary! This is highly non-linear behaviour and its a nightmare to process from the Python side.
+    # This issue has forced me to 'hack' a few methods already which, besides seriously pissing me off, it removes all elegance from the code and makes it too 'tailored' to a specific scenario.
+    # Anyway, in the next loop I have to check for that issue... again... or otherwise the code will crash over a stupid, stupid decision from whomever decided on the ThingsBoard data model...
+    for data_pair in data_pairs_list:
+        # The database only stores 'description' information (that's the name of the column by the way). But the extractor method for the key list that I've developed so far ignore high level keys (keys that have other dictionaries as values).
+        # Which translates to this: if the data that was retrieved in this dictionary had its DESCRIPTION field filled in, I don't have any problems: my data dictionary keys have a one-to-one correspondence with the database table columns. But,
+        # as it happens 99% of the time, this field was left blank during the form completion, than my data dictionary comes back (after going by the extractor method) with a 'additionalInfo' key (with None as the value,
+        # but of course...) for which I have no correspondence in a database column... which eventually leads to an Exception being raised at some point. Hence why I need to employ an ugly if statement in the next loop just to deal with this...
+        if data_pair[0] == 'additionalInfo':
+            # If the damn field is among the data dictionary, replace it with the expected column name
+            dict_column_list.append('description')
+            # And keep the lists synchronized by adding the corresponding value
+            value_list.append(None)
+        # Otherwise, keep up with the normal comparison
+        elif data_pair[0] not in db_column_list:
+            error_msg = "Mismatch detected: {0} is not among {1}.{2} columns! Cannot continue...".format(str(data_pair[0]), str(database_name), str(table_name))
+            insert_log.error(error_msg)
+            select_cursor.close()
+            cnx.close()
+            raise utils.InputValidationException(message=error_msg)
+        else:
+            # Put the keys in the column list
+            dict_column_list.append(data_pair[0])
+            # And the values are going to be transformed into the data tuple for that statement's execution
+            value_list.append(data_pair[1])
+
+            # The simplest (and expected) of cases: there's nothing yet in the database with this id string
     if not result:
-        # Start preparing the INSERT operation then
-        column_list = mysql_utils.get_table_columns(config.mysql_db_access['database'], table_name)
         # Get the skeleton for this INSERT statement from the respective function
-        sql_insert = mysql_utils.create_insert_sql_statement(column_list, table_name)
-        # The sql_insert statement has everything but the values to be inserted. For this case its just a matter of casting the list of values that I've retrieved already
-        data_tuple = tuple(data_value_list)
+        sql_insert = mysql_utils.create_insert_sql_statement(dict_column_list, table_name)
 
         # Get a new cursor for this operation
         change_cursor = cnx.cursor(buffered=True)
 
-        # And run the statement finally
-        change_cursor = mysql_utils.run_sql_statement(change_cursor, sql_insert, data_tuple)
+        # And run the statement finally but casting the value_list to a tuple first (the method expects it)
+        change_cursor = mysql_utils.run_sql_statement(change_cursor, sql_insert, tuple(value_list))
 
         # Check if the operation was successful (the cursor's rowcount value should be set to not zero if so)
         if change_cursor.rowcount == 0:
@@ -105,7 +149,7 @@ def insert_table_data(data_dict, table_name, data_validated=False):
             change_cursor.close()
             cnx.close()
             # Give an heads up to the user
-            insert_log.info("Inserted a new record with data '{0}' into {1}.{2} successfully!".format(str(data_tuple), str(config.mysql_db_access['database']), str(table_name)))
+            insert_log.info("Inserted a new record with data '{0}' into {1}.{2} successfully!".format(str(data_tuple), str(proj_config.mysql_db_access['database']), str(table_name)))
 
     # If I got here, my SELECT yielded something. Lets find out what exactly
     else:
@@ -116,7 +160,7 @@ def insert_table_data(data_dict, table_name, data_validated=False):
         result = utils.translate_mysql_to_python(result)
 
         # Compare both sets using the proper function (details of why I need to do this through a function instead of a simple equality comparison are explained in that function's man entry)
-        if utils.compare_sets(data_value_list, list(result)):
+        if utils.compare_sets(value_list, list(result)):
             # If the comparison comes back as True
             insert_log.warning("The record (id = {0}) provided already exists in the database! Nothing to do but to exit...".format(str(data_dict['id']['id'])))
             # Close the open cursor and connection
@@ -126,7 +170,7 @@ def insert_table_data(data_dict, table_name, data_validated=False):
             return True
         # Okay, I've ruled out two scenarios out of three possible ones. By exclusion of parts, I have something in the database with this id but the data isn't a complete match. The only course of action at this point to to go for an UPDATE then
         else:
-            insert_log.warning("The data dictionary provided already exists in {0}.{1} but with different data. Running an UPDATE instead...".format(str(config.mysql_db_access['database']), str(table_name)))
+            insert_log.warning("The data dictionary provided already exists in {0}.{1} but with different data. Running an UPDATE instead...".format(str(proj_config.mysql_db_access['database']), str(table_name)))
             # Close all the open stuff
             select_cursor.close()
             cnx.close()
@@ -158,7 +202,8 @@ def update_table_data(data_dict, table_name, data_validated=False):
             update_log.warning("The current data dictionary does not have a 'createdTime' key. Moving on...")
 
     # Create the database connection and a cursor to run the base SELECT
-    cnx = mysql_utils.connect_db(table_name)
+    database_name = proj_config.mysql_db_access['database']
+    cnx = mysql_utils.connect_db(database_name)
     select_cursor = cnx.cursor(buffered=True)
 
     # Prepare the SELECT statement
@@ -190,7 +235,41 @@ def update_table_data(data_dict, table_name, data_validated=False):
     # Okay, I got something back from the previous SELECT but I need to see if the UPDATE is really necessary or if it is going to be redundant
     else:
         # Retrieve the value list from the data dictionary.
-        value_list = utils.extract_all_values_from_dictionary(data_dict, [])
+        data_pair_list = utils.extract_all_key_value_pairs_from_dictionary(data_dict, [])
+
+        # Grab the list of columns from the database
+        db_column_list = mysql_utils.get_table_columns(database_name, table_name)
+
+        # Compare the two lists first
+        if len(db_column_list) != len(data_pair_list):
+            error_msg = "The number of columns in {0}.{1} ({2}) doesn't match the number of values retrieved from the data dictionary ({3}). Cannot continue..."\
+                .format(str(database_name), str(table_name), str(len(db_column_list)), str(len(data_pair_list)))
+            update_log.error(error_msg)
+            select_cursor.close()
+            cnx.close()
+            raise utils.InputValidationException(message=error_msg)
+
+        # Just like before, validate the lists and extract the keys to a (another) column list and the values for the data tuple to be used for the SQL statement execution
+        dict_column_list = []
+        value_list = []
+
+        # I have to deal with the same issue as in the insert_table_data and utils.extract_all_keys_from_dictionary methods (please, please check the extensive comments on either of these methods for details. Its just too long of an explanation to
+        # repeat here too)
+        for data_pair in data_pair_list:
+            if data_pair[0] == 'additionalInfo':
+                dict_column_list.append('description')
+                value_list.append(None)
+            elif data_pair[0] not in db_column_list:
+                error_msg = "Mismatch detected: {0} is not among the database {1}.{2} columns. Cannot continue...".format(str(data_pair[0]), str(database_name), str(table_name))
+                update_log.error(error_msg)
+                select_cursor.close()
+                cnx.close()
+                raise utils.InputValidationException(message=error_msg)
+            else:
+                # The keys go in the column list
+                dict_column_list.append(data_pair[0])
+                # And the values go in the list that is going to be converted to the data tuple
+                value_list.append(data_pair[1])
 
         # Translate the results from the previous SELECT from MySQL-speak to Python-speak
         result = utils.translate_mysql_to_python(result)
@@ -206,10 +285,8 @@ def update_table_data(data_dict, table_name, data_validated=False):
             return True
         # If scenario 1 and 2 are invalidated, this means that an UPDATE is now in order
         else:
-            # Get the column list
-            column_list = mysql_utils.get_table_columns(config.mysql_db_access['database'], table_name)
             # And prepare the UPDATE statement skeleton from the automatic function (this one takes an extra argument for the trigger column, i.e., what to put in the 'WHERE <column_name> is' part
-            sql_update = mysql_utils.create_update_sql_statement(column_list, table_name, 'id')
+            sql_update = mysql_utils.create_update_sql_statement(dict_column_list, table_name, 'id')
             # My data tuple for this statement is the value list that I've extracted from the input dictionary already, in a tuple form, but I need to add one extra element to be replaced in the 'WHERE <column_name> is' part goes
             # NOTE: Don't need to do the next attribution inside a try-except anymore since I've done it before in this same method. If it didn't raise an Exception before, sure as hell is not going to do it now
             value_list.append(data_dict['id']['id'])
@@ -229,7 +306,7 @@ def update_table_data(data_dict, table_name, data_validated=False):
                 cnx.close()
                 raise mysql_utils.MySQLDatabaseException(message=error_msg)
             else:
-                update_log.info("SQL UPDATE of record with id = {0} in {1}.{2} successful.".format(str(data_dict['id']['id']), str(config.mysql_db_access['database']), str(table_name)))
+                update_log.info("SQL UPDATE of record with id = {0} in {1}.{2} successful.".format(str(data_dict['id']['id']), str(proj_config.mysql_db_access['database']), str(table_name)))
                 # Don't forget to commit the data to the database (#1 in most annoying database related bugs)
                 cnx.commit()
                 # Close all stuff still open
@@ -261,13 +338,13 @@ def validate_data_dictionary(data_dict, table_name):
     data_dict_keys = utils.extract_all_keys_from_dictionary(data_dict, [])
 
     # And now for the other list of stuff to compare to
-    column_list = mysql_utils.get_table_columns(config.mysql_db_access['database'], table_name)
+    column_list = mysql_utils.get_table_columns(proj_config.mysql_db_access['database'], table_name)
 
     # Do a one to many comparison (because either the INSERT and/or UPDATE statements do not require all columns to be explicit given that all them have default values, at this point I just want to make sure that the set data_dict_keys is,
     # at least, a subset of the column_list. If an element from the data_dict_key is not in the column_list set, the resulting INSERT and/or UPDATE statement is going to crash)
     for data_key in data_dict_keys:
         if data_key not in column_list:
-            error_msg = "The key '{0}' from the input dictionary doesn't have a corresponding column in table {1}.{2}.".format(str(data_key), str(config.mysql_db_access['database']), str(table_name))
+            error_msg = "The key '{0}' from the input dictionary doesn't have a corresponding column in table {1}.{2}.".format(str(data_key), str(proj_config.mysql_db_access['database']), str(table_name))
             validate_log.error(error_msg)
             raise Exception(error_msg)
 

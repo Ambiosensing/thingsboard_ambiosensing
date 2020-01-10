@@ -2,8 +2,8 @@
 
 import utils
 from mysql_database.python_database_modules import database_table_updater
-from ThingsBoard_REST_API import tenant_controller
-import config
+from ThingsBoard_REST_API import tb_tenant_controller
+import proj_config
 import ambi_logger
 
 
@@ -19,7 +19,7 @@ def update_tenants_table():
     # The key that I need to use to retrieve the correct table name for where I need to insert the tenant data
     module_table_key = 'tenants'
     limit = 50
-    response = tenant_controller.getTenants(limit=limit)
+    response = tb_tenant_controller.getTenants(limit=limit)
     response_dict = eval(utils.translate_postgres_to_python(response.text))
 
     # Before processing the results, check if all of them were returned in the last call and warn the user otherwise
@@ -33,4 +33,4 @@ def update_tenants_table():
     # Each element in the tenant list is a tenant. Process them one by one then using the insert and update functions. Actually, the way I wrote these functions, you can call either of them since their internal logic decides,
     # based on what's already present in the database, what is the best course of action (INSERT or UPDATE)
     for tenant in tenant_list:
-        database_table_updater.insert_table_data(tenant, config.mysql_db_tables[module_table_key])
+        database_table_updater.insert_table_data(tenant, proj_config.mysql_db_tables[module_table_key])

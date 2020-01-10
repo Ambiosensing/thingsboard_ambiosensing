@@ -1,9 +1,9 @@
 """ Place holder for methods related to the interface between the MySQL database (MySQL internal Ambiosensing database) and the data obtained from service calls placed to the API group customer-controller"""
 
-import config
+import proj_config
 import utils
 from mysql_database.python_database_modules import database_table_updater
-from ThingsBoard_REST_API import customer_controller
+from ThingsBoard_REST_API import tb_customer_controller
 
 
 def update_customer_table():
@@ -14,7 +14,7 @@ def update_customer_table():
     limit = 50
 
     # Grab the data from the remote API
-    response = customer_controller.getCustomers(limit=limit)
+    response = tb_customer_controller.getCustomers(limit=limit)
 
     # Translate the response text to replace the PostGres-speak returned for Python-speak. And cast that text into a dictionary too
     response_dict = eval(utils.translate_postgres_to_python(response.text))
@@ -30,4 +30,4 @@ def update_customer_table():
         customer['tenantId'] = customer['tenantId']['id']
 
         # Send the data to be added to the MySQL database in the customers table
-        database_table_updater.insert_table_data(customer, config.mysql_db_tables[module_table_key])
+        database_table_updater.insert_table_data(customer, proj_config.mysql_db_tables[module_table_key])
