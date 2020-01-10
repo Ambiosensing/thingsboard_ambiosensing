@@ -3,7 +3,7 @@ import requests
 import ambi_logger
 import utils
 import proj_config
-import urllib.request
+import urllib.parse
 from mysql_database.python_database_modules import mysql_utils
 
 
@@ -117,19 +117,19 @@ def getTenantDevices(type=None, textSearch=None, idOffset=None, textOffset=None,
     # Lets start building the API request strings to add to the endpoint
     if type:
         # Escape the string to URL-esque before adding it to the main service endpoint URL string as well as the forward slashes to '%2F' given that the quote method doesn't do that
-        url_type = "type=" + urllib.request.quote(type.encode('UTF-8')).replace('/', '%2F')
+        url_type = "type=" + urllib.parse.quote(type.encode('UTF-8')).replace('/', '%2F')
         url_strings.append(url_type)
 
     if textSearch:
-        url_textSearch = "textSearch=" + urllib.request.quote(textSearch.encode('UTF-8')).replace('/', '%2F')
+        url_textSearch = "textSearch=" + urllib.parse.quote(textSearch.encode('UTF-8')).replace('/', '%2F')
         url_strings.append(url_textSearch)
 
     if idOffset:
-        url_idOffset = "idOffset=" + urllib.request.quote(idOffset.encode('UTF-8')).replace('/', '%2F')
+        url_idOffset = "idOffset=" + urllib.parse.quote(idOffset.encode('UTF-8')).replace('/', '%2F')
         url_strings.append(url_idOffset)
 
     if textOffset:
-        url_textOffset = "textOffset=" + urllib.request.quote(textOffset.encode('UTF-8')).replace('/', '%2F')
+        url_textOffset = "textOffset=" + urllib.parse.quote(textOffset.encode('UTF-8')).replace('/', '%2F')
         url_strings.append(url_textOffset)
 
     url_strings.append("limit=" + str(limit))
@@ -302,13 +302,13 @@ def getCustomerDevices(customer_name, type=None, textSearch=None, idOffset=None,
     url_strings = []
     if type:
         # Don't forget to escape the url strings characters to URL-compatible characters, including the '/' character for '%2F'
-        url_strings.append("type=" + urllib.request.quote(type.encode('UTF-8')).replace('/', '%2F'))
+        url_strings.append("type=" + urllib.parse.quote(type.encode('UTF-8')).replace('/', '%2F'))
     if textSearch:
-        url_strings.append("textSearch=" + urllib.request.quote(textSearch.encode('UTF-8')).replace('/', '%2F'))
+        url_strings.append("textSearch=" + urllib.parse.quote(textSearch.encode('UTF-8')).replace('/', '%2F'))
     if idOffset:
-        url_strings.append("idOffset=" + urllib.request.quote(idOffset.encode('UTF-8')).replace('/', '%2F'))
+        url_strings.append("idOffset=" + urllib.parse.quote(idOffset.encode('UTF-8')).replace('/', '%2F'))
     if textOffset:
-        url_strings.append("textOffset=" + urllib.request.quote(textOffset.encode('UTF-8')).replace('/', '%2F'))
+        url_strings.append("textOffset=" + urllib.parse.quote(textOffset.encode('UTF-8')).replace('/', '%2F'))
     url_strings.append("limit=" + str(limit))
 
     # Concatenate all the gathered url_strings together with the rest of the service_endpoint, using '&' as a separator

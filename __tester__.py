@@ -10,13 +10,20 @@ db_utils = False
 mysql_ten = False
 auth = False
 tenant_dev = False
-devices = True
+devices = False
 timeseries = False
 database = False
 basic_setup = False
 customer = False
+tb_asset = True
 
 def __main__():
+    if tb_asset:
+        from ThingsBoard_REST_API import tb_asset_controller as ac
+        response = ac.getAssetTypes()
+
+        print("Response = " + str(response))
+
     if customer:
         from mysql_database.python_database_modules import mysql_customer_controller
         mysql_customer_controller.update_customer_table()

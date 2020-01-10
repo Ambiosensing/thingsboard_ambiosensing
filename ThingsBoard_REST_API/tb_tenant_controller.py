@@ -2,7 +2,7 @@
 
 import utils
 import ambi_logger
-import urllib.request
+import urllib.parse
 import requests
 
 
@@ -106,15 +106,15 @@ def getTenants(textSearch=None, idOffset=None, textOffset=None, limit=10):
         # First encode the string into a safe character set (UTF-8) and only then do the escaping of all characters to URL charset. NOTE: By a some reason the following method escapes all problematic characters to URL-esque except one of
         # the worst ones in that regard: '/'. The forward slash, a basic character in URL strings to denote paths, should be escaped to '%2F' if it appears in an argument string but the method bellow ignores this, not sure really why...
         # Anyway, an easily solved problem by forcing a string replace for this character after executing the base function
-        url_textSearch = "textSearch=" + urllib.request.quote(textSearch.encode('UTF-8')).replace('/', '%2F')
+        url_textSearch = "textSearch=" + urllib.parse.quote(textSearch.encode('UTF-8')).replace('/', '%2F')
         url_strings.append(url_textSearch)
 
     if idOffset:
-        url_idOffset = "idOffset=" + urllib.request.quote(idOffset.encode('UTF-8')).replace('/', '%2F')
+        url_idOffset = "idOffset=" + urllib.parse.quote(idOffset.encode('UTF-8')).replace('/', '%2F')
         url_strings.append(url_idOffset)
 
     if textOffset:
-        url_textOffset = "textOffset=" + urllib.request.quote(textOffset.encode('UTF-8')).replace('/', '%2F')
+        url_textOffset = "textOffset=" + urllib.parse.quote(textOffset.encode('UTF-8')).replace('/', '%2F')
         url_strings.append(url_textOffset)
 
     # Add the mandatory parameter to the list as is
