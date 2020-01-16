@@ -95,6 +95,7 @@ def update_devices_table(customer_name=False):
         # returned from the previous API call. This method, if correctly call, returns a single string with the name that the PostGres database from the API side is using to store the device data. It is not optimal to create a single table with
         # just a column with this data (or even with two additional entityType and entityId) when I can simply add a new one to the existing thingsboard_devices_table and place a call at this point to the other API service that returns just that
         # and concatenate it to the existing data dictionary. The thingsboard_devices_table already has an 'extra' column names timeseriesKey at the end to include this element so now its just a matter of putting it into the dictionary to return.
+        # Humm... it seems that there are sensors that can provide readings from multiple sources (the device can be a multi-sensor array that uses a single interface to communicate
         timeseries_key = tb_telemetry_controller.getTimeseriesKeys(device['id']['entityType'], device['id']['id'])
 
         # Add an extra entry to the device dictionary to be used on the database population operation

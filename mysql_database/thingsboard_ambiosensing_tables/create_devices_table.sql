@@ -6,7 +6,7 @@ CREATE TABLE IF NOT EXISTS thingsboard_devices_table
     name                VARCHAR(100)    DEFAULT NULL NULL,
     type                VARCHAR(100)    DEFAULT NULL NULL,
     label               VARCHAR(100)    DEFAULT NULL NULL,
-    timeseriesKey       VARCHAR(100)    DEFAULT NULL NULL,
+    timeseriesKeys      VARCHAR(999)    DEFAULT NULL NULL,
     id                  VARCHAR(100)    DEFAULT NULL NULL,
     createdTime         DATETIME        DEFAULT NULL NULL,
     description         VARCHAR(255)    DEFAULT NULL NULL,
