@@ -49,6 +49,5 @@ def getAssetTypes():
         return response
 
 
-
-
-
+def getTenantAssets(type=None, textSearch=None, idOffset=None, textOffset=None, limit=10):
+    pass

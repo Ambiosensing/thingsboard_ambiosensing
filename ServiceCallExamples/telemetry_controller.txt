@@ -8,6 +8,84 @@ http://localhost:8080/api/plugins/telemetry/DEVICE/00b3e7c0-0ada-11ea-8001-3975f
 
 Response Body = ["temperature"]
 
+MULTI-SENSOR DEVICE (multiple timeseries keys returned)
+http://localhost:8080/api/plugins/telemetry/DEVICE/3f0e8760-3874-11ea-8da5-2fbefd4cb87e/keys/timeseries
+
+Response Body = [
+  "lux",
+  "humidity",
+  "pressure",
+  "temperature"
+]
+
+----------- getTimeseries Multi-sensor call -----------------
+entityType = DEVICE
+entityId = 3f0e8760-3874-11ea-8da5-2fbefd4cb87e
+start_ts = 1579189110790
+end_ts = 1579193100786
+
+NOTE: DO NOT PUT SPACES BETWEEN TIMESERIES KEYS ELEMENTS
+Request URL = http://localhost:8080/api/plugins/telemetry/DEVICE/3f0e8760-3874-11ea-8da5-2fbefd4cb87e/values/timeseries?limit=3&agg=NONE&keys=humidity,temperature,pressure,lux&startTs=1579189110790&endTs=1579193100786
+
+Response Body = {
+  "humidity": [
+    {
+      "ts": 1579193100786,
+      "value": "75.2"
+    },
+    {
+      "ts": 1579193090776,
+      "value": "83"
+    },
+    {
+      "ts": 1579193080767,
+      "value": "77.4"
+    }
+  ],
+  "temperature": [
+    {
+      "ts": 1579193100786,
+      "value": "27.6"
+    },
+    {
+      "ts": 1579193090776,
+      "value": "27.8"
+    },
+    {
+      "ts": 1579193080767,
+      "value": "29.2"
+    }
+  ],
+  "pressure": [
+    {
+      "ts": 1579193100786,
+      "value": "2.9"
+    },
+    {
+      "ts": 1579193090776,
+      "value": "1.3"
+    },
+    {
+      "ts": 1579193080767,
+      "value": "7.7"
+    }
+  ],
+  "lux": [
+    {
+      "ts": 1579193100786,
+      "value": "856.4"
+    },
+    {
+      "ts": 1579193090776,
+      "value": "783.1"
+    },
+    {
+      "ts": 1579193080767,
+      "value": "534.1"
+    }
+  ]
+}
+
 ----------- getTimeseries -----------------
 http://localhost:8080/api/plugins/telemetry/DEVICE/00b3e7c0-0ada-11ea-8001-3975f352e04e/values/timeseries?limit=1000&agg=NONE&keys=temperature&startTs=1574698432889&endTs=1574698852889
 

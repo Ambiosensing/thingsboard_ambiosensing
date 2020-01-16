@@ -11,11 +11,12 @@ mysql_ten = False
 auth = False
 tenant_dev = False
 devices = False
-timeseries = False
+timeseries = True
 database = False
 basic_setup = False
 customer = False
-tb_asset = True
+tb_asset = False
+
 
 def __main__():
     if tb_asset:
@@ -59,13 +60,18 @@ def __main__():
     if timeseries:
         from ThingsBoard_REST_API import tb_telemetry_controller
         import datetime
+        from mysql_database.python_database_modules import mysql_utils
 
-        device_name = "Water Meter A1"
-        end_time = datetime.datetime(2019, 11, 24, 20, 0, 0)
-        start_time = datetime.datetime(2019, 11, 24, 19, 0, 0)
+        device_name = "Multisensor_device 1"
+        # end_time = datetime.datetime(2019, 11, 24, 20, 0, 0)
+        end_time = mysql_utils.convert_timestamp_tb_to_datetime(1579193100786)
+        # start_time = datetime.datetime(2019, 11, 24, 19, 0, 0)
+        # interval = datetime.timedelta(days=1)
+        start_time = mysql_utils.convert_timestamp_tb_to_datetime(1579189110790)
         limit = 10
+        timeseries_filter = ['temperature', 'lux']
 
-        data_list = tb_telemetry_controller.getTimeseries(device_name=device_name, end_time=end_time, start_time=start_time, limit=limit)
+        data_list = tb_telemetry_controller.getTimeseries(device_name=device_name, end_time=end_time, start_time=start_time, limit=limit, timeseries_keys_filter=timeseries_filter)
 
         print(data_list)
 
@@ -143,4 +149,13 @@ def __main__():
         my_log.critical("This is a CRITICAL message")
 
 
-__main__()
+if __name__ == "__main__":
+
+    # from mysql_database.python_database_modules import mysql_tenant_controller as mtc
+    # from mysql_database.python_database_modules import mysql_customer_controller as mcc
+    # from mysql_database.python_database_modules import mysql_device_controller as mdc
+    #
+    # mtc.update_tenants_table()
+    # mcc.update_customer_table()
+    # mdc.update_devices_table()
+    __main__()

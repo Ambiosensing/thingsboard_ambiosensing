@@ -4,13 +4,13 @@ please use the proj_config.py file"""
 
 # ---------------- LOCAL INSTALLATION ------------------------------
 
-# thingsboard_host = "http://localhost"
-# thingsboard_port = 8080
+thingsboard_host = "http://localhost"
+thingsboard_port = 8080
 
 # ---------------- REMOTE INSTALLATION (Sines's Server) ------------------------------
 # NOTE: The access credentials for the local installation are the same as for the remote one, so it should be just a matter of changing the host's endpoints and the whole thing should still work
-thingsboard_host = "http://62.48.174.118"
-thingsboard_port = 5044
+# thingsboard_host = "http://62.48.174.118"
+# thingsboard_port = 5044
 
 
 # Regular user database credentials

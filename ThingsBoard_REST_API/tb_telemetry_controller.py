@@ -90,24 +90,20 @@ def getTimeseriesKeys(entityType, entityId):
             timeseries_key_log.error(ive.message)
             raise ive
 
-        # This should never happen, but check it anyway
-        if len(result) > 1:
-            # If I do get a list back but it is empty
-            error_msg = "There are multiple key associated to {0} with id {1}: Found {2} timeseries keys!".format(str(entityType), str(entityId), str(len(result)))
-            timeseries_key_log.error(error_msg)
-            raise Exception(error_msg)
-        # If the result returned is an empty list
-        elif not len(result):
+        # In some cases I may have a multi-sensor device (which is actually the case in our prototype setting), which means that this result may be an array of all the supported timeseries keys. In this case, the return needs to be processed that way
+        # Check if, at least, one result was returned
+        if not len(result):
             # Warn the user first
             timeseries_key_log.warning("There are no keys associated to {0} with id {1} yet!".format(str(entityType), str(entityId)))
             # Return a result that is passable to be used by another calling method
             return None
         else:
-            # If all goes well, return the expected value
-            return result[0]
+            # If all goes well, return the expected value. NOTE: This method returns these results as is, i.e., just like they are returned from the remote API, which means that 'result' is going to be a list that potentially may have multiple
+            # elements (if the DEVICE identified by the ID has multiple sensors measuring different variables at once). The method that consumes these results should take heed on this
+            return result
 
 
-def getTimeseries(device_name, end_time, start_time=None, time_interval=None, interval=None, limit=100, agg=None):
+def getTimeseries(device_name, end_time, start_time=None, time_interval=None, interval=None, limit=100, agg=None, timeseries_keys_filter=None):
     """This method is the real deal, at least to establish a base methodology to retrieve hard data from the remote API server. Unlike other API based methods so far, this one requires some data to be present in the MySQL server already because
     that is where the actual method call input data is going to come from. The remote API service that retrieves the requested data requires 5 mandatory elements (the optional arguments are explicit in the calling signature of this method where
     they are set to their default values already, in case that down the line there is a need to use them): entityType, entityId, keys, startTs and endTs. The first 3 parameters are going to be retrieved with a call to the MySQL
@@ -128,6 +124,9 @@ def getTimeseries(device_name, end_time, start_time=None, time_interval=None, in
     regard, this method is going to count the number of returned results and, if they do match the limit value provided, warn the user about it.
     @:param agg (str) - No idea what this one does too... The API testing interface has it set to NONE by default, though it is an optional parameter whose effect on the returned results is still yet to be understood. ALl I know so far is that the
     remote API expects a string on it
+    @:param timeseries_keys_filter (list of str) - A list with strings with the keys to be returned from the remote API. Some devices contain multiple sensors, which means that there are going to be multiple records from different variables under
+    the same device ID. To limit the returned results to a sub set of all parameters, provide a list in this argument with the correct names to limit the entries to be returned. Omitting this parameter (which defaults to None) returns all
+    timeseries keys under the provided device ID
     @:return result_list (list of tuple) - The returned results are going to be processed and returned as a list of 2 element-tuples: a timestamp and the associated value for the timeseriesKey provided.
     @:raise utils.InputValidationException - If any of the inputs provided fails validation
     @:raise utils.ServiceEndpointException - If something goes wrong with any of the external service calls to the remote API executed in the method
@@ -138,7 +137,7 @@ def getTimeseries(device_name, end_time, start_time=None, time_interval=None, in
     # The key that I need to use to retrieve the name of the table in the MySQL database where the necessary data to call this method is currently stored (specifically, the entityType, entityId and timeseriesKey
     module_table_key = "devices"
     # Put those in an handy list to so that I don't need to type them down all the time
-    columns_to_retrieve = ['entityType', 'id', 'timeseriesKey']
+    columns_to_retrieve = ['entityType', 'id', 'timeseriesKeys']
 
     # Before moving forward, check if at least one of the start_time, time_interval inputs was provided. NOTE: If both inputs are present, i.e., not None, the method validates both and if both are valid it prioritizes start_time over
     # time_interval. If one of them happens to be invalid, the method execution is not stopped but the user gets warned (through the logger) about this and how the method is going to be operated. But at this stage, I'm only moving forward if I
@@ -149,23 +148,31 @@ def getTimeseries(device_name, end_time, start_time=None, time_interval=None, in
         raise utils.InputValidationException(message=error_msg)
 
     # Time for validate inputs
-    try:
-        utils.validate_input_type(device_name, str)
-        utils.validate_input_type(end_time, datetime.datetime)
-        # Limit is OPTIONAL but, because of what is explained in this method's man entry, I need this value to be sort of mandatory. This verification, given that the input is already set with a decent default value, is just to protect the
-        # method's execution against a user setting it to None by whatever reason that may be
-        utils.validate_input_type(limit, int)
-        if start_time:
-            utils.validate_input_type(start_time, datetime.datetime)
-        if time_interval:
-            utils.validate_input_type(time_interval, int)
-        if interval:
-            utils.validate_input_type(interval, int)
-        if agg:
-            utils.validate_input_type(agg, str)
-    except utils.InputValidationException as ive:
-        timeseries_log.error(ive.message)
-        raise ive
+    utils.validate_input_type(device_name, str)
+    utils.validate_input_type(end_time, datetime.datetime)
+    # Limit is OPTIONAL but, because of what is explained in this method's man entry, I need this value to be sort of mandatory. This verification, given that the input is already set with a decent default value, is just to protect the
+    # method's execution against a user setting it to None by whatever reason that may be
+    utils.validate_input_type(limit, int)
+    if start_time:
+        utils.validate_input_type(start_time, datetime.datetime)
+    if time_interval:
+        utils.validate_input_type(time_interval, int)
+    if interval:
+        utils.validate_input_type(interval, int)
+    if agg:
+        utils.validate_input_type(agg, str)
+
+    # Validate the argument against the list type
+    if timeseries_keys_filter:
+        utils.validate_input_type(timeseries_keys_filter, list)
+
+        if len(timeseries_keys_filter) <= 0:
+            timeseries_log.warning("Invalid timeseries keys filter provided: empty list. This filter is going to be ignored")
+            timeseries_keys_filter = None
+        else:
+            # And each of its elements against the expected str type
+            for timeseries in timeseries_keys_filter:
+                utils.validate_input_type(timeseries, str)
 
     # Data type validation done. Now for the functional validations
     error_msg = None
@@ -196,12 +203,14 @@ def getTimeseries(device_name, end_time, start_time=None, time_interval=None, in
     # statement doesn't return any results, I will then repeat the statement but using a LIKE name = %device_name statement instead of the WHERE clause, followed by a LIKE name = device_name% and ending with a final call using LIKE name =
     # %device_name%, i.e., using wildcard search parameters in the beginning, end and both beginning and end of the device name string. The objective here is to get a single entry from the database table: multiple results or no results discard the
     # current SQL SELECT statement and move the code to the next option. If non definite results are obtained, a MySQLDatabaseException is going to be raised signaling this fact.
+    database_name = proj_config.mysql_db_access['database']
+    search_field = "name"
 
-    cnx = mysql_utils.connect_db(proj_config.mysql_db_access['database'])
+    cnx = mysql_utils.connect_db(database_name=database_name)
     select_cursor = cnx.cursor(buffered=True)
 
-    # Create the base SQL SELECT statement. I can then change the wildcards to be considered in the LIKE clause directly in the argument to replace the follwing %s
-    sql_select = """SELECT """ + ", ".join(columns_to_retrieve) + """ FROM """ + str(proj_config.mysql_db_tables[module_table_key]) + """ WHERE name LIKE %s;"""
+    # Create the base SQL SELECT statement. I can then change the wildcards to be considered in the LIKE clause directly in the argument to replace the following %s
+    sql_select = """SELECT """ + ", ".join(columns_to_retrieve) + """ FROM """ + str(proj_config.mysql_db_tables[module_table_key]) + """ WHERE """ + str(search_field) + """ LIKE %s;"""
 
     # Execute the statement in its basic form
     select_cursor = mysql_utils.run_sql_statement(select_cursor, sql_select, (device_name,))
@@ -282,7 +291,38 @@ def getTimeseries(device_name, end_time, start_time=None, time_interval=None, in
     if agg:
         url_elements.append("agg=" + str(agg))
 
-    url_elements.append("keys=" + str(result[2]))
+    # The element in result[2] can be a string containing multiple timeseries keys (if the device in question is a multisensor one). If a timeseries filter was provided, it is now time to apply it to reduce the number of variable types returned
+    if timeseries_keys_filter:
+        # Grab the original string list to a single variable
+        keys_string = str(result[2])
+        valid_keys = []
+        for timeseries_key in timeseries_keys_filter:
+            # And now check if any of the elements passed in the filter list is in the initial list
+            if timeseries_key in keys_string:
+                # Add it to the valid keys list if so
+                valid_keys.append(timeseries_key)
+            # Otherwise warn the user of the mismatch
+            else:
+                timeseries_log.warning("The filter key '{0}' provided in the filter list is not a valid timeseries key. Ignoring it...".format(str(timeseries_key)))
+
+        # If the last loop didn't yield any valid results, warn the user and default to the original string list
+        if not len(valid_keys):
+            timeseries_log.warning("Unable to apply timeseries key filter: none of the provided keys had a match. Defaulting to {0}...".format(str(keys_string)))
+
+        else:
+            # Otherwise, replace the original keys string with the set of valid keys found after applying the filter
+            keys_string = ",".join(valid_keys)
+
+            # And inform the user of the alteration
+            timeseries_log.info("Valid filter found. Running remote API query with keys: {0}".format(str(valid_keys)))
+
+        # Done with this. Bundle the resulting string with the rest of the endpoint string, regardless of what happened above
+        url_elements.append("keys=" + keys_string)
+
+    else:
+        # No filters required. Append the full timeseries elements then
+        url_elements.append("keys=" + str(result[2]))
+
     url_elements.append("startTs=" + str(start_ts))
     url_elements.append("endTs=" + str(end_ts))
 
@@ -305,12 +345,38 @@ def getTimeseries(device_name, end_time, start_time=None, time_interval=None, in
         timeseries_log.error(error_msg)
         raise utils.ServiceEndpointException(message=error_msg)
     else:
-        # So, I got a valid response with a bunch or little dictionaries in a list, which is itself another dictionary with the timeseriesKey as its key. Extract the list first of all
-        data_list = eval(response.text)[str(result[2])]
+        # The results are going to be returned as a dictionary of dictionaries in the following format:
+        # result_dict = {
+        #               "timeseries_key_1": [
+        #                   {'ts': int, 'value': str},
+        #                   {'ts': int, 'value': str},
+        #                   ...
+        #                   {'ts': int, 'value': str}
+        #               ],
+        #               "timeseries_key_2": [
+        #                   {'ts': int, 'value': str},
+        #                   {'ts': int, 'value': str},
+        #                   ...
+        #                   {'ts': int, 'value': str}
+        #               ],
+        #               ...
+        #               "timeseries_key_N": [
+        #                   {'ts': int, 'value': str},
+        #                   {'ts': int, 'value': str},
+        #                   ...
+        #                   {'ts': int, 'value': str}
+        #               ]
+        # }
+        # Use this as a reference for when another method needs to consume data from this response. Its a over complicated structure, honestly, and its not hard to create a simple method to call after this to simplify it greatly. But there's no
+        # point in doing that until we know exactly what is the format that need to be returned.
 
-        if len(data_list) == limit:
-            # Give an heads up to the user that the number of results that came back were not limited by the time window defined but by the 'limit' argument instead. Continue after that
-            timeseries_log.warning("The number of results returned from the remote API was limited by the 'limit' parameter: got {0} valid results back".format(str(limit)))
+        # Apply the 'eval' base method just to transform the str that is returned into a dict
+        result_dict = eval(response.text)
 
-        # Nothing more to do but to return the result list
-        return data_list
+        # Finally, check if any of the entries in the returned dictionary matches the 'limit' parameter and warn the user of potential missing results if so
+        for result_key in list(result_dict.keys()):
+            if len(result_dict[result_key]) == limit:
+                timeseries_log.warning("Timeseries key '{0}' results were limited by the 'limit' parameter: got {1} valid results back".format(str(result_key), str(limit)))
+
+        # Return the result dictionary finally
+        return result_dict
