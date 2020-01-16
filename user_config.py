@@ -33,6 +33,7 @@ thingsboard_admin = {
 thingsboard_regular = {
     "host": thingsboard_host,
     "port": thingsboard_port,
-    "username": "rdl.almeida@campus.fct.unl.pt",
+    # "username": "rdl.almeida@campus.fct.unl.pt",
+    "username": "rdlalmeida@gmail.com",
     "password": "ambiosensing2019"
 }

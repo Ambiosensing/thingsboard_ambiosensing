@@ -19,5 +19,5 @@ CREATE TABLE IF NOT EXISTS thingsboard_customers_table
     name                VARCHAR(100)    DEFAULT NULL NULL,
     CONSTRAINT thingsboard_customers_table_pk UNIQUE (id)
 )
-COMMENT 'Table to store the full information for a customer, as it is returned from the remote API.'
+COMMENT 'Table to store the full information for a customer, as it is returned from the remote API.';
 COMMIT;
