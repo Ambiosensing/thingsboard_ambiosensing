@@ -3,6 +3,7 @@ import requests
 import ambi_logger
 import utils
 import proj_config
+import user_config
 import urllib.parse
 from mysql_database.python_database_modules import mysql_utils
 
@@ -20,7 +21,6 @@ def getDeviceTypes(auth_token):
     # Execute the service call
     response = requests.get(url=service_dict["url"], headers=service_dict["headers"])
 
-    # Replace the troublesome elements from the API side to Python-esque (Pass it just the text part of the response. I have no use for the rest of the object anyway)
     return response
 
 

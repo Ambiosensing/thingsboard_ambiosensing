@@ -37,7 +37,7 @@ def __main__():
 
     if database:
         from mysql_database.python_database_modules import mysql_utils
-        import proj_config, utils
+        import proj_config, utils, user_config
         table_key = 'devices'
         device_name = "%"
 
@@ -150,12 +150,5 @@ def __main__():
 
 
 if __name__ == "__main__":
-
-    from mysql_database.python_database_modules import mysql_tenant_controller as mtc
-    from mysql_database.python_database_modules import mysql_customer_controller as mcc
-    from mysql_database.python_database_modules import mysql_device_controller as mdc
-
-    # mtc.update_tenants_table()
-    mcc.update_customer_table()
-    # mdc.update_devices_table()
-    __main__()
+    from ThingsBoard_REST_API import tb_auth_controller as tac
+    tac.getUser()

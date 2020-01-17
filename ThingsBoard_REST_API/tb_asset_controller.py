@@ -1,9 +1,8 @@
-""" Place holder for methods related to the interface between the MySQL database (MySQL internal Ambiosensing database) and the data obtained from service calls placed to the API group asset-controller """
+""" Place holder for methods related to the ThingsBoard REST API - assets-controller methods """
 
 import requests
 import ambi_logger
 import utils
-import urllib.parse
 
 
 def getAssetTypes():

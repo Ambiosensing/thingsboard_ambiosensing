@@ -2,3 +2,4 @@
 /ThingsBoard_REST_API/__init__.py
 /ambiosensing_logs/
 /user_config.py
+/__tester__.py

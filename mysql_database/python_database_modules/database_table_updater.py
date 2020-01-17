@@ -2,7 +2,7 @@
 updated existing ones or do nothing in case the data received is identical to an existing record
 """
 
-import proj_config
+import user_config
 import utils
 from mysql_database.python_database_modules import mysql_utils
 import ambi_logger

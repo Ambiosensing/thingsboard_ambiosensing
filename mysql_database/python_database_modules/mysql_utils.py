@@ -3,7 +3,7 @@
 import utils
 import ambi_logger
 import traceback
-import proj_config
+import user_config
 import mysql.connector as mysqlc
 from mysql.connector.errors import Error
 import datetime

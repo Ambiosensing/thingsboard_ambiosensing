@@ -18,3 +18,15 @@
 
 # TODO 6 - The auth token management method is not completely OK... The biggest issue is the fact that there are actually 3 types of authorization tokens: SYS_ADMIN, TENANT_ADMIN and CUSTOMER_USER. Each type of authorization token grants access to
 #  specific sets of services and currently some methods are freaking out on this given the fact that I'm supporting two of these so far. This need to be reviewed ASAP
+
+# DONE_TODO 7 - Move the proj_config.mysql_database_access dictionary to the user_config.py file so that each project contributor can configure this dictionary according to the access credentials to its local installation of the MySQL database -
+# Finished.
+
+# TODO 8 - Create the interface for the auth_controller service category and change the way that the authorization token is processed using the services in this set, which as way more appropriate for this effect has the current strategy. USE THE
+#  DAMN database to store the tokens instead of a text file!
+
+# TODO 9 (big maybe) - Can I create a method that automatically detects which type of token a given remote service requires and changes this also automatically without bothering the user? Tricky but possible I think, just like I like it... Challenge
+#  accepted!
+
+# TODO 10 - Eventually we need to find a way to store the access credentials (and also pass them to services) in a protected way, i.e., without using plain text strings as of now... Python probably already has some clever way to do this...
+#  investigate.

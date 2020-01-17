@@ -1,4 +1,4 @@
-""" Place holder for methods related to the interface between the MySQL database (MySQL internal Ambiosensing database) and the data obtained from service calls placed to the API group customer-controller """
+""" Place holder for methods related to the ThingsBoard REST API - customer-controller methods """
 
 import requests
 import ambi_logger

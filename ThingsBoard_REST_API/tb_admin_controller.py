@@ -99,7 +99,6 @@ def getSecuritySettings(auth_token):
     return response
 
 
-
 def checkUpdates(auth_token):
     """ GET method to retrieve any available updates to the system
      @:param auth_token - A valid admin authorization token

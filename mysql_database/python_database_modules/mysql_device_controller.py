@@ -103,7 +103,8 @@ def update_devices_table(customer_name=False):
         # Add an extra entry to the device dictionary to be used on the database population operation. The str.join() operation is going to concatenate all elements in the timeseries_keys using a comma to separate them in a single string.
         # Also, this approach has the advantage that if an API request is built from this data (retrieved from the database of course), this format allows for a direct call - no post processing required at all. This is because of how these types
         # of remote API requests are constructed: the endpoint request takes a query for multiple timeseries keys from one single device as comma-separated strings with no spaces.
-        # For example, querying for the timeseries values from a device with 4 sensors attached that can produce 4 types of different readings implies the following endpoint to be sent in a URL to the remote service: http://localhost:8080/api/plugins/telemetry/DEVICE/3f0e8760-3874-11ea-8da5-2fbefd4cb87e/values/timeseries?limit=3&agg=NONE&keys=humidity,temperature,pressure,lux&startTs=1579189110790&endTs=1579193100786
+        # For example, querying for the timeseries values from a device with 4 sensors attached that can produce 4 types of different readings implies the following endpoint to be sent in a URL to the remote service:
+        # http://localhost:8080/api/plugins/telemetry/DEVICE/3f0e8760-3874-11ea-8da5-2fbefd4cb87e/values/timeseries?limit=3&agg=NONE&keys=humidity,temperature,pressure,lux&startTs=1579189110790&endTs=1579193100786
         # The 'keys' part of the last string shows how this request must be constructed and that implies all parameters in a single string, separated by commas and without any spaces in between.
         device['timeseriesKeys'] = ",".join(timeseries_keys)
         # Done. Carry on with the database stuff
