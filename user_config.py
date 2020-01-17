@@ -4,13 +4,13 @@ please use the proj_config.py file"""
 
 # ---------------- LOCAL INSTALLATION ------------------------------
 
-thingsboard_host = "http://localhost"
-thingsboard_port = 8080
+# thingsboard_host = "http://localhost"
+# thingsboard_port = 8080
 
 # ---------------- REMOTE INSTALLATION (Sines's Server) ------------------------------
 # NOTE: The access credentials for the local installation are the same as for the remote one, so it should be just a matter of changing the host's endpoints and the whole thing should still work
-# thingsboard_host = "http://62.48.174.118"
-# thingsboard_port = 5044
+thingsboard_host = "http://62.48.174.118"
+thingsboard_port = 5044
 
 
 # Regular user database credentials
@@ -29,12 +29,11 @@ thingsboard_admin = {
     "password": "sysadmin"
 }
 
-# Credentials for the regular user (a Tenant Administrator one)
+# Credentials for the regular user (a Tenant Administrator one): The password is the same for both Tenant Administrator and Customer user's but the associated e-mail is not
 thingsboard_regular = {
     "host": thingsboard_host,
     "port": thingsboard_port,
-    # "username": "rdlalmeida@gmail.com",
-    "username": "rdl.almeida@campus.fct.unl.pt",
+    "username": "rdlalmeida@gmail.com",
     "password": "ambiosensing2019"
 }
 
@@ -43,6 +42,14 @@ thingsboard_regular = {
 #     "host": thingsboard_host,
 #     "port": thingsboard_port,
 #     # "username": "rdl.almeida@campus.fct.unl.pt",
-#     "username": "rdlalmeida@gmail.com",
 #     "password": "ambiosensing2019"
 # }
+
+# --------------------------------------------- MySQL DATABASE ACCESS CONFIGURATION ----------------------------------------------------------------------------------
+# The logic here is: the database name is the key and the corresponding value are the access credentials
+mysql_db_access = {
+    'username': 'ambiosensing',
+    'password': 'ambiosensing2019',
+    'host': 'localhost',
+    'database': 'ambiosensing_thingsboard'
+}

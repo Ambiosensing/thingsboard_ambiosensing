@@ -124,14 +124,10 @@ def get_new_session_token(connection_dict):
      @:return if successful, returns a string with an authentication token
      @:raise InvalidAuthenticationData if not successful (needs to be properly catch somewhere above) """
 
-    gnst_log = ambi_logger.get_logger(__name__)
+    new_session_log = ambi_logger.get_logger(__name__)
 
     # Validate the provided connection dictionary before anything else
-    try:
-        validate_connection_dict(connection_dict)
-    except AuthenticationException as authex:
-        gnst_log.error(authex.message)
-        raise authex
+    validate_connection_dict(connection_dict)
 
     # Build the elements of the POST command to request the authentication token. All of the remaining data, headers and
     # such, are defined by default from the standard curl command to retrieve the authentication tokes
@@ -142,18 +138,18 @@ def get_new_session_token(connection_dict):
 
     # And here's the main call to the remote server, this time using the 'requests' package instead of curl or other
     # utility. The structure of the command is slightly different but in the end it yields to the same.
-    gnst_log.info("Requesting {0}...".format(str(con_url)))
+    new_session_log.info("Requesting {0}...".format(str(con_url)))
     try:
         response = requests.post(url=con_url, data=con_data, headers=con_headers)
     except (requests.ConnectionError, requests.ConnectTimeout):
         error_msg = "Unable to establish a connection with {0}. Exiting...".format(str(str(user_config.thingsboard_host) + ":" + str(user_config.thingsboard_port)))
-        gnst_log.error(error_msg)
+        new_session_log.error(error_msg)
         raise AuthenticationException(error_msg)
 
     # If a non OK response is returned, treat it as something abnormal, i.e, throw an AuthenticationException with its
     # data populated with the returned response data
     if response.status_code != 200:
-        gnst_log.error(response.text)
+        new_session_log.error(response.text)
         raise AuthenticationException(message=response.text, error_code=response.status_code)
 
     # The required token is returned initially in a text (string) form, but its actually a dictionary

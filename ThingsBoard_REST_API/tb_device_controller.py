@@ -254,7 +254,7 @@ def getCustomerDevices(customer_name, type=None, textSearch=None, idOffset=None,
     # %customer_name) and, if I still can't find a single result, try one last time with wildcard on both ends of the string (%customer_name%) in order to get an unique record (multiple records returned are also disregarded). If no clear answer is
     # obtained thus far, raise an Exception with this information
     # Connect to the MySQL database
-    cnx = mysql_utils.connect_db(proj_config.mysql_db_access['database'])
+    cnx = mysql_utils.connect_db(user_config.mysql_db_access['database'])
 
     # And get a buffered cursor to run SQL statements
     select_cursor = cnx.cursor(buffered=True)

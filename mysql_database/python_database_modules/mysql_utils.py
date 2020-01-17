@@ -56,12 +56,12 @@ def connect_db(database_name):
 
     try:
         utils.validate_input_type(database_name, str)
-        connection_dict = proj_config.mysql_db_access
+        connection_dict = user_config.mysql_db_access
     except utils.InputValidationException as ive:
         connect_log.error(ive.message)
         raise ive
     except KeyError as ke:
-        error_msg = "Missing '{0}' key from the config.mysql_db_access dictionary!".format(str(database_name))
+        error_msg = "Missing '{0}' key from the user_config.mysql_db_access dictionary!".format(str(database_name))
         connect_log.error(error_msg)
         raise ke
 
@@ -361,7 +361,7 @@ def validate_database_table_name(table_name):
     utils.validate_input_type(table_name, str)
 
     # Get the default database name
-    database_name = proj_config.mysql_db_access['database']
+    database_name = user_config.mysql_db_access['database']
     # Create the database interface elements
     cnx = connect_db(database_name=database_name)
     select_cursor = cnx.cursor(buffered=True)

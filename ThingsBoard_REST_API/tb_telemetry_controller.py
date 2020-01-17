@@ -203,7 +203,7 @@ def getTimeseries(device_name, end_time, start_time=None, time_interval=None, in
     # statement doesn't return any results, I will then repeat the statement but using a LIKE name = %device_name statement instead of the WHERE clause, followed by a LIKE name = device_name% and ending with a final call using LIKE name =
     # %device_name%, i.e., using wildcard search parameters in the beginning, end and both beginning and end of the device name string. The objective here is to get a single entry from the database table: multiple results or no results discard the
     # current SQL SELECT statement and move the code to the next option. If non definite results are obtained, a MySQLDatabaseException is going to be raised signaling this fact.
-    database_name = proj_config.mysql_db_access['database']
+    database_name = user_config.mysql_db_access['database']
     search_field = "name"
 
     cnx = mysql_utils.connect_db(database_name=database_name)

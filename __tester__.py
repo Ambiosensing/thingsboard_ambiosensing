@@ -3,19 +3,19 @@
 #  require an id or specific token of some kind to return any meaningful data). Use it to navigate until getting deviceId values via API calls instead of using
 #  the ThingsBoard web interface
 
-log_file = False
-entity_view = False
-tenant = False
-db_utils = False
-mysql_ten = False
-auth = False
-tenant_dev = False
-devices = False
-timeseries = True
-database = False
-basic_setup = False
-customer = False
-tb_asset = False
+log_file =      False
+entity_view =   False
+tenant =        False
+db_utils =      False
+mysql_ten =     False
+auth =          False
+tenant_dev =    False
+devices =       False
+timeseries =    False
+database =      False
+basic_setup =   False
+customer =      False
+tb_asset =      False
 
 
 def __main__():
@@ -41,7 +41,7 @@ def __main__():
         table_key = 'devices'
         device_name = "%"
 
-        cnx = mysql_utils.connect_db(proj_config.mysql_db_access['database'])
+        cnx = mysql_utils.connect_db(user_config.mysql_db_access['database'])
 
         select_cursor = cnx.cursor(buffered=True)
 
@@ -151,11 +151,11 @@ def __main__():
 
 if __name__ == "__main__":
 
-    # from mysql_database.python_database_modules import mysql_tenant_controller as mtc
-    # from mysql_database.python_database_modules import mysql_customer_controller as mcc
-    # from mysql_database.python_database_modules import mysql_device_controller as mdc
-    #
+    from mysql_database.python_database_modules import mysql_tenant_controller as mtc
+    from mysql_database.python_database_modules import mysql_customer_controller as mcc
+    from mysql_database.python_database_modules import mysql_device_controller as mdc
+
     # mtc.update_tenants_table()
-    # mcc.update_customer_table()
+    mcc.update_customer_table()
     # mdc.update_devices_table()
     __main__()
