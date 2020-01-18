@@ -17,8 +17,8 @@ remote_server = False
 
 # The main access info dictionary for all things accesses
 access_info = {
-    'thingsboard_host': 'http://62.48.174.118' if remote_server else 'http://localhost',
-    'thingsboard_port': 5044 if remote_server else 8080,
+    'host': 'http://62.48.174.118' if remote_server else 'http://localhost',
+    'port': 5044 if remote_server else 8080,
 
     'sys_admin': {
         'username': 'sysadmin@thingsboard.org',
