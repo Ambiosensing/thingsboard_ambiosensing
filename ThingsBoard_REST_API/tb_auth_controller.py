@@ -52,6 +52,8 @@ def get_session_tokens(sys_admin=True, tenant_admin=True, customer_user=True):
     url = str(user_config.access_info['host']) + ':' + str(user_config.access_info['port']) + '/api/auth/login'
     headers = {'Content-Type': 'application/json'}
 
+    # TODO - continue from here
+
 
 
 
