@@ -45,14 +45,11 @@ def get_session_tokens(sys_admin=True, tenant_admin=True, customer_user=True):
     headers = {'Content-Type': 'application/json', 'Accept': 'application/json'}
 
     # And the template for the return dictionary
-    auth_dict = {
-        'sys_admin': None,
-        'tenant_admin': None,
-        'customer_user': None
-    }
+    auth_dict = {'sys_admin': None, 'tenant_admin': None, 'customer_user': None}
+    key_list = ['sys_admin', 'tenant_admin', 'customer_user']
 
     # Now go for each of the user types in the above dictionary
-    for user_type in list(auth_dict.keys()):
+    for user_type in key_list:
         if not sys_admin and user_type == 'sys_admin':
             # Ignore the current run if the flag is not set
             continue
@@ -198,7 +195,7 @@ def refresh_session_token(sys_admin=False, tenant_admin=False, customer_user=Fal
             con_dict = utils.build_service_calling_info(auth_token=result[column_list.index('token')], service_endpoint=service_endpoint)
 
             # Build the additional data payload structure which is needed for this service call in particular
-            data = {'refreshToken: ' + str(result[column_list.index('refreshToken')])}
+            data = '{"refreshToken": "' + str(result[column_list.index('refreshToken')]) + '"}'
 
             # And call the remote API with the refresh request
             try:
@@ -212,14 +209,27 @@ def refresh_session_token(sys_admin=False, tenant_admin=False, customer_user=Fal
 
             # If a non-HTTP 200 status code was returned, its probably a credential issue. Raise an exception with the proper information in it
             if api_response.status_code != 200:
-                refresh_token_log.error(api_response.text)
-                select_cursor.close()
-                cnx.close()
-                raise utils.AuthenticationException(message=api_response.text, error_code=api_response.status_code)
+                # Check first if the status code is HTTP 401 and if the sub-errorCode is 11, which means that the refresh token for this user_type is also expired. In this case I can always request a new pair instead of raising an Exception
+                if api_response.status_code == 401 and eval(api_response.text)['errorCode'] == 11:
+                    user_type = result[column_list.index('user_type')]
+                    refresh_token_log.warning("The refresh token for user_type '{0}' is also expired. Requesting a new pair...".format(str(user_type)))
+
+                    # Request for a new pair of authorization tokens but only for the user_type that has its expired so that the other user_types tokens currently in the database don't get invalidated by forcing an issue of a new pair. The
+                    # get_session_token method either returns a valid pair of authorization tokens or it raises an Exception with the reason why it couldn't do it in the first place, so there's no need to verify the next call's results
+                    auth_dict = get_session_tokens(sys_admin=(user_type == 'sys_admin'), tenant_admin=(user_type == 'tenant_admin'), customer_user=(user_type == 'customer_user'))
+
+                    return auth_dict
+
+                # If the error was something other than HTTP 401 with a sub-errorCode of 10, raise an Exception with the error details
+                else:
+                    refresh_token_log.error(api_response.text)
+                    select_cursor.close()
+                    cnx.close()
+                    raise utils.AuthenticationException(message=api_response.text, error_code=api_response.status_code)
 
             # Got a pair of valid tokens back. Update the structures then
             else:
-                auth_dict[column_list.index('user_type')] = eval(api_response.text)
+                auth_dict[result[column_list.index('user_type')]] = eval(api_response.text)
 
             # And grab the next result for another iteration of this
             result = select_cursor.fetchone()
