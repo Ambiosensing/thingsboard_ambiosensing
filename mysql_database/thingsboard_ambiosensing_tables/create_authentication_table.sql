@@ -1,6 +1,6 @@
-DROP TABLE IF EXISTS thingsboard_authentication_table;
+DROP TABLE IF EXISTS ambiosensing_thingsboard.thingsboard_authentication_table;
 
-CREATE TABLE IF NOT EXISTS thingsboard_authentication_table
+CREATE TABLE IF NOT EXISTS ambiosensing_thingsboard.thingsboard_authentication_table
 (
     user_type                   VARCHAR(30)     DEFAULT NULL NULL,
     token                       VARCHAR(999)    DEFAULT NULL NULL,
