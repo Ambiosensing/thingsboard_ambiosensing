@@ -5,7 +5,6 @@ import sys
 from logging.handlers import TimedRotatingFileHandler
 import proj_config
 import utils
-import os
 
 
 def get_console_handler():

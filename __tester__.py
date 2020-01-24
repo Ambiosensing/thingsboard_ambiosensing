@@ -3,21 +3,33 @@
 #  require an id or specific token of some kind to return any meaningful data). Use it to navigate until getting deviceId values via API calls instead of using
 #  the ThingsBoard web interface
 
-log_file = False
-entity_view = False
-tenant = False
-db_utils = False
-mysql_ten = False
-auth = False
-tenant_dev = False
-devices = False
-timeseries = False
-database = False
-basic_setup = False
-customer = False
-tb_asset = True
+log_file =      False
+entity_view =   False
+tenant =        False
+db_utils =      False
+mysql_ten =     False
+auth =          False
+tenant_dev =    False
+devices =       False
+timeseries =    False
+database =      False
+basic_setup =   False
+customer =      False
+tb_asset =      False
+auth_ctrl =     True
+
 
 def __main__():
+    if auth_ctrl:
+        from ThingsBoard_REST_API import tb_auth_controller as tac
+        from mysql_database.python_database_modules import mysql_auth_controller as mac
+
+        mac.populate_auth_table()
+        # user_type = 'customer_user'
+        # tk = mac.get_auth_token(user_type=user_type)
+
+        # print(str(tk))
+
     if tb_asset:
         from ThingsBoard_REST_API import tb_asset_controller as ac
         response = ac.getAssetTypes()
@@ -36,11 +48,11 @@ def __main__():
 
     if database:
         from mysql_database.python_database_modules import mysql_utils
-        import proj_config, utils
+        import proj_config, utils, user_config
         table_key = 'devices'
         device_name = "%"
 
-        cnx = mysql_utils.connect_db(proj_config.mysql_db_access['database'])
+        cnx = mysql_utils.connect_db(user_config.mysql_db_access['database'])
 
         select_cursor = cnx.cursor(buffered=True)
 
@@ -59,13 +71,18 @@ def __main__():
     if timeseries:
         from ThingsBoard_REST_API import tb_telemetry_controller
         import datetime
+        from mysql_database.python_database_modules import mysql_utils
 
-        device_name = "Water Meter A1"
-        end_time = datetime.datetime(2019, 11, 24, 20, 0, 0)
-        start_time = datetime.datetime(2019, 11, 24, 19, 0, 0)
+        device_name = "Multisensor_device 1"
+        # end_time = datetime.datetime(2019, 11, 24, 20, 0, 0)
+        end_time = mysql_utils.convert_timestamp_tb_to_datetime(1579193100786)
+        # start_time = datetime.datetime(2019, 11, 24, 19, 0, 0)
+        # interval = datetime.timedelta(days=1)
+        start_time = mysql_utils.convert_timestamp_tb_to_datetime(1579189110790)
         limit = 10
+        timeseries_filter = ['temperature', 'lux']
 
-        data_list = tb_telemetry_controller.getTimeseries(device_name=device_name, end_time=end_time, start_time=start_time, limit=limit)
+        data_list = tb_telemetry_controller.getTimeseries(device_name=device_name, end_time=end_time, start_time=start_time, limit=limit, timeseries_keys_filter=timeseries_filter)
 
         print(data_list)
 
@@ -143,4 +160,5 @@ def __main__():
         my_log.critical("This is a CRITICAL message")
 
 
-__main__()
+if __name__ == "__main__":
+    __main__()

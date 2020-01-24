@@ -1,0 +1,21 @@
+# Use this text file to keep up a list of which user_types, from SYS_ADMIN, TENANT_ADMIN and CUSTOMER_USER, are able to execute services in this module
+
+MODULE                              SERVICE/METHOD                  SYS_ADMIN       TENANT_ADMIN        CUSTOMER_USER
+tb_admin_controller                 getSecuritySettings             YES             NO                  NO
+tb_admin_controller                 checkUpdates                    YES             NO                  NO
+
+tb_asset_controller                 getAssetTypes                   NO              YES                 YES
+tb_asset_controller                 getTenantAssets                 NO              NO                  YES
+
+tb_customer_controller              getCustomers                    NO              NO                  YES
+
+tb_device_controller                getDeviceTypes                  NO              YES                 YES
+tb_device_controller                getTenantDevices                NO              NO                  YES
+tb_device_controller                getCustomerDevices              NO              YES                 YES
+
+tb_entity_view_controller           getEntityViewTypes              NO              YES                 YES
+
+tb_telemetry_controller             getTimeseriesKeys               NO              YES                 YES
+tb_telemetry_controller             getTimeseries                   NO              YES                 YES
+
+tb_tenant_controller                getTenants                      YES             NO                  NO

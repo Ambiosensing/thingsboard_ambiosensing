@@ -1,0 +1,51 @@
+Curl: curl -X GET --header 'Accept: application/json' --header 'X-Authorization: Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJyZGwuYWxtZWlkYUBjYW1wdXMuZmN0LnVubC5wdCIsInNjb3BlcyI6WyJURU5BTlRfQURNSU4iXSwidXNlcklkIjoiZWJhMTczNDAtZWY2Ni0xMWU5LTk2N2MtYzMyNmU0NGM2MjI4IiwiZmlyc3ROYW1lIjoiUmljYXJkbyIsImxhc3ROYW1lIjoiQWxtZWlkYSIsImVuYWJsZWQiOnRydWUsImlzUHVibGljIjpmYWxzZSwidGVuYW50SWQiOiJiYmNkN2UyMC1lZjY2LTExZTktOTY3Yy1jMzI2ZTQ0YzYyMjgiLCJjdXN0b21lcklkIjoiMTM4MTQwMDAtMWRkMi0xMWIyLTgwODAtODA4MDgwODA4MDgwIiwiaXNzIjoidGhpbmdzYm9hcmQuaW8iLCJpYXQiOjE1NzkxODYzOTEsImV4cCI6MTU3OTE5NTM5MX0.5CGA5BhOz5ddPytZEbtC88SLCIw_FktBRds-Enj5864870ABv3KVhrLxj81DqeQyjqDcfitFSM4959PZ2Kjncw' 'http://localhost:8080/api/tenant/assets?limit=10'
+
+URL: http://localhost:8080/api/tenant/assets?limit=10
+
+Response Body:
+{
+  "data": [
+    {
+      "id": {
+        "entityType": "ASSET",
+        "id": "782a0340-ef67-11e9-967c-c326e44c6228"
+      },
+      "createdTime": 1571156328820,
+      "additionalInfo": {
+        "description": "A dummy building that I'm planning to fill with dead rats and cockroaches once I'm done with it"
+      },
+      "tenantId": {
+        "entityType": "TENANT",
+        "id": "bbcd7e20-ef66-11e9-967c-c326e44c6228"
+      },
+      "customerId": {
+        "entityType": "CUSTOMER",
+        "id": "ade9cd50-0bad-11ea-a17e-77a2b980ac65"
+      },
+      "name": "Building A",
+      "type": "Building"
+    },
+    {
+      "id": {
+        "entityType": "ASSET",
+        "id": "d819c260-f1cc-11e9-bad3-8bf59b1f7ad1"
+      },
+      "createdTime": 1571419771270,
+      "additionalInfo": {
+        "description": "Another test building, this time to deal with multiple water readers inside it"
+      },
+      "tenantId": {
+        "entityType": "TENANT",
+        "id": "bbcd7e20-ef66-11e9-967c-c326e44c6228"
+      },
+      "customerId": {
+        "entityType": "CUSTOMER",
+        "id": "e3412140-103c-11ea-a17e-77a2b980ac65"
+      },
+      "name": "Building B",
+      "type": "Building"
+    }
+  ],
+  "nextPageLink": null,
+  "hasNext": false
+}

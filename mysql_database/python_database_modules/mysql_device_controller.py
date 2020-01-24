@@ -95,9 +95,17 @@ def update_devices_table(customer_name=False):
         # returned from the previous API call. This method, if correctly call, returns a single string with the name that the PostGres database from the API side is using to store the device data. It is not optimal to create a single table with
         # just a column with this data (or even with two additional entityType and entityId) when I can simply add a new one to the existing thingsboard_devices_table and place a call at this point to the other API service that returns just that
         # and concatenate it to the existing data dictionary. The thingsboard_devices_table already has an 'extra' column names timeseriesKey at the end to include this element so now its just a matter of putting it into the dictionary to return.
-        timeseries_key = tb_telemetry_controller.getTimeseriesKeys(device['id']['entityType'], device['id']['id'])
+        # Humm... it seems that there are sensors that can provide readings from multiple sources (the device can be a multi-sensor array that uses a single interface to communicate
+        # The return from the next statement is always a list with as many elements as the number of supported timeSeriesKeys by the device identified (one per supported reading/sensor)
+        timeseries_keys = tb_telemetry_controller.getTimeseriesKeys(device['id']['entityType'], device['id']['id'])
 
-        # Add an extra entry to the device dictionary to be used on the database population operation
-        device['timeseriesKey'] = timeseries_key
+        # The database entry needs to contain all elements returned in the list in timeseries_keys variable
+        # Add an extra entry to the device dictionary to be used on the database population operation. The str.join() operation is going to concatenate all elements in the timeseries_keys using a comma to separate them in a single string.
+        # Also, this approach has the advantage that if an API request is built from this data (retrieved from the database of course), this format allows for a direct call - no post processing required at all. This is because of how these types
+        # of remote API requests are constructed: the endpoint request takes a query for multiple timeseries keys from one single device as comma-separated strings with no spaces.
+        # For example, querying for the timeseries values from a device with 4 sensors attached that can produce 4 types of different readings implies the following endpoint to be sent in a URL to the remote service:
+        # http://localhost:8080/api/plugins/telemetry/DEVICE/3f0e8760-3874-11ea-8da5-2fbefd4cb87e/values/timeseries?limit=3&agg=NONE&keys=humidity,temperature,pressure,lux&startTs=1579189110790&endTs=1579193100786
+        # The 'keys' part of the last string shows how this request must be constructed and that implies all parameters in a single string, separated by commas and without any spaces in between.
+        device['timeseriesKeys'] = ",".join(timeseries_keys)
         # Done. Carry on with the database stuff
         database_table_updater.insert_table_data(device, proj_config.mysql_db_tables[module_table_key])

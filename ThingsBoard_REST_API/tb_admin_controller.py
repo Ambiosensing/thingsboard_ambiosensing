@@ -3,6 +3,7 @@ import requests
 import ambi_logger
 import utils
 import ast
+from mysql_database.python_database_modules import mysql_auth_controller as mac
 
 
 # --------------------------------------------------------------------- CUSTOM CLASSES -------------------------------------------------------------------------
@@ -63,10 +64,11 @@ class SecuritySettings:
         self.settings["userLockoutNotificationEmail"] = userLockoutNotificationEmail
 
 
-def getSecuritySettings(auth_token):
+def getSecuritySettings():
     """ Simple GET method to retrieve the current administration security settings. These can be also consulted in the ThingsBoard Admin dashboard under 'System Settings' -> 'Security Settings'
-     @:param auth_token - A valid admin authorization token
-     @:return
+    @:type user_types allowed for this service: SYS_ADMIN (NOTE: This service is NOT AVAILABLE in the ThingsBoard remote installation at 62.48.174.118)
+    @:param auth_token - A valid admin authorization token
+    @:return
                 {
                     "maxFailedLoginAttempts": 0,
                     "passwordPolicy":
@@ -85,7 +87,7 @@ def getSecuritySettings(auth_token):
     security_set_log = ambi_logger.get_logger(__name__)
 
     service_endpoint = "/api/admin/securitySettings"
-    service_dict = utils.build_service_calling_info(auth_token, service_endpoint)
+    service_dict = utils.build_service_calling_info(mac.get_auth_token(user_type='sys_admin'), service_endpoint)
 
     response = requests.get(url=service_dict["url"], headers=service_dict["headers"])
 
@@ -99,19 +101,18 @@ def getSecuritySettings(auth_token):
     return response
 
 
-
-def checkUpdates(auth_token):
+def checkUpdates():
     """ GET method to retrieve any available updates to the system
-     @:param auth_token - A valid admin authorization token
-     @:return
+    @:type user_types allowed for this service: SYS_ADMIN
+    @:return
                 {
                   "message": "string",
                   "updateAvailable": true
                 }
-     """
+    """
     service_endpoint = "/api/admin/updates"
 
-    service_dict = utils.build_service_calling_info(auth_token, service_endpoint)
+    service_dict = utils.build_service_calling_info(mac.get_auth_token(user_type='sys_admin'), service_endpoint)
 
     response = requests.get(url=service_dict["url"], headers=service_dict["headers"])
 

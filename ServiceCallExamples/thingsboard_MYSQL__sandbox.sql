@@ -20,3 +20,6 @@ SELECT entityType, id, timeseriesKey FROM thingsboard_devices_table WHERE name L
 SELECT * FROM ambiosensing_thingsboard.thingsboard_customers_table;
 SELECT * FROM ambiosensing_thingsboard.thingsboard_devices_table;
 SELECT * FROM ambiosensing_thingsboard.thingsboard_tenants_table;
+
+SHOW TABLES FROM ambiosensing_thingsboard;
+SHOW COLUMNS FROM ambiosensing_thingsboard.thingsboard_devices_table;

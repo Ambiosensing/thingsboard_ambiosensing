@@ -40,21 +40,14 @@ thingsboard_supported_entityTypes = [
     "ALARM",
     "ENTITY_VIEW"
 ]
-# --------------------------------------------- MySQL DATABASE ACCESS CONFIGURATION ----------------------------------------------------------------------------------
-# The logic here is: the database name is the key and the corresponding value are the access credentials
-mysql_db_access = {
-    'username': 'ambiosensing',
-    'password': 'ambiosensing2019',
-    'host': 'localhost',
-    'database': 'ambiosensing_thingsboard'
-}
 
 # This dictionary maps the complete table names in the ambiosensing database to a more simple term or name. This abstraction allows us to change the table names at will in the future, but as long as we maintain the same key in the next
 # dictionary and all the table names in further methods are obtained referencing the key instead of the table name, the operation should be trivial
 mysql_db_tables = {
     'tenants': 'thingsboard_tenants_table',
     'devices': 'thingsboard_devices_table',
-    'customers': 'thingsboard_customers_table'
+    'customers': 'thingsboard_customers_table',
+    'authentication': 'thingsboard_authentication_table'
 }
 
 # --------------------------------------------- LOGGER CONFIGURATION ----------------------------------------------------------------------------------

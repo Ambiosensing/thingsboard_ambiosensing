@@ -1,14 +1,15 @@
-""" Place holder for methods related to the interface between the MySQL database (MySQL internal Ambiosensing database) and the data obtained from service calls placed to the API group asset-controller """
+""" Place holder for methods related to the ThingsBoard REST API - assets-controller methods """
 
 import requests
 import ambi_logger
 import utils
-import urllib.parse
+from mysql_database.python_database_modules import mysql_auth_controller as mac
 
 
 def getAssetTypes():
     """This method employs the same logic as all the ThingsBoard interface methods so far: it creates the necessary endpoint, gather any arguments necessary for the service call, places a GET request to the remote API and returns the response,
     in a dictionary data structure, as usual
+    @:type user_types allowed for this service: TENANT_ADMIN, CUSTOMER_USER
     @:raise utils.ServiceEndpointException - If errors occur when accessing the remote API
     @:return result (dict) - A dictionary in the following format (dictated by the remote API):
         result = [
@@ -30,7 +31,7 @@ def getAssetTypes():
     service_endpoint = "/api/asset/types"
 
     # Build the full service dictionary for the executing the remote call
-    service_dict = utils.build_service_calling_info(utils.get_auth_token(admin=False), service_endpoint)
+    service_dict = utils.build_service_calling_info(mac.get_auth_token(user_type='tenant_admin'), service_endpoint)
 
     try:
         response = requests.get(url=service_dict['url'], headers=service_dict['headers'])
@@ -49,6 +50,14 @@ def getAssetTypes():
         return response
 
 
-
-
-
+def getTenantAssets(type=None, textSearch=None, idOffset=None, textOffset=None, limit=10):
+    """
+    @:type user_types allowed for this service: CUSTOMER_USER
+    :param type:
+    :param textSearch:
+    :param idOffset:
+    :param textOffset:
+    :param limit:
+    :return:
+    """
+    pass

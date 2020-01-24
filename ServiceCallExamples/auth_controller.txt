@@ -1,0 +1,81 @@
+Request URL (using ADMIN type user for the request): http://62.48.174.118:5044/api/auth/user
+
+Response Body:
+{
+  "id": {
+    "entityType": "USER",
+    "id": "9d97c320-92dc-11e9-b6c0-05c6d39f9f61"
+  },
+  "createdTime": 1560981184594,
+  "additionalInfo": null,
+  "tenantId": {
+    "entityType": "TENANT",
+    "id": "13814000-1dd2-11b2-8080-808080808080"
+  },
+  "customerId": {
+    "entityType": "CUSTOMER",
+    "id": "13814000-1dd2-11b2-8080-808080808080"
+  },
+  "email": "sysadmin@thingsboard.org",
+  "authority": "SYS_ADMIN",
+  "firstName": null,
+  "lastName": null,
+  "name": "sysadmin@thingsboard.org"
+}
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Request URL (using REGULAR type user for request, i.e., Customer User):
+http://62.48.174.118:5044/api/auth/user
+
+Response Body:
+{
+  "id": {
+    "entityType": "USER",
+    "id": "ae76d0d0-aa62-11e9-be3e-5191a24525ae"
+  },
+  "createdTime": 1563567642205,
+  "additionalInfo": null,
+  "tenantId": {
+    "entityType": "TENANT",
+    "id": "02bda270-92e1-11e9-b2d7-a9d50a42a11e"
+  },
+  "customerId": {
+    "entityType": "CUSTOMER",
+    "id": "db518340-92e1-11e9-b2d7-a9d50a42a11e"
+  },
+  "email": "rdl.almeida@campus.fct.unl.pt",
+  "authority": "CUSTOMER_USER",
+  "firstName": "Ricardo",
+  "lastName": "Almeida",
+  "name": "rdl.almeida@campus.fct.unl.pt"
+}
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+Request URL (Using TENANT ADMIN type user for request):
+http://62.48.174.118:5044/api/auth/user
+
+Response Body:
+{
+  "id": {
+    "entityType": "USER",
+    "id": "e6746360-379a-11ea-971a-c108b8f2be6f"
+  },
+  "createdTime": 1579094901910,
+  "additionalInfo": {
+    "description": "FCT NOVA"
+  },
+  "tenantId": {
+    "entityType": "TENANT",
+    "id": "02bda270-92e1-11e9-b2d7-a9d50a42a11e"
+  },
+  "customerId": {
+    "entityType": "CUSTOMER",
+    "id": "13814000-1dd2-11b2-8080-808080808080"
+  },
+  "email": "rdlalmeida@gmail.com",
+  "authority": "TENANT_ADMIN",
+  "firstName": "Ricardo",
+  "lastName": "Almeida",
+  "name": "rdlalmeida@gmail.com"
+}

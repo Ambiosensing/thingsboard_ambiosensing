@@ -2,7 +2,7 @@
 updated existing ones or do nothing in case the data received is identical to an existing record
 """
 
-import proj_config
+import user_config
 import utils
 from mysql_database.python_database_modules import mysql_utils
 import ambi_logger
@@ -47,7 +47,7 @@ def insert_table_data(data_dict, table_name, data_validated=False):
             insert_log.warning("The current data dictionary does not have a 'createdTime' key. Moving on...")
 
     # Get a database connection
-    database_name = proj_config.mysql_db_access['database']
+    database_name = user_config.mysql_db_access['database']
     cnx = mysql_utils.connect_db(database_name)
 
     # And grab a cursor object, this one to be used for SELECTs (There's no reason why I couldn't use to do INSERT/UPDATEs with it too, but experience with this connector tells me that this approach is way more secure towards avoiding nasty bugs
@@ -149,7 +149,7 @@ def insert_table_data(data_dict, table_name, data_validated=False):
             change_cursor.close()
             cnx.close()
             # Give an heads up to the user
-            insert_log.info("Inserted a new record with data '{0}' into {1}.{2} successfully!".format(str(data_tuple), str(proj_config.mysql_db_access['database']), str(table_name)))
+            insert_log.info("Inserted a new record with data '{0}' into {1}.{2} successfully!".format(str(data_tuple), str(user_config.mysql_db_access['database']), str(table_name)))
 
     # If I got here, my SELECT yielded something. Lets find out what exactly
     else:
@@ -170,7 +170,7 @@ def insert_table_data(data_dict, table_name, data_validated=False):
             return True
         # Okay, I've ruled out two scenarios out of three possible ones. By exclusion of parts, I have something in the database with this id but the data isn't a complete match. The only course of action at this point to to go for an UPDATE then
         else:
-            insert_log.warning("The data dictionary provided already exists in {0}.{1} but with different data. Running an UPDATE instead...".format(str(proj_config.mysql_db_access['database']), str(table_name)))
+            insert_log.warning("The data dictionary provided already exists in {0}.{1} but with different data. Running an UPDATE instead...".format(str(user_config.mysql_db_access['database']), str(table_name)))
             # Close all the open stuff
             select_cursor.close()
             cnx.close()
@@ -202,7 +202,7 @@ def update_table_data(data_dict, table_name, data_validated=False):
             update_log.warning("The current data dictionary does not have a 'createdTime' key. Moving on...")
 
     # Create the database connection and a cursor to run the base SELECT
-    database_name = proj_config.mysql_db_access['database']
+    database_name = user_config.mysql_db_access['database']
     cnx = mysql_utils.connect_db(database_name)
     select_cursor = cnx.cursor(buffered=True)
 
@@ -306,7 +306,7 @@ def update_table_data(data_dict, table_name, data_validated=False):
                 cnx.close()
                 raise mysql_utils.MySQLDatabaseException(message=error_msg)
             else:
-                update_log.info("SQL UPDATE of record with id = {0} in {1}.{2} successful.".format(str(data_dict['id']['id']), str(proj_config.mysql_db_access['database']), str(table_name)))
+                update_log.info("SQL UPDATE of record with id = {0} in {1}.{2} successful.".format(str(data_dict['id']['id']), str(user_config.mysql_db_access['database']), str(table_name)))
                 # Don't forget to commit the data to the database (#1 in most annoying database related bugs)
                 cnx.commit()
                 # Close all stuff still open
@@ -338,13 +338,13 @@ def validate_data_dictionary(data_dict, table_name):
     data_dict_keys = utils.extract_all_keys_from_dictionary(data_dict, [])
 
     # And now for the other list of stuff to compare to
-    column_list = mysql_utils.get_table_columns(proj_config.mysql_db_access['database'], table_name)
+    column_list = mysql_utils.get_table_columns(user_config.mysql_db_access['database'], table_name)
 
     # Do a one to many comparison (because either the INSERT and/or UPDATE statements do not require all columns to be explicit given that all them have default values, at this point I just want to make sure that the set data_dict_keys is,
     # at least, a subset of the column_list. If an element from the data_dict_key is not in the column_list set, the resulting INSERT and/or UPDATE statement is going to crash)
     for data_key in data_dict_keys:
         if data_key not in column_list:
-            error_msg = "The key '{0}' from the input dictionary doesn't have a corresponding column in table {1}.{2}.".format(str(data_key), str(proj_config.mysql_db_access['database']), str(table_name))
+            error_msg = "The key '{0}' from the input dictionary doesn't have a corresponding column in table {1}.{2}.".format(str(data_key), str(user_config.mysql_db_access['database']), str(table_name))
             validate_log.error(error_msg)
             raise Exception(error_msg)
 
