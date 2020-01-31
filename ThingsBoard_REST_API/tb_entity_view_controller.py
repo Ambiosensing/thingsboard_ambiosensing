@@ -2,11 +2,12 @@
 
 import utils
 import requests
+from mysql_database.python_database_modules import mysql_auth_controller as mac
 
 
-def getEntityViewTypes(auth_token):
+def getEntityViewTypes():
     """ GET method to retrieve the types associated to the entityView structure
-     @:param auth_token - a valid authorization token
+     @:type user_types allowed for this service: TENANT_ADMIN, CUSTOMER_USER
      @:return
                 {
                     "entityType": string,
@@ -18,7 +19,7 @@ def getEntityViewTypes(auth_token):
                 }
      """
     service_endpoint = "/api/entityView/types"
-    service_dict = utils.build_service_calling_info(auth_token, service_endpoint)
+    service_dict = utils.build_service_calling_info(mac.get_auth_token(user_type='tenant_admin'), service_endpoint)
 
     response = requests.get(url=service_dict["url"], headers=service_dict["headers"])
 

@@ -4,6 +4,7 @@ import utils
 import ambi_logger
 import urllib.parse
 import requests
+from mysql_database.python_database_modules import mysql_auth_controller as mac
 
 
 def getTenants(textSearch=None, idOffset=None, textOffset=None, limit=10):
@@ -88,13 +89,6 @@ def getTenants(textSearch=None, idOffset=None, textOffset=None, limit=10):
         tenant_log.error(error_msg)
         raise utils.InputValidationException(message=error_msg)
 
-    # Before moving on, I still need to get my hands on a valid authorization token. The method designed to achieve that (utils.get_auth_token()) manages that automatically (grabs a saved authorization token if there's one present in the
-    # auth_token file, checks if it is still valid, renews it if not, etc... Worst case scenario it goes to the remote API for a new fresh pair of authorization tokens if needed) so I've been trying different strategies on that regard.
-    # Namely, should I pass this token as an argument for the method call or should I do it internally during the method call? The first approach gives more transparency to the user but required that authorization token management to be
-    # somewhat of its side and also requires that the user knows a priori which services require admin tokens and which don't. The second approach hides this step from the user (methods call the get_auth_token by themselves) but I can then
-    # manage the whole 'admin' vs 'regular' issue more efficiently since each method knows pretty well what type of token it needs. This method implements the second approach given that it needs and ADMIN token.
-    admin_auth_token = utils.get_auth_token(admin=True)
-
     service_endpoint = "/api/tenants?"
 
     # This service point for this particular method has its arguments built-in using a standard URL format. Because of this, I need to make sure that
@@ -121,7 +115,7 @@ def getTenants(textSearch=None, idOffset=None, textOffset=None, limit=10):
     url_strings.append("limit=" + str(limit))
     service_endpoint += '&'.join(url_strings)
 
-    service_dict = utils.build_service_calling_info(admin_auth_token, service_endpoint)
+    service_dict = utils.build_service_calling_info(mac.get_auth_token(user_type='sys_admin'), service_endpoint)
     try:
         response = requests.get(url=service_dict['url'], headers=service_dict['headers'])
     except (requests.ConnectionError, requests.ConnectTimeout) as ce:

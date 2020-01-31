@@ -4,12 +4,14 @@ import requests
 import ambi_logger
 import utils
 import urllib.parse
+from mysql_database.python_database_modules import mysql_auth_controller as mac
 
 
 def getCustomers(textSearch=None, idOffset=None, textOffset=None, limit=10):
     """This in one of the simplest GET methods in the customer-controller section of the ThingsBoard API. With it I only need to provide a valid limit number and I can request a list of all registered customers in the platform so far,
     so that I can then populate my own MySQL database table with them.
     All parameters initialized to None in the method signature are OPTIONAL (textSearch, idOffset and textOffset). Those that were set to specific values and data types are MANDATORY (limit)
+    @:type user_types allowed for this service: CUSTOMER_USER
     @:param textSearch (str) - Use this field to narrow down results based only in the 'name' field (which in this case should be the same as 'title', though the textSearch field only goes to the former). Yet, in order to yield any results,
     the textSearch field has to be exactly equal to whatever is in the 'name' field in the remote API (put case sensitive in this case...)
     @:param idOffset (str) - A similar field as the one before in the sense that it the sense that its search scope is limited to the 'id' fields. It provides a bit more of flexibility than the last one - id string can be inserted with, at most,
@@ -103,7 +105,7 @@ def getCustomers(textSearch=None, idOffset=None, textOffset=None, limit=10):
     service_endpoint += '&'.join(url_strings)
 
     # Place the HTTP GET request using a REGULAR type authorization token
-    service_dict = utils.build_service_calling_info(utils.get_auth_token(admin=False), service_endpoint)
+    service_dict = utils.build_service_calling_info(mac.get_auth_token(user_type='customer_user'), service_endpoint)
 
     # Query the remote API
     try:

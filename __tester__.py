@@ -16,9 +16,20 @@ database =      False
 basic_setup =   False
 customer =      False
 tb_asset =      False
+auth_ctrl =     True
 
 
 def __main__():
+    if auth_ctrl:
+        from ThingsBoard_REST_API import tb_auth_controller as tac
+        from mysql_database.python_database_modules import mysql_auth_controller as mac
+
+        mac.populate_auth_table()
+        # user_type = 'customer_user'
+        # tk = mac.get_auth_token(user_type=user_type)
+
+        # print(str(tk))
+
     if tb_asset:
         from ThingsBoard_REST_API import tb_asset_controller as ac
         response = ac.getAssetTypes()
@@ -150,5 +161,4 @@ def __main__():
 
 
 if __name__ == "__main__":
-    from ThingsBoard_REST_API import tb_auth_controller as tac
-    tac.getUser()
+    __main__()

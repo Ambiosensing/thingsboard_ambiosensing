@@ -1,15 +1,10 @@
-from mysql_database.python_database_modules import mysql_device_controller as mdc
-from ThingsBoard_REST_API import tb_device_controller as tdc
-import utils
+from mysql_database.python_database_modules import mysql_auth_controller as mac
 
 
 def __main__():
-    tk1 = utils.get_auth_token(admin=True)
-    tk2 = utils.get_auth_token(admin=False)
-
-    print("Updating customer table...")
-    mdc.update_devices_table(customer_name=False)
-    print("Done.")
+    print("Getting new authorization tokens for all users...")
+    mac.populate_auth_table()
+    print("Done!")
 
 
 if __name__ == "__main__":

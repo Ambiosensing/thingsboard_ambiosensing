@@ -46,7 +46,8 @@ thingsboard_supported_entityTypes = [
 mysql_db_tables = {
     'tenants': 'thingsboard_tenants_table',
     'devices': 'thingsboard_devices_table',
-    'customers': 'thingsboard_customers_table'
+    'customers': 'thingsboard_customers_table',
+    'authentication': 'thingsboard_authentication_table'
 }
 
 # --------------------------------------------- LOGGER CONFIGURATION ----------------------------------------------------------------------------------
