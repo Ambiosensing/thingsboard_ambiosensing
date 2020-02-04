@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<project version="4">
-  <component name="SqlDialectMappings">
-    <file url="file://$PROJECT_DIR$/mysql_database/database_configuration_scripts/restore_thingsboard_database.sql" dialect="MySQL" />
-    <file url="file://$PROJECT_DIR$/mysql_database/thingsboard_ambiosensing_tables/create_customers_table.sql" dialect="MySQL" />
-    <file url="file://$PROJECT_DIR$/mysql_database/thingsboard_ambiosensing_tables/create_devices_table.sql" dialect="MySQL" />
-    <file url="file://$PROJECT_DIR$/mysql_database/thingsboard_ambiosensing_tables/create_tenants_table.sql" dialect="MySQL" />
-  </component>
-</project>
