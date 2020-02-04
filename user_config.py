@@ -90,3 +90,11 @@ mysql_db_access = {
     'host': 'localhost',
     'database': 'ambiosensing_thingsboard'
 }
+
+# Regular user database credentials
+ambiosensing_BD = {
+    "host": "http://localhost",
+    "port": 5432,
+    "username": "postgres",
+    "password": "rootroot"
+}
