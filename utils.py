@@ -116,7 +116,8 @@ authentication_API_paths = {
 }
 
 
-def get_new_session_token(connection_dict):
+# DEPRECATED: use mysql_database.python_database_modules.mysql_auth_controller.get_auth_token() or ThingsBoard_REST_API.tb_auth_controller.get_session_tokens() instead
+def _get_new_session_token(connection_dict):
     """ Lets start with the basics. This method receives a dictionary object such as the one set in the config.py
      file, extracts the necessary connection parameters and, if all is OK, sends an HTTP request for a valid session
      token
@@ -157,7 +158,8 @@ def get_new_session_token(connection_dict):
     return ast.literal_eval(response.text)
 
 
-def refresh_authorization_tokens(admin=False):
+# DEPRECATED: use mysql_database.python_database_modules.mysql_auth_controller.get_auth_token() or ThingsBoard_REST_API.tb_auth_controller.refresh_session_tokens() instead
+def _refresh_authorization_tokens(admin=False):
     """ This method simply does a call to the get_new_session_token to get a new set of fresh authorization and refresh tokens from the server.
      This is just to abstract the following code a bit more since I've realised that I'm calling the aforementioned method all the time
      @:param admin - a boolean indicating if the tokens to be refreshed are for an admin profile (admin=True) or a regular profile(admin=False). Default option is always 'regular user' (admin=False)
@@ -177,9 +179,9 @@ def refresh_authorization_tokens(admin=False):
         raise ive
 
     if admin:
-        return get_new_session_token(user_config.thingsboard_admin)
+        return _get_new_session_token(user_config.access_info['sys_admin'])
     else:
-        return get_new_session_token(user_config.thingsboard_regular)
+        return _get_new_session_token(user_config.access_info['tenant_admin'])
 
 
 def validate_connection_dict(connection_dict):
@@ -320,7 +322,7 @@ def get_auth_token(admin=False):
     # refreshing the token needs the expired token (auth_token) to execute the request to the new endpoint
     if not auth_dict["token"]:
         auth_log.warning("No authorization tokens found. Requesting new ones...")
-        result = refresh_authorization_tokens(admin)
+        result = _refresh_authorization_tokens(admin)
     else:
         # So, there's a token in the file. Lets see if it is yet valid. For that, the simplest way is to call a GET service and see what HTTP status code comes
         # back. Since the admin and tenant(regular) users are disjoint groups,
@@ -347,7 +349,7 @@ def get_auth_token(admin=False):
         # new set of tokens from scratch based on the state of the admin flag
         elif test_response.status_code == 403 and ast.literal_eval(test_response.text)["errorCode"] == 20:
             auth_log.warning("The token provided is associated to the wrong profile (admin token in a regular user or vice versa). Requesting new authorization tokens...")
-            result = refresh_authorization_tokens(admin)
+            result = _refresh_authorization_tokens(admin)
 
         # The next case (HTTP 401) is returned whenever there's something in the authorization token but that information cannot be used to authenticate the
         # user. This can happen either because the token is expired (complex case) or that the token is corrupted (error at copying the file, etc.),
@@ -362,7 +364,7 @@ def get_auth_token(admin=False):
             # There's no simple way to determine what is really wrong with it, so I might as well request a new pair of tokens and be done with it.
             if test_response_dict["errorCode"] == 10:
                 auth_log.warning("Bad formed/corrupted authorization token detected. Requesting new ones....")
-                result = refresh_authorization_tokens(admin)
+                result = _refresh_authorization_tokens(admin)
 
             # An expired (valid but just too old) authorization token returns an internal errorCode = 11. Try to get a new set of tokens using the refresh
             # token first. Again, just for the sake of covering all bases, there an even more remote possibility of having an expired authorization token and
@@ -372,7 +374,7 @@ def get_auth_token(admin=False):
                 auth_log.warning("Expired authorization token detected.")
                 if not auth_dict['refreshToken'] or auth_dict['refreshToken'] == "":
                     auth_log.warning("Missing refresh token too. Requesting new ones...")
-                    result = refresh_authorization_tokens(admin)
+                    result = _refresh_authorization_tokens(admin)
                 else:
                     # Prepare the refresh token request using an automated method written for the effect
                     service_dict = build_service_calling_info(auth_dict['token'], authentication_API_paths['refreshToken'])
@@ -396,14 +398,14 @@ def get_auth_token(admin=False):
                     # If that's the case, then all its left to do is to request for a new pair of tokens straight away
                     elif token_refresh_response.status_code == 401 and ast.literal_eval(token_refresh_response.text)["errorCode"] == 10:
                         auth_log.warning("Both authorization and refresh tokens are expired. Requesting new ones...")
-                        result = refresh_authorization_tokens(admin)
+                        result = _refresh_authorization_tokens(admin)
 
                     # If my logic is correct so far, the following elif statement should never be reached, given how rare an HTTP 403 response should be and
                     # because I've deal with it above too. In any case, since this is but a copy-paste of the code above with the new variable names replaced,
                     # what the hell, why not? Just leave it there. If this ever run I shall be quite surprised!
                     elif token_refresh_response.status_code == 403 and ast.literal_eval(token_refresh_response.text)["errorCode"] == 20:
                         auth_log.warning("The token provided is still associated to the wrong profile (admin token in a regular user or vice versa). Requesting new authorization tokens...")
-                        result = refresh_authorization_tokens(admin)
+                        result = _refresh_authorization_tokens(admin)
 
                     # Before the default result (in which something really weird and unexpected happened, I want to check for further requests that were
                     # successful, from the request itself standpoint, but came back with none

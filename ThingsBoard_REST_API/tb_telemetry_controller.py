@@ -6,13 +6,14 @@ import user_config
 import requests
 import ambi_logger
 import datetime
-from mysql_database.python_database_modules import mysql_utils
+from mysql_database.python_database_modules import mysql_utils, mysql_auth_controller as mac
 
 
 def getTimeseriesKeys(entityType, entityId):
     """This method executes the GET request that returns the name (the ThingsBoard PostGres database key associated to the Timeseries table) of the variable whose quantity is being produced by the element identified by the pair (entityType,
     entityId). This method is limited to 'DEVICE' type elements (it really doesn't make sense for any other type and that's why I should validate this against the allowed entityTypes).
-    @:param entityType (str) - One of the elements in the config.thingsbard_supported_entityTypes dictionary, though for this particular method only 'DEVICE' type elements are allowed (the remote API returns an empty set otherwise)
+    @:type user_types allowed for this service: TENANT_ADMIN, CUSTOMER_USER
+    @:param entityType (str) - One of the elements in the config.thingsboard_supported_entityTypes dictionary, though for this particular method only 'DEVICE' type elements are allowed (the remote API returns an empty set otherwise)
     @:param entityId (str) - The associated id string. The expected format is 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxx', where x is an hexadecimal character.
     @:return response (str) - A string identifying the quantity being measured by the device identified by the input arguments (e.g., 'temperature', 'water consumption', etc..)
     @:raise utils.InputValidationException - If any of the inputs fails validation
@@ -64,7 +65,7 @@ def getTimeseriesKeys(entityType, entityId):
 
     service_endpoint += "{0}/{1}/keys/timeseries".format(str(expected_entity_type), str(entityId))
     # NOTE: This particular service requires a REGULAR type authorization token, so admin=False
-    service_dict = utils.build_service_calling_info(utils.get_auth_token(admin=False), service_endpoint)
+    service_dict = utils.build_service_calling_info(mac.get_auth_token(user_type='tenant_admin'), service_endpoint)
 
     try:
         response = requests.get(url=service_dict['url'], headers=service_dict['headers'])
@@ -110,6 +111,7 @@ def getTimeseries(device_name, end_time, start_time=None, time_interval=None, in
     they are set to their default values already, in case that down the line there is a need to use them): entityType, entityId, keys, startTs and endTs. The first 3 parameters are going to be retrieved with a call to the MySQL
     thingsboard_devices_table and the timestamp ones are going to be determined from the triplet start_time (mandatory), ent_time and time_interval (only one of these is required). The method returns a dictionary with a list of timestamp,
     value pairs that can or cannot be limited by the limit value
+    @:type user_types allowed for this service: TENANT_ADMIN, CUSTOMER_USER
     @:param device_name (str) - The name of the device to retrieve data from (e.g., 'Thermometer A-1', 'Water Meter A-1', etc... whatever the string used when registering the device in the ThingsBoard system). This value is certainly easier to
     retained and/or memorized from the user than the id string, for instance.
     @:param end_time (datetime.datetime) - A datetime.datetime object, i.e., in the format YYYY-MM-DD hh:mm:ss but that belongs to the datetime.datetime class. This is the latest value of the interval and, to avoid invalid dates into the input (
@@ -331,7 +333,7 @@ def getTimeseries(device_name, end_time, start_time=None, time_interval=None, in
     service_endpoint += "&".join(url_elements)
 
     # I'm finally ready to query the remote endpoint. This service requires a REGULAR type authorization token
-    service_dict = utils.build_service_calling_info(utils.get_auth_token(admin=False), service_endpoint)
+    service_dict = utils.build_service_calling_info(mac.get_auth_token(user_type='tenant_admin'), service_endpoint)
 
     try:
         response = requests.get(url=service_dict['url'], headers=service_dict['headers'])

@@ -1,6 +1,6 @@
-DROP TABLE IF EXISTS thingsboard_devices_table;
+DROP TABLE IF EXISTS ambiosensing_thingsboard.thingsboard_devices_table;
 
-CREATE TABLE IF NOT EXISTS thingsboard_devices_table
+CREATE TABLE IF NOT EXISTS ambiosensing_thingsboard.thingsboard_devices_table
 (
     entityType          VARCHAR(15)     DEFAULT NULL NULL,
     name                VARCHAR(100)    DEFAULT NULL NULL,
