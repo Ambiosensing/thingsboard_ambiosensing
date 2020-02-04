@@ -237,7 +237,6 @@ def refresh_session_token(sys_admin=False, tenant_admin=False, customer_user=Fal
         # The while loop is done here and I've processed all results thus far. All its left to do is return the updated authorization dictionary
         return auth_dict
 
-
 def getUser(auth_token):
     """This method uses the authorization token transmitted via the service endpoint string to return which type of user the provided token is associated with: SYS_ADMIN, TENANT_ADMIN or CUSTOMER USER. If successful, the API returns a dictionary
     with the user information that is currently stored in the server side database
