@@ -43,7 +43,7 @@ def connect_db(database_name):
 
     try:
         utils.validate_input_type(database_name, str)
-        connection_dict = user_config.postgres_db_access
+        connection_dict = user_config.access_info['postgres_database']
     except utils.InputValidationException as ive:
         connect_log.error(ive.message)
         raise ive
