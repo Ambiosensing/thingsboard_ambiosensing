@@ -8,7 +8,6 @@ auth_ctrl = True
 
 def __main__():
     if auth_ctrl:
-        from ThingsBoard_REST_API import tb_auth_controller as tac
         from mysql_database.python_database_modules import mysql_auth_controller as mac
 
         mac.populate_auth_table()
