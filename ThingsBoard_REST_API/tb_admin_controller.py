@@ -24,7 +24,7 @@ class SecuritySettings:
         "userLockoutNotificationEmail": "string"
     }
 
-    def __init__(self,
+    def __init__(self,userLockoutNotificationEmail,
                  maxFailedLoginAttempts=0,
                  minimumDigits=0,
                  minimumLenght=0,
@@ -32,8 +32,8 @@ class SecuritySettings:
                  minimumSpecialCharacters=0,
                  minimumUppercaseLetters=0,
                  passwordExpirationPeriodDays=0,
-                 passwordReuseFrequencyDays=0,
-                 userLockoutNotificationEmail="string"):
+                 passwordReuseFrequencyDays=0
+                 ):
         """ A quick explanation on this constructor method:
          - If it is called without any arguments (e.g. sec_sett = utils.SecuritySettings()), the dictionary 'settings'
          is initialized with the default arguments indicated in the __init__ method signature
