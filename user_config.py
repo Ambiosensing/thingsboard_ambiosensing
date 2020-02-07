@@ -13,7 +13,7 @@ thingsboard_host = "http://62.48.174.118"
 thingsboard_port = 5044
 
 # Use the following parameters to switch between a local (remote_server = False) and a remote ThingsBoard installations (remote_server = True). Flip the flag accordingly
-remote_server = True
+remote_server = False
 
 # The main access info dictionary for all things accesses
 access_info = {
