@@ -34,8 +34,8 @@ access_info = {
         'username': 'rdl.almeida@campus.fct.unl.pt',
         'password': 'ambiosensing2019'
     },
-    'thingsboard_database': {
-        'host': 'http://localhost',
+    'postgres_database': {
+        'host': 'localhost',
         'port': 5432,
         'username': 'postgres',
         'password': 'ambiosensing2019'
@@ -47,7 +47,6 @@ access_info = {
         'password': 'ambiosensing2019',
         'database': 'ambiosensing_thingsboard'
     }
-
 }
 
 
