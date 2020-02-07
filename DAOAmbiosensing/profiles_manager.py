@@ -1,5 +1,5 @@
-from DAOProfile.DAO_profiles import DAO_profiles
-from DAOProfile.profile import Profile
+from DAOAmbiosensing.DAO_ambiosensing import DAO_profiles
+from DAOAmbiosensing.profile import Profile
 
 class Profiles_Manager:
     def __init__(self,connection):
