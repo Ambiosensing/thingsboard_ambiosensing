@@ -56,3 +56,42 @@ def on_message(client, userdata, msg):
         set_gpio_status(data['params']['pin'], data['params']['enabled'])
         client.publish(msg.topic.replace('request', 'response'), get_gpio_status(), 1)
         client.publish('v1/devices/me/attributes', get_gpio_status(), 1)
+
+
+def get_gpio_status():
+    # This method encodes the GPIOs state into a json structures
+    return json.dumps(gpio_state)
+
+
+def set_gpio_status(pin, status):
+    # Output the GPIOs state
+    GPIO.output(pin, GPIO.HIGH if status else GPIO.LOW)
+    # Update GPIOs state
+    gpio_state[pin] = status
+
+
+# Now the main logic
+# Using board GPIO layout
+GPIO.setmode(GPIO.BOARD)
+for pin in gpio_state:
+    # Set the output mode for all GPIO pins
+    GPIO.setup(pin, GPIO.OUT)
+
+client = mqtt.Client()
+
+# Register connect callback
+client.on_connect = on_connect
+
+# Registered publish message callback
+client.on_message = on_message
+
+# Set access token
+client.username_pw_set(ACCESS_TOKEN)
+
+# Connect to Thingsboard using default MQTT port and 60 seconds keepalive interval
+client.connect(THINGSBOARD_HOST, 1883, 60)
+
+try:
+    client.loop_forever()
+except KeyboardInterrupt:
+    GPIO.cleanup()
