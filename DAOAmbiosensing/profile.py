@@ -1,7 +1,7 @@
 from DAOAmbiosensing.schedule import Schedule
 
 class Profile:
-    def __init__(self,id_profile,profile_name, state, activation_strategy):
+    def __init__(self,profile_name, state, id_profile=None,activation_strategy=None):
         self.activation_strategy = activation_strategy
         self.id_profile=id_profile
         self.profile_name=profile_name

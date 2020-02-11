@@ -1,6 +1,6 @@
 class Space:
 
-    def __init__(self, id_space, name, area, occupation_type, building):
+    def __init__(self, name, area, occupation_type, building, id_space=None):
         self.id_space = id_space
         self.name = name
         self.area = area
