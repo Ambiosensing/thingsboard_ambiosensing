@@ -1,7 +1,7 @@
 class Building:
 
-    def __init__(self,  name, id_building=None):
-        self.id_building = id_building
+    def __init__(self,  name, id=None):
+        self.id_building = id
         self.name = name
         # self.id_thingsboard = id_thingsboard
         self.spaces = []

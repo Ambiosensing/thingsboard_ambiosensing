@@ -15,5 +15,5 @@ class Space:
     def toString(self):
         return "name " + self.name + " id " + self.id_space + \
                "area " + self.area + "occupation type " + self.occupation_type + \
-               "profiles " + self.profiles
+               "profiles " + str(self.profiles)
 

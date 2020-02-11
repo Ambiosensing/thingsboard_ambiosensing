@@ -90,9 +90,10 @@ mysql_db_access = {
     'host': 'localhost',
     'database': 'ambiosensing_thingsboard'
 }
+
 mysql_db_accessUni = {
-    'username': 'ambiosensing_bd',
+    'username': 'ambiosensing',
     'password': 'ambiosensing2019',
     'host': 'localhost',
-    'database': 'ambiosensing_thingsboard'
+    'database': 'ambiosensing_bd'
 }

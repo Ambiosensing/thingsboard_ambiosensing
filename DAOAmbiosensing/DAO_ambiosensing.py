@@ -2,6 +2,8 @@ import user_config
 from DAOAmbiosensing.device import Device
 from DAOAmbiosensing.profile import Profile
 from DAOAmbiosensing.schedule import Schedule
+from DAOAmbiosensing.space import Space
+from DAOAmbiosensing.building import Building
 from DAOAmbiosensing.activation_strategy import Activation_strategy, Strategy_occupation, Strategy_temporal
 from mysql_database.python_database_modules import mysql_utils
 import mysql.connector as mysqlc
@@ -11,6 +13,7 @@ class DAO_ambiosensing:
 
     def connect_db(selfself, database_name):
         connection_dict = user_config.mysql_db_accessUni
+        print(connection_dict)
         try:
             cnx = mysqlc.connect(user=connection_dict['username'],
                                  password=connection_dict['password'],
@@ -62,20 +65,29 @@ class DAO_ambiosensing:
         print("removing profile.....")
         print(id_profile)
 
+    def load_building(self,id_building):
+        result = self.select_data_from_table("building", "id", id_building)
+        row = result[0]
+        building = Building(id=row[0], name=row[1])
+        return building
+
+    def load_space(self,id_space):
+        result = self.select_data_from_table("space", "id", id_space)
+        row= result[0]
+        building = self.load_building(row[4]);
+        space= Space(id_space=row[0],name=row[1],area=row[2],ocupation_type=row[3], building=building)
+        return space
+
     def load_profiles(self):
         # to replace by a query to database
-        profile1 = Profile(1, "veraoNormal")
-        schedule = Schedule(10, 20, self.load_device(1))
-        profile1.add_schedule(schedule)
-        st = Strategy_occupation(1, 5)
-        profile1.set_activationStrategy(st)
-        schedule = Schedule(0, 20, self.load_device(2))
-        st2 = Strategy_temporal([0, 0, 0, 0, 0, 0, 1, 1], [0, 1, 0, 0])
-        profile2 = Profile(2, "veraoQuente")
-        profile2.add_schedule(schedule)
-        profile2.set_activationStrategy(st2)
-        list.append(profile1)
-        list.append(profile2)
+        print("load profile list")
+        result= self.select_data_from_table("profile")
+        list=[]
+        for row in result:
+            space = self.load_space(id_space=row[3])
+            profile = Profile(id_profile=row[0],profile_name=row[1],state=row[2],space=space)
+            list.append(profile)
+            print(profile.toString())
         return list
 
     def load_profile(self, id):
@@ -88,6 +100,23 @@ class DAO_ambiosensing:
         return profile
 
 
+    def select_data_from_table(self,table_name,column="",value=""):
+        database_name = user_config.mysql_db_accessUni['database']
+        print(database_name)
+        cnx = self.connect_db(database_name)
+        if column == "":
+            sql_select = self.create_all_sql_statement(table_name)
+        else:
+            sql_select = self.create_value_sql_statement(value=value, col=column,table_name=table_name)
+        change_cursor = cnx.cursor(buffered=True)
+        result = self.run_sql_statement(change_cursor, sql_select)
+        cnx.commit()
+        change_cursor.close()
+        cnx.close()
+        return result;
+
+
+
     def insert_data_in_table(self,dict_column_list, value_list, table_name):
         database_name = user_config.mysql_db_accessUni['database']
         print(database_name)
@@ -95,10 +124,18 @@ class DAO_ambiosensing:
         sql_insert = self.create_insert_sql_statement(dict_column_list, table_name)
         print(sql_insert)
         change_cursor = cnx.cursor(buffered=True)
-        change_cursor = self.run_sql_statement(change_cursor, sql_insert, tuple(value_list))
+        self.run_sql_statement(change_cursor, sql_insert, tuple(value_list))
         cnx.commit()
         change_cursor.close()
         cnx.close()
+
+    def create_value_sql_statement(self, col, value, table_name):
+        sql_select = """SELECT * FROM """ + str(table_name) + """ WHERE """ + col +"" "= """ +value + """;"""
+        return sql_select
+
+    def create_all_sql_statement(self, table_name):
+        sql_select = """SELECT * FROM """ + str(table_name) + """;"""
+        return sql_select
 
     def create_insert_sql_statement(self,column_list, table_name):
         values_to_replace = []
@@ -117,6 +154,8 @@ class DAO_ambiosensing:
         try:
 
             cursor.execute(sql_statement, data_tuple)
+            result=cursor.fetchall()
         except:
-            print("insert error ")
-        return cursor
+            print("execute error ")
+            result=None
+        return result
