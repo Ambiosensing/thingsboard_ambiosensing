@@ -1,6 +1,21 @@
 Ambi-05 device (Raspberry Pi with multi-sensor module):
-deviceId: 520bbec0-4826-11ea-91aa-d53c594a2db8
-access Token: rizPJk2E0yXMugHeJZuQ
+
+RICARDO-NTBOOK
+Ambi-05 deviceId: 520bbec0-4826-11ea-91aa-d53c594a2db8
+Ambi-05 access Token: rizPJk2E0yXMugHeJZuQ
+
+HA-RALMEIDA-P1
+Ambi-05 deviceId: 74fe2c20-4866-11ea-9613-8dbf86e66a64
+Ambi-05 access Token: XJCv4VjHvhvtEaVoHGFK
+
+Wind Direction sensor (emulated):
+deviceId: 1d51d430-4d17-11ea-885a-ed86f736f3ee
+access Token: dKBpMvHI2gGAKI3mobAp
+
+Rotating System (emulated)
+deviceId: 5dfed5f0-4d17-11ea-885a-ed86f736f3ee
+access Token: NBeMl5WdnWAd4D8gFyWh
+
 
 json request format:
 {
@@ -12,9 +27,9 @@ json request format:
 }
 
 {
-  "method": "getGpioStatus",
-  "params": {
-    "pin": "23",
-    "enabled": 1
-  }
+"method": "getGpioStatus",
+"params": {
+  "pin": "23",
+  "enabled": 1
+}
 }
