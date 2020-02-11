@@ -10,5 +10,5 @@ class Building:
         self.spaces.append(space)
 
     def toString(self):
-        return "name " + self.name + " id " + self.id_building + "spaces " + self.spaces
+        return " Building -> name:" + self.name + " id:" + self.id_building + " spaces:" + self.spaces
 

@@ -13,7 +13,7 @@ class Profile:
         self.list_schedule.append(schedule)
 
     def toString(self):
-        return "name"  + self.profile_name + " id " + str(self.id_profile) + "space" + self.space.toString()
+        return " Profile - > name:"  + self.profile_name + " id:" + str(self.id_profile) + self.space.toString()
 
     def set_activationStrategy(self, act_strategy):
         self.activation_strategy = act_strategy

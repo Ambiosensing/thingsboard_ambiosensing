@@ -13,7 +13,8 @@ class Space:
         self.profiles.append(profile)
 
     def toString(self):
-        return "name " + self.name + " id " + self.id_space + \
-               "area " + self.area + "occupation type " + self.occupation_type + \
-               "profiles " + str(self.profiles)
+
+        return " name:" + self.name + " id:" + str(self.id_space) + \
+               " area:" + str(self.area) + " occupation type:" + self.occupation_type
+
 

@@ -7,11 +7,17 @@ from DAOAmbiosensing.space import Space
 
 def __main__():
     dao = DAO_ambiosensing()
+    building=Building("EdificioE")
+    dao.create_building(building)
+    space=Space(name='sala1',area='3',occupation_type='aulas',building=building)
+    dao.create_space(space)
     l1=dao.select_data_from_table("profile")
     print(l1)
     list = dao.load_profiles()
     for profile in list:
         print(profile.toString())
+    profile.profile_name="inverno"
+    dao.update_profile(profile)
     print("Done!")
 
 
