@@ -1,0 +1,20 @@
+Ambi-05 device (Raspberry Pi with multi-sensor module):
+deviceId: 520bbec0-4826-11ea-91aa-d53c594a2db8
+access Token: rizPJk2E0yXMugHeJZuQ
+
+json request format:
+{
+  "method": "setGpioStatus",
+  "params": {
+    "pin": "23",
+    "enabled": 1
+  }
+}
+
+{
+  "method": "getGpioStatus",
+  "params": {
+    "pin": "23",
+    "enabled": 1
+  }
+}
