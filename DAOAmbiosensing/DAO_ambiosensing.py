@@ -4,14 +4,24 @@ from DAOAmbiosensing.profile import Profile
 from DAOAmbiosensing.schedule import Schedule
 from DAOAmbiosensing.space import Space
 from DAOAmbiosensing.building import Building
+from DAOAmbiosensing.schedule import Schedule
 from DAOAmbiosensing.activation_strategy import Activation_strategy, Strategy_occupation, Strategy_temporal
 from mysql_database.python_database_modules import mysql_utils
 import mysql.connector as mysqlc
 from mysql_database.python_database_modules.mysql_utils import MySQLDatabaseException
 
 class DAO_ambiosensing:
+    cnx=None #connection to database
+    def __init__(self):
+        database_name = user_config.mysql_db_accessUni['database']
+        print(database_name)
+        self.cnx = self.__connect_db(database_name)
 
-    def connect_db(selfself, database_name):
+    def __del__(self):
+        if self.cnx!=None:
+            self.cnx.close()
+
+    def __connect_db(selfself, database_name):
         connection_dict = user_config.mysql_db_accessUni
         print(connection_dict)
         try:
@@ -19,9 +29,10 @@ class DAO_ambiosensing:
                                  password=connection_dict['password'],
                                  host=connection_dict['host'],
                                  database=connection_dict['database'])
-        except :
+        except:
            print("error connection")
         return cnx
+
 
     def load_devices(self):
         # to replace by a query to database
@@ -37,27 +48,66 @@ class DAO_ambiosensing:
     def create_profile(self, profile):
         dict_column_list=['profile_name','state','space_id']
         value_list=[profile.profile_name,profile.state,profile.space.id_space]
-        self.insert_data_in_table(dict_column_list,value_list,'profile')
+        index=self.__insert_data_in_table(dict_column_list,value_list,'profile')
+        profile.id_profile=index
+        return index
 
     def update_profile(self,profile):
         id = profile.id_profile
         dict_column_list = ['profile_name', 'state', 'space_id']
         value_list = [profile.profile_name,profile.state, profile.space.id_space]
-        self.update_data_in_table(dict_column_list, value_list, 'idprofile',id, 'profile')
+        self.__update_data_in_table(dict_column_list, value_list, 'idprofile',id, 'profile')
 
     def create_building(self, building):
         dict_column_list = ['name']
         value_list = [building.name]
-        self.insert_data_in_table(dict_column_list, value_list, 'building')
+        index=self.__insert_data_in_table(dict_column_list, value_list, 'building')
+        building.id_building=index
+        return index
 
     def create_space(self, space):
-        dict_column_list = ['name','area','ocupation_type','building_id']
-        value_list = [space.name,space.area,space.building.id_building]
-        self.insert_data_in_table(dict_column_list, value_list, 'space')
+        dict_column_list = ['name','area','occupation_type','building_id']
+        value_list = [space.name,space.area,space.occupation_type,space.building.id_building]
+        index=self.__insert_data_in_table(dict_column_list, value_list, 'space')
+        space.id_space=index
+        return index
 
+    def __create_activationST(self, strategy,profile):
+         dict_column_list = ['name', 'profile_idprofile']
+         value_list = [strategy.name, profile.id_profile]
+         id = self.__insert_data_in_table(dict_column_list, value_list, 'activation_strategy')
+         return id
 
+    def create_activationSt_occupation(self,strategy_occupation,profile):
+        id=self.__create_activationST(strategy_occupation,profile)
+        dict_column_list = ['min', 'max', 'activation_strategy_id_activation_strategy']
+        value_list = [strategy_occupation.min, strategy_occupation.max, id]
+        index=self.__insert_data_in_table(dict_column_list, value_list, 'strategy_occupation')
+        return index
 
+    def create_activationSt_temporal(self, strategy_temporal, profile):
+        id = self.__create_activationST(strategy_temporal, profile)
+        dict_column_list = ['monday','tuesday','wednesday','thursday','friday',
+                            'saturday','sunday','spring','summer','autumn','winter',
+                            'activation_strategy_id_activation_strategy']
+        value_list = strategy_temporal.list_weekdays +  strategy_temporal.list_seasons + [id]
+        index = self.__insert_data_in_table(dict_column_list, value_list, 'strategy_temporal')
+        return index
 
+    def create_schedule(self, schedule, profile):
+        dict_column_list = ['start', 'end','profile_idprofile']
+        value_list = [schedule.start, schedule.end,profile.id_profile]
+        id = self.__insert_data_in_table(dict_column_list, value_list, 'schedule')
+        schedule.id=id;#update id with the index returned
+        return id
+
+    def create_device_configuration(self, device_configuration,schedule, device):
+        dict_column_list = ['state', 'operation_value', 'device_id', 'schedule_idshedule']
+
+        value_list = [schedule.start, schedule.end, profile.id_profile]
+        id = self.__insert_data_in_table(dict_column_list, value_list, 'schedule')
+        schedule.id = id;  # update id with the index returned
+        return id
 
     def remove_profile(self, id_profile):
         # to replace by update/delete to database
@@ -65,7 +115,7 @@ class DAO_ambiosensing:
         print(id_profile)
 
     def load_building(self,id_building):
-        result = self.select_data_from_table("building", "id", id_building)
+        result = self.__select_data_from_table("building", "id", id_building)
         if len(result) > 0:
             row = result[0]
             building = Building(id=row[0], name=row[1])
@@ -74,7 +124,7 @@ class DAO_ambiosensing:
             return None
 
     def load_space(self,id_space):
-        result = self.select_data_from_table("space", "id", id_space)
+        result = self.__select_data_from_table("space", "id", id_space)
         if len(result) >0 :
             row= result[0]
             building = self.load_building(row[4]);
@@ -85,7 +135,7 @@ class DAO_ambiosensing:
 
     def load_profiles(self):
         # to replace by a query to database
-        result= self.select_data_from_table("profile")
+        result= self.__select_data_from_table("profile")
         list=[]
         for row in result:
             space = self.load_space(id_space=row[3])
@@ -94,7 +144,7 @@ class DAO_ambiosensing:
         return list
 
     def load_profile(self, id):
-        result = self.select_data_from_table("profile",column='idprofile',value=id)
+        result = self.__select_data_from_table("profile",column='idprofile',value=id)
         if len(result) > 0:
             row=result[0]
             space = self.load_space(id_space=row[3])
@@ -103,58 +153,61 @@ class DAO_ambiosensing:
         else:
             return None
 
-
-    def select_data_from_table(self,table_name,column="",value=""):
-        database_name = user_config.mysql_db_accessUni['database']
-        print(database_name)
-        cnx = self.connect_db(database_name)
+    def __select_data_from_table(self,table_name,column="",value=""):
         if column == "":
-            sql_select = self.create_all_sql_statement(table_name)
+            sql_select = self.__create_all_sql_statement(table_name)
         else:
-            sql_select = self.create_value_sql_statement(value=value, col=column,table_name=table_name)
-        change_cursor = cnx.cursor(buffered=True)
-        result = self.run_sql_statement(change_cursor, sql_select)
-        cnx.commit()
+            sql_select = self.__create_value_sql_statement(value=value, col=column,table_name=table_name)
+        change_cursor = self.cnx.cursor(buffered=True)
+        result = self.__run_sql_select_statement(change_cursor, sql_select)
         change_cursor.close()
-        cnx.close()
         return result;
 
-
-
-    def insert_data_in_table(self,dict_column_list, value_list, table_name):
-        database_name = user_config.mysql_db_accessUni['database']
-        print(database_name)
-        cnx =self.connect_db(database_name)
-        sql_insert = self.create_insert_sql_statement(dict_column_list, table_name)
+    def __insert_data_in_table(self,dict_column_list, value_list, table_name):
+        sql_insert = self.__create_insert_sql_statement(dict_column_list, table_name)
         print(sql_insert)
-        change_cursor = cnx.cursor(buffered=True)
-        self.run_sql_statement(change_cursor, sql_insert, tuple(value_list))
-        cnx.commit()
+        change_cursor = self.cnx.cursor(buffered=True)
+        self.__run_sql_exec_statement(change_cursor, sql_insert, tuple(value_list))
+        self.cnx.commit()
         change_cursor.close()
-        cnx.close()
+        change_cursor = self.cnx.cursor(buffered=True)
+        index=self.__sql_getLastIndex(change_cursor)
+        change_cursor.close()
+        return index
 
-    def update_data_in_table(self, dict_column_list, value_list, column,value, table_name):
-        database_name = user_config.mysql_db_accessUni['database']
-        print(database_name)
-        cnx = self.connect_db(database_name)
-        sql_update = self.create_update_sql_statement(column_list=dict_column_list,
+
+
+    def __update_data_in_table(self, dict_column_list, value_list, column,value, table_name):
+        sql_update = self.__create_update_sql_statement(column_list=dict_column_list,
                                                       column=column, value=value,table_name=table_name)
         print(sql_update)
-        change_cursor = cnx.cursor(buffered=True)
-        self.run_sql_statement(change_cursor, sql_update, tuple(value_list))
-        cnx.commit()
+        change_cursor = self.cnx.cursor(buffered=True)
+        self.__run_sq_exec_statement(change_cursor, sql_update, tuple(value_list))
+        self.cnx.commit()
         change_cursor.close()
-        cnx.close()
 
-    def create_value_sql_statement(self, col, value, table_name):
+    def __sql_getLastIndex(self,cursor):
+        sql_statement="SELECT last_insert_id();"
+        try:
+            cursor.execute(sql_statement)
+            row = cursor.fetchall()
+            index=row[0][0]
+        except:
+             print("error select alst index")
+             index=-1
+        print('last select index' + str(index))
+        return index
+
+        #sql statements creation
+    def __create_value_sql_statement(self, col, value, table_name):
         sql_select = """SELECT * FROM """ + str(table_name) + """ WHERE """ + str(col) +"" "= """ +str(value) + """;"""
         return sql_select
 
-    def create_all_sql_statement(self, table_name):
+    def __create_all_sql_statement(self, table_name):
         sql_select = """SELECT * FROM """ + str(table_name) + """;"""
         return sql_select
 
-    def create_insert_sql_statement(self,column_list, table_name):
+    def __create_insert_sql_statement(self,column_list, table_name):
         values_to_replace = []
         for i in range(0, len(column_list)):
             values_to_replace.append('%s')
@@ -165,7 +218,7 @@ class DAO_ambiosensing:
         sql_insert += """);"""
         return sql_insert
 
-    def create_update_sql_statement(self, column_list, column, value,table_name):
+    def __create_update_sql_statement(self, column_list, column, value,table_name):
         sql_update = """UPDATE """ + str(table_name) + """ SET """
         for i in range(len(column_list)-1) :
             sql_update += column_list[i] + """ = %s ,"""
@@ -174,15 +227,20 @@ class DAO_ambiosensing:
         sql_update += """;"""
         return sql_update
 
-    def run_sql_statement(self,cursor, sql_statement, data_tuple=()):
-        print("data")
-        print(data_tuple)
-        print("sql_statement")
-        print(sql_statement)
+    def __run_sql_exec_statement(self,cursor, sql_statement, data_tuple=()):
         try:
             cursor.execute(sql_statement, data_tuple)
-            result=cursor.fetchall()
         except:
-            #print("execute error ")
-            result=None
-        return result
+            print("execute error ")
+            return 0
+        return 1
+
+    def __run_sql_select_statement(self, cursor, sql_statement, data_tuple=()):
+       try:
+            cursor.execute(sql_statement, data_tuple)
+            result = cursor.fetchall()
+       except:
+            # print("execute error ")
+            result = None
+       return result
+

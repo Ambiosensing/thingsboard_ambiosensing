@@ -2,6 +2,7 @@ from DAOAmbiosensing.DAO_ambiosensing import DAO_profiles
 from DAOAmbiosensing.profile import Profile
 
 class Profiles_Manager:
+    profiles_list=[]
     def __init__(self,connection):
         dao=DAO_profiles(connection)
         profiles_list=dao.load_profiles()
