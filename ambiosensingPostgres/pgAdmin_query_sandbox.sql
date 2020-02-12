@@ -1,0 +1,1 @@
+SELECT to_timestamp(ts/1000), entity_type, key, long_v, dbl_v FROM ts_kv ORDER BY ts DESC;
