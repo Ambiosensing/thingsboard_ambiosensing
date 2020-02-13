@@ -147,3 +147,38 @@ http://localhost:8080/api/tenant/devices?textSearch=Thermometer%20A-1&limit=10
 
 The most complex service call of them all
 http://localhost:8080/api/tenant/devices?type=Thermometer&textSearch=East%20window&idOffset=b0a36900-ef67-11e9-967c-c3&textOffset=Ricardo%20Almeida&limit=10
+
+---------------------------------------------------------------------------
+findByQuery (device):
+
+
+Building A AssetId = 782a0340-ef67-11e9-967c-c326e44c6228
+Building A Postgres id = 1e9ef67782a0340967cc326e44c6228
+
+Thermometer A-1 (From Building A)
+device Id = b0a36900-ef67-11e9-967c-c326e44c6228
+Postgres Id = 1e9ef67b0a36900967cc326e44c6228
+accessToken = 2JhT1dKaOy4KFccqBc7d
+
+Thermometer A-2 (From Building A)
+device Id =  c4f98e70-ef67-11e9-967c-c326e44c6228
+Postgres Id = 1e9ef67c4f98e70967cc326e44c6228
+accessToken = g0QJfX9UCjV1OGp9nufc
+
+{
+  "deviceTypes": [
+  ],
+  "parameters": {
+    "entityId": {
+      "entityType": "ASSET",
+      "id": "782a0340-ef67-11e9-967c-c326e44c6228"
+    },
+    "rootId": "782a0340-ef67-11e9-967c-c326e44c6228",
+    "rootType": "ASSET",
+    "direction": "FROM",
+    "relationTypeGroup": "COMMON",
+    "maxLevel": 0,
+    "fetchLastLevelOnly": false
+  },
+  "relationType": "Contains"
+}
