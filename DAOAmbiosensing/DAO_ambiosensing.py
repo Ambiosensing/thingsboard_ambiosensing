@@ -4,9 +4,10 @@ from DAOAmbiosensing.profile import Profile
 from DAOAmbiosensing.schedule import Schedule
 from DAOAmbiosensing.space import Space
 from DAOAmbiosensing.building import Building
-from DAOAmbiosensing.schedule import Schedule
+from DAOAmbiosensing.device_configuration import Device_configuration
+from DAOAmbiosensing.environmental_variable import Environmental_variable
+from DAOAmbiosensing.env_variable_configuration import Env_variable_configuration
 from DAOAmbiosensing.activation_strategy import Activation_strategy, Strategy_occupation, Strategy_temporal
-from mysql_database.python_database_modules import mysql_utils
 import mysql.connector as mysqlc
 from mysql_database.python_database_modules.mysql_utils import MySQLDatabaseException
 
@@ -14,38 +15,22 @@ class DAO_ambiosensing:
     cnx=None #connection to database
     def __init__(self):
         database_name = user_config.mysql_db_accessUni['database']
-        print(database_name)
-        self.cnx = self.__connect_db(database_name)
+        connection_dict = user_config.mysql_db_accessUni
+        try:
+            self.cnx = mysqlc.connect(user=connection_dict['username'],
+                                 password=connection_dict['password'],
+                                 host=connection_dict['host'],
+                                 database=connection_dict['database'])
+        except:
+            print("error connection")
+
 
     def __del__(self):
         if self.cnx!=None:
             self.cnx.close()
 
-    def __connect_db(selfself, database_name):
-        connection_dict = user_config.mysql_db_accessUni
-        print(connection_dict)
-        try:
-            cnx = mysqlc.connect(user=connection_dict['username'],
-                                 password=connection_dict['password'],
-                                 host=connection_dict['host'],
-                                 database=connection_dict['database'])
-        except:
-           print("error connection")
-        return cnx
 
-
-    def load_devices(self):
-        # to replace by a query to database
-        device = Device(1, 'themometer', 'avac')
-        list.append(self, device);
-        return list
-
-    def load_device(self, id):
-        # to replace by a query to database
-        device = Device(id, 'themometer', 'avac')
-        return device
-
-    def create_profile(self, profile):
+    def save_profile(self, profile):
         dict_column_list=['profile_name','state','space_id']
         value_list=[profile.profile_name,profile.state,profile.space.id_space]
         index=self.__insert_data_in_table(dict_column_list,value_list,'profile')
@@ -58,14 +43,14 @@ class DAO_ambiosensing:
         value_list = [profile.profile_name,profile.state, profile.space.id_space]
         self.__update_data_in_table(dict_column_list, value_list, 'idprofile',id, 'profile')
 
-    def create_building(self, building):
+    def save_building(self, building):
         dict_column_list = ['name']
         value_list = [building.name]
         index=self.__insert_data_in_table(dict_column_list, value_list, 'building')
         building.id_building=index
         return index
 
-    def create_space(self, space):
+    def save_space(self, space):
         dict_column_list = ['name','area','occupation_type','building_id']
         value_list = [space.name,space.area,space.occupation_type,space.building.id_building]
         index=self.__insert_data_in_table(dict_column_list, value_list, 'space')
@@ -78,14 +63,14 @@ class DAO_ambiosensing:
          id = self.__insert_data_in_table(dict_column_list, value_list, 'activation_strategy')
          return id
 
-    def create_activationSt_occupation(self,strategy_occupation,profile):
+    def save_activationSt_occupation(self,strategy_occupation,profile):
         id=self.__create_activationST(strategy_occupation,profile)
         dict_column_list = ['min', 'max', 'activation_strategy_id_activation_strategy']
         value_list = [strategy_occupation.min, strategy_occupation.max, id]
         index=self.__insert_data_in_table(dict_column_list, value_list, 'strategy_occupation')
         return index
 
-    def create_activationSt_temporal(self, strategy_temporal, profile):
+    def save_activationSt_temporal(self, strategy_temporal, profile):
         id = self.__create_activationST(strategy_temporal, profile)
         dict_column_list = ['monday','tuesday','wednesday','thursday','friday',
                             'saturday','sunday','spring','summer','autumn','winter',
@@ -94,27 +79,103 @@ class DAO_ambiosensing:
         index = self.__insert_data_in_table(dict_column_list, value_list, 'strategy_temporal')
         return index
 
-    def create_schedule(self, schedule, profile):
+    def save_schedule(self, schedule, profile):
         dict_column_list = ['start', 'end','profile_idprofile']
         value_list = [schedule.start, schedule.end,profile.id_profile]
         id = self.__insert_data_in_table(dict_column_list, value_list, 'schedule')
         schedule.id=id;#update id with the index returned
         return id
 
-    def create_device_configuration(self, device_configuration,schedule, device):
+    def save_device_configuration(self, device_configuration,schedule, device):
         dict_column_list = ['state', 'operation_value', 'device_id', 'schedule_idshedule']
 
-        value_list = [schedule.start, schedule.end, profile.id_profile]
-        id = self.__insert_data_in_table(dict_column_list, value_list, 'schedule')
-        schedule.id = id;  # update id with the index returned
+        value_list = [device_configuration.state, device_configuration.operation_value,
+                      device.id_device,schedule.id]
+        id = self.__insert_data_in_table(dict_column_list, value_list, 'device_configuration')
+        device_configuration.id = id;  # update id with the index returned
         return id
+
+    def save_env_variable_configuration(self, env_variable_configuration,environmental_variable,schedule):
+        dict_column_list = ['min', 'max', 'environmental_variables_id', 'schedule_idshedule']
+
+        value_list = [env_variable_configuration.min,env_variable_configuration.max,
+                      environmental_variable.id,schedule.id]
+        id = self.__insert_data_in_table(dict_column_list, value_list, 'env_variable_configuration')
+        env_variable_configuration.id = id;  # update id with the index returned
+        return id
+
+
 
     def remove_profile(self, id_profile):
         # to replace by update/delete to database
         print("removing profile.....")
         print(id_profile)
 
-    def load_building(self,id_building):
+    def load_device(self, id):
+        # to replace by a query to database
+        result = self.__select_data_from_table("device", "id", id)
+        if len(result) > 0:
+            row = result[0]
+            device = Device(id=row[0], name=row[1], type=row[2], id_thingsboard=row[3])
+            return device
+        else:
+            return None
+
+    def load_environmental_variable(self, id):
+        # to replace by a query to database
+        result = self.__select_data_from_table("environmental_variables", "id", id)
+        if len(result) > 0:
+            row = result[0]
+            ev = Environmental_variable(id=row[0], name=row[1], value=row[2], unit_type=row[3])
+            return ev
+        else:
+            return None
+
+    def load_environmental_variable_by_space(self, space):
+        # to replace by a query to database
+        result = self.__select_data_from_table("environmental_variables", "space_id", space.id_space)
+        if len(result) > 0:
+            row = result[0]
+            ev = Environmental_variable(id=row[0], name=row[1], value=row[2], unit_type=row[3])
+            return ev
+        else:
+            return None
+
+    def load_env_variable_configuration_bySchedule(self,schedule):
+        result = self.__select_data_from_table("env_variable_configuration", "schedule_idschedule")
+        list = []
+        for row in result:
+            ev_config = Env_variable_configuration( id=row[0], min=row[1], max=row[2], list_environmental_variables))
+            list.append(ev)
+        return list
+
+    def load_allEnvironmentVariables(self):
+        result = self.__select_data_from_table("environmental_variables")
+        list = []
+        for row in result:
+            ev = Environmental_variable(id=row[0], name=row[1], value=row[2], unit_type=row[3])
+            list.append(ev)
+        return list
+
+    def load_devicesFromSpace(self, space):
+        # load all devices from a specific space
+        result = self.__select_data_from_table("device", "space_id", space.id_space)
+        if len(result) > 0:
+            row = result[0]
+            device = Device(id=row[0], name=row[1], type=row[2], id_thingsboard=row[3])
+            return device
+        else:
+            return None
+
+    def load_allDevices(self):
+        result = self.__select_data_from_table("device")
+        list = []
+        for row in result:
+            device = Device(id_device=row[0], name=row[1], type=row[2], id_thingsboard=row[3])
+            list.append(device)
+        return list
+
+def load_building(self,id_building):
         result = self.__select_data_from_table("building", "id", id_building)
         if len(result) > 0:
             row = result[0]
@@ -127,11 +188,12 @@ class DAO_ambiosensing:
         result = self.__select_data_from_table("space", "id", id_space)
         if len(result) >0 :
             row= result[0]
-            building = self.load_building(row[4]);
-            space= Space(id_space=row[0],name=row[1],area=row[2],occupation_type=row[3], building=building)
+            building = self.load_building(row[4])
+            space= Space(id_space=row[0],name=row[1],area=row[2],occupation_type=row[3],
+                         building=building)
             return space
-        else:
-            return None
+        else :
+            return  None
 
     def load_profiles(self):
         # to replace by a query to database
@@ -193,7 +255,7 @@ class DAO_ambiosensing:
             row = cursor.fetchall()
             index=row[0][0]
         except:
-             print("error select alst index")
+             print("error select last index")
              index=-1
         print('last select index' + str(index))
         return index
