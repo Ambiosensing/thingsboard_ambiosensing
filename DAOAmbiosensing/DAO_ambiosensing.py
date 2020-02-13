@@ -175,13 +175,13 @@ class DAO_ambiosensing:
             list.append(device)
         return list
 
-def load_building(self,id_building):
+    def load_building(self,id_building):
         result = self.__select_data_from_table("building", "id", id_building)
-        if len(result) > 0:
+        if len(result) > 0 :
             row = result[0]
             building = Building(id=row[0], name=row[1])
             return building
-        else:
+        else :
             return None
 
     def load_space(self,id_space):
