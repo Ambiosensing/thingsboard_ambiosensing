@@ -49,6 +49,15 @@ mysql_db_tables = {
     'customers': 'thingsboard_customers_table',
     'authentication': 'thingsboard_authentication_table'
 }
+# --------------------------------------------- TYPE VALIDATION ----------------------------------------------------------------------------------
+# Allowed entityTypes in the ThingsBoard platform
+valid_entity_types = ['TENANT', 'CUSTOMER', 'USER', 'DASHBOARD', 'ASSET', 'DEVICE', 'ALARM', 'RULE_CHAIN', 'RULE_NODE', 'ENTITY_VIEW', 'WIDGETS_BUNDLE', 'WIDGETS_TYPE']
+
+# Allowed relation types
+valid_relation_type = ['COMMON', 'ALARM', 'DASHBOARD', 'RULE_CHAIN', 'RULE_NODE']
+
+# Allowed direction (for relation queries)
+valid_direction = ['FROM', 'TO']
 
 # --------------------------------------------- LOGGER CONFIGURATION ----------------------------------------------------------------------------------
 # The next string establishes a base format for the lines output by the logger objects. The syntax used was defined by the logging module itself (its in its

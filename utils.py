@@ -331,9 +331,9 @@ def get_auth_token(admin=False):
         # can call whatever they want and only regular users are barred from admin-only services. Because of this, I have to call different services for each
         # profile:
         if admin:
-            test_response = ac.checkUpdates(auth_dict["token"])
+            test_response = ac.checkUpdates()
         else:
-            test_response = dc.getDeviceTypes(auth_dict["token"])
+            test_response = dc.getDeviceTypes()
 
         # This is the simplest case: the authorization token is still valid. Which means that there's little else to do but to return the valid authorization
         # token. No need to update the auth_token file even.
@@ -929,4 +929,48 @@ def compare_sets(set1, set2):
             return False
 
     # If I made it to the end of the for loop, the sets are identical. Return True instead then
+    return True
+
+
+def validate_id(entity_id):
+    """This method receives a ThingsBoard issued id and validates it against the expected format, which in this case is a 32 byte string in a 8-4-4-4-12 format, each block denoting how many hexadecimal characters are in there
+    @:param entity_id (str) - String element containing the dash '-' separated 32 byte identification string
+    @:raise InputValidationException - If the input fails the data type validation
+    @:return True (bool) - True if the string provided is in the expected format, otherwise an Exception is raised with the details on why the validation failed"""
+
+    validate_input_type(id, str)
+
+    if len(entity_id) != 36:
+        raise InputValidationException(message="Expected a 36 character string (32 bytes of data + 4 separator dashes). Got {0} instead...".format(str(len(entity_id))))
+
+    # Tokenize the element using the '-' as separator and check the number and lenght of each token element
+    id_tokens = entity_id.split('-')
+
+    if len(id_tokens) != 5:
+        raise InputValidationException(message="Expected 5 dash separated groups. Got {0} instead from {1}...".format(str(len(id_tokens)), str(entity_id)))
+
+    # Check if the 8-4-4-4-12 format is respected
+    if len(id_tokens[0] != 8):
+        raise InputValidationException(message="Expected 8 characters in id group 1, got {0} instead from {1}...".format(str(len(id_tokens[0])), str(entity_id)))
+    elif len(id_tokens[1] != 4):
+        raise InputValidationException(message="Expected 4 characters in id group 2, got {0} instead from {1}...".format(str(len(id_tokens[1])), str(entity_id)))
+    elif len(id_tokens[2] != 4):
+        raise InputValidationException(message="Expected 4 characters in id group 3, got {0} instead from {1}...".format(str(len(id_tokens[2])), str(entity_id)))
+    elif len(id_tokens[3] != 4):
+        raise InputValidationException(message="Expected 4 characters in id group 4, got {0} instead from {1}...".format(str(len(id_tokens[3])), str(entity_id)))
+    elif len(id_tokens[4] != 12):
+        raise InputValidationException(message="Expected 12 characters in id group 5, got {0} instead from {1}...".format(str(len(id_tokens[4])), str(entity_id)))
+
+    # Finally, check if all characters in the id are hexadecimal ones using a clever Python trick
+    # First, go through all the id elements
+    for i in range(0, len(id_tokens)):
+        try:
+            # And try to cast them to an int using an hexadecimal base!
+            int(id_tokens[i], 16)
+        # If a ValueError exception gets raised, it means that there's a non hex character somewhere in that block! Clever!
+        except ValueError:
+            # If a non hex block is detected, simply output it to the user, assuming the moron knows what constitutes an hexadecimal character
+            raise InputValidationException(message="Detected a non hexadecimal character in the following id block: {0}. All id characters need to be between 0-f!".format(str(id_tokens[i])))
+
+    # Done. If the code reaches this point than it means that the id string was able to jump through all the loops before
     return True

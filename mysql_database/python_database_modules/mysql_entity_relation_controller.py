@@ -1,0 +1,1 @@
+# TODO: Create a database table similar to the "relation" table in the ThingsBoard side and map ASSETS -> DEVICE in it for a quicker and simpler access
