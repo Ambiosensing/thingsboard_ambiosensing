@@ -145,8 +145,8 @@ class DAO_ambiosensing:
         result = self.__select_data_from_table("env_variable_configuration", "schedule_idschedule")
         list = []
         for row in result:
-            ev_config = Env_variable_configuration( id=row[0], min=row[1], max=row[2], list_environmental_variables))
-            list.append(ev)
+            ev_config = Env_variable_configuration(id=row[0], min=row[1], max=row[2])
+            list.append(ev_config)
         return list
 
     def load_allEnvironmentVariables(self):

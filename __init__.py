@@ -9,14 +9,14 @@ from DAOAmbiosensing.activation_strategy import Activation_strategy, Strategy_te
 def __main__():
     dao = DAO_ambiosensing()
     building=Building("EdificioE20")
-    index = dao.create_building(building)
+    index = dao.save_building(building)
     space=Space(name='sala9',area='3',occupation_type='aulas',building=building)
-    index=dao.create_space(space)
+    index=dao.save_space(space)
     profile=Profile(profile_name='perfil7',state=0,space=space)
-    id_profile=dao.create_profile(profile)
+    id_profile=dao.save_profile(profile)
     #st=Strategy_occupation(name='st1',min=0,max=50)
     st = Strategy_temporal(name='st2',list_weekdays= [1,1,1,1,1,0,0],list_seasons=[1,1,0,0])
-    id=dao.create_activationSt_temporal(st,profile)
+    id=dao.save_activationSt_temporal(st,profile)
     print("Done!")
 
 
