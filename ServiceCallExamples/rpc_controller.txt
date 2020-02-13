@@ -4,6 +4,22 @@ RICARDO-NTBOOK
 Ambi-05 deviceId: 520bbec0-4826-11ea-91aa-d53c594a2db8
 Ambi-05 access Token: rizPJk2E0yXMugHeJZuQ
 
+Wind Direction sensor (emulated):
+deviceId: 81761610-4cdb-11ea-b28e-135aeeb5f5fd
+access Token: 3lzRqnQC9SFIMh1LYPt4
+
+Rotating System (emulated):
+deviceId: 9309e730-4cdb-11ea-b28e-135aeeb5f5fd
+access Token: JuDBwG1jOAKxKHYvzXf9
+
+Thermostat A (RPC example)
+deviceId : 98ffe6d0-4dad-11ea-b28e-135aeeb5f5fd
+access Token: JJU3FoqQTki8COVWgKhg
+
+Controller A (RPC Example)
+deviceId: a23c4040-4dad-11ea-b28e-135aeeb5f5fd
+access Token: KtPKsFFUWoQDfFUQnPJN
+
 HA-RALMEIDA-P1
 Ambi-05 deviceId: 74fe2c20-4866-11ea-9613-8dbf86e66a64
 Ambi-05 access Token: XJCv4VjHvhvtEaVoHGFK
