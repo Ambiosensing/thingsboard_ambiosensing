@@ -84,21 +84,17 @@ def getTenantDevices(type=None, textSearch=None, idOffset=None, textOffset=None,
     tenant_device_log = ambi_logger.get_logger(__name__)
 
     # Validate inputs
-    try:
-        # Start by the mandatory ones (only the limit)
-        utils.validate_input_type(limit, int)
-        # And then go for the optional ones
-        if type:
-            utils.validate_input_type(type, str)
-        if textSearch:
-            utils.validate_input_type(textSearch, str)
-        if idOffset:
-            utils.validate_input_type(idOffset, str)
-        if textOffset:
-            utils.validate_input_type(textOffset, str)
-    except utils.InputValidationException as ive:
-        tenant_device_log.error(ive.message)
-        raise ive
+    # Start by the mandatory ones (only the limit)
+    utils.validate_input_type(limit, int)
+    # And then go for the optional ones
+    if type:
+        utils.validate_input_type(type, str)
+    if textSearch:
+        utils.validate_input_type(textSearch, str)
+    if idOffset:
+        utils.validate_input_type(idOffset, str)
+    if textOffset:
+        utils.validate_input_type(textOffset, str)
 
     # Check the number passed in limit: zero or negative values are not allowed by the API
     if limit <= 0:

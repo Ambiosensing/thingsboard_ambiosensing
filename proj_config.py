@@ -27,20 +27,6 @@ auth_data = {
         }
 }
 
-# Next follows a list of supported entityTypes by the ThingsBoard platform (as mentioned in https://thingsboard.io/docs/user-guide/telemetry/, just bellow the curl example code to access the Timeseries data keys API. Most services require
-# than one of these types be specified in the service
-# endpoint
-thingsboard_supported_entityTypes = [
-    "TENANT",
-    "CUSTOMER",
-    "USER",
-    "DASHBOARD",
-    "ASSET",
-    "DEVICE",
-    "ALARM",
-    "ENTITY_VIEW"
-]
-
 # This dictionary maps the complete table names in the ambiosensing database to a more simple term or name. This abstraction allows us to change the table names at will in the future, but as long as we maintain the same key in the next
 # dictionary and all the table names in further methods are obtained referencing the key instead of the table name, the operation should be trivial
 mysql_db_tables = {

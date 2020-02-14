@@ -4,10 +4,16 @@
 #  the ThingsBoard web interface
 
 auth_ctrl = False
-ent_rel = True
+ent_rel = False
+asset_ctrl = True
 
 
 def __main__():
+    if asset_ctrl:
+        from ThingsBoard_REST_API import tb_asset_controller as ac
+        resp = ac.getTenantAssets(limit=10)
+
+        print(resp.text)
     if ent_rel:
         from ThingsBoard_REST_API import tb_entity_relation_controller as erc
         # Local configs
