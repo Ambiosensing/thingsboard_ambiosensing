@@ -1,17 +1,33 @@
 findByQuery (entity-relation-controller)
 
+RICARDO-NTBOOK data
 Building A AssetId = 782a0340-ef67-11e9-967c-c326e44c6228
 Building A Postgres id = 1e9ef67782a0340967cc326e44c6228
 
 Thermometer A-1 (From Building A)
 device Id = b0a36900-ef67-11e9-967c-c326e44c6228
-Postgres Id = 1e9ef67b0a36900967cc326e44c6228
 accessToken = 2JhT1dKaOy4KFccqBc7d
+Postgres Id = 1e9ef67b0a36900967cc326e44c6228
 
 Thermometer A-2 (From Building A)
 device Id =  c4f98e70-ef67-11e9-967c-c326e44c6228
-Postgres Id = 1e9ef67c4f98e70967cc326e44c6228
 accessToken = g0QJfX9UCjV1OGp9nufc
+Postgres Id = 1e9ef67c4f98e70967cc326e44c6228
+
+HA-RALMEIDA-P1
+Building A AssetId = efa6d2d0-0ad9-11ea-8001-3975f352e04e
+Building A Postgres id = 1ea0ad9efa6d2d080013975f352e04e
+
+Thermometer A-1 (From Building A)
+device Id = 00b3e7c0-0ada-11ea-8001-3975f352e04e
+accessToken = PJHtuWkNteBgumbInwqZ
+Postgres Id = 1ea0ada00b3e7c080013975f352e04e
+
+Thermometer A-2 (From Building A)
+device Id = 08f28040-0ada-11ea-8001-3975f352e04e
+accessToken = xEQC2KNj3i079zjzX7t8
+Postgres Id = 1ea0ada08f2804080013975f352e04e
+
 
 {
   "filters": [

@@ -938,7 +938,7 @@ def validate_id(entity_id):
     @:raise InputValidationException - If the input fails the data type validation
     @:return True (bool) - True if the string provided is in the expected format, otherwise an Exception is raised with the details on why the validation failed"""
 
-    validate_input_type(id, str)
+    validate_input_type(entity_id, str)
 
     if len(entity_id) != 36:
         raise InputValidationException(message="Expected a 36 character string (32 bytes of data + 4 separator dashes). Got {0} instead...".format(str(len(entity_id))))
@@ -950,15 +950,15 @@ def validate_id(entity_id):
         raise InputValidationException(message="Expected 5 dash separated groups. Got {0} instead from {1}...".format(str(len(id_tokens)), str(entity_id)))
 
     # Check if the 8-4-4-4-12 format is respected
-    if len(id_tokens[0] != 8):
+    if len(id_tokens[0]) != 8:
         raise InputValidationException(message="Expected 8 characters in id group 1, got {0} instead from {1}...".format(str(len(id_tokens[0])), str(entity_id)))
-    elif len(id_tokens[1] != 4):
+    elif len(id_tokens[1]) != 4:
         raise InputValidationException(message="Expected 4 characters in id group 2, got {0} instead from {1}...".format(str(len(id_tokens[1])), str(entity_id)))
-    elif len(id_tokens[2] != 4):
+    elif len(id_tokens[2]) != 4:
         raise InputValidationException(message="Expected 4 characters in id group 3, got {0} instead from {1}...".format(str(len(id_tokens[2])), str(entity_id)))
-    elif len(id_tokens[3] != 4):
+    elif len(id_tokens[3]) != 4:
         raise InputValidationException(message="Expected 4 characters in id group 4, got {0} instead from {1}...".format(str(len(id_tokens[3])), str(entity_id)))
-    elif len(id_tokens[4] != 12):
+    elif len(id_tokens[4]) != 12:
         raise InputValidationException(message="Expected 12 characters in id group 5, got {0} instead from {1}...".format(str(len(id_tokens[4])), str(entity_id)))
 
     # Finally, check if all characters in the id are hexadecimal ones using a clever Python trick

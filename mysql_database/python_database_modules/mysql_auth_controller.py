@@ -127,7 +127,7 @@ def get_auth_token(user_type):
             # Check the most usual case for a non-HTTP 200 return: HTTP 401 with sub-errorCode (its embedded in the response text) 11 - the authorization token has expired
             if token_status_response.status_code == 401 and eval(token_status_response.text)['errorCode'] == 11:
                 # Inform the user first
-                auth_token_log.warning("The authorization token for user type = {0} retrived from {1}.{2} is expired. Requesting new one...".format(str(user_type), str(database_name), str(table_name)))
+                auth_token_log.warning("The authorization token for user type = {0} retrieved from {1}.{2} is expired. Requesting new one...".format(str(user_type), str(database_name), str(table_name)))
 
                 # Use the refresh token to retrieve a new authorization dictionary into the proper variable. No need to provide the refresh token: the tb_auth_controller.refresh_session_token method already takes care of retrieving it from the
                 # database. Create a dictionary to call this method by setting all user_types to False except the one that I want
