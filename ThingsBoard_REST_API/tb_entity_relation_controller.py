@@ -101,5 +101,24 @@ def findByQuery(entityType, entityId, direction, relationTypeGroup):
 
     service_dict = utils.build_service_calling_info(mac.get_auth_token(user_type='tenant_admin'), service_endpoint=service_endpoint)
 
-    # I have almost everything to call this service so far. This one needs a dictionary as data payload in which the dictionary contents are the search terms to be used in the database query on the remote API side. Build the damn thing then...
-    data_payload = {}
+    # I have almost everything to call this service so far. This one needs a dictionary as data payload in which the dictionary contents are the search terms to be used in the database query on the remote API side. Build the damn thing then. Start
+    # by setting the 'filters' value empty for now... at least until I figure out what the hell this field does...
+    data_payload = {'filters': [], 'parameters': {'entityId': {'entityType': entityType, 'id': entityId}}, 'rootId': entityId, 'rootType': entityType, 'direction': direction, 'relationTypeGroup': relationTypeGroup,
+                    'maxLevel': proj_config.max_query_level, 'fetchLastLevelOnly': proj_config.last_level_fetching}
+
+    # Done. I'm ready to call the service then
+    try:
+        response = requests.post(url=service_dict['url'], headers=service_dict['headers'], data=data_payload)
+    except (requests.ConnectionError, requests.ConnectTimeout) as ce:
+        error_msg = "Could not get a response from {0}...".format(str(service_dict['url']))
+        entity_relation_log.error(error_msg)
+        raise ce
+
+    # Check if the response code came back a nice HTTP 200
+    if response.status_code != 200:
+        error_msg = "Request unsuccessful: Received an HTTP " + str(eval(response.text)['status']) + " with message: " + str(eval(response.text)['message'])
+        entity_relation_log.error(error_msg)
+        raise utils.ServiceEndpointException(message=error_msg)
+    else:
+        # All done it appears. Send back the response
+        return response

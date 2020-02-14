@@ -59,6 +59,12 @@ valid_relation_type = ['COMMON', 'ALARM', 'DASHBOARD', 'RULE_CHAIN', 'RULE_NODE'
 # Allowed direction (for relation queries)
 valid_direction = ['FROM', 'TO']
 
+# Max search level for the query based services. I'm assuming that this is related to the deepness level in terms of relations that the considered query going to implement. In any case, just put in a higher value to make sure all results are returned
+max_query_level = 10
+
+# Standard flag in all services that require a query dictionary to execute. In this case, set this flag to false, since we are interested in all elements at all levels
+last_level_fetching = False
+
 # --------------------------------------------- LOGGER CONFIGURATION ----------------------------------------------------------------------------------
 # The next string establishes a base format for the lines output by the logger objects. The syntax used was defined by the logging module itself (its in its
 # manual) but it is quite straight forward. The datefmt variable establishes a rule to print datetime elements and the '-10' extra element associated with
