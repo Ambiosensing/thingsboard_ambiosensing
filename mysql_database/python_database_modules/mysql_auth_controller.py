@@ -120,62 +120,80 @@ def get_auth_token(user_type):
         # And call the getUser service providing the retrieved token to see if a) the token is still valid and b) the user_type provided matches what the remote API sends back
         token_status_response = tb_auth_controller.getUser(auth_token=auth_token)
 
-        # And convert the response body into the expected dictionary for easier access after this point
-        token_status_dict = eval(utils.translate_postgres_to_python(token_status_response.text))
+        # And convert the response body into the expected dictionary for easier access after this point.
+        # NOTE: Interesting development in this case: it turns out that I can authorize a user using a authorization token that was issued from a different ThingsBoard installation!!! In other words, I can get a authorization token issued from my
+        # local ThingsBoard installation and use it to get a "valid" authentication in the remote ThingsBoard installation. When I say "valid" I mean, the interface accepts the token without any kind of feedback regarding its actual validity. Yet,
+        # when I execute a service with it, guess what? I do get a HTTP 200 response but without any data!! This doesn't make any sense and is going to complicate my code a lot! So I need to deal with this retarded cases too...
+        # Attempt to do the following only if something was returned back in the text parameter of the response
+        token_status_dict = None
 
-        if token_status_response.status_code != 200:
+        if token_status_response.text != "":
+            token_status_dict = eval(utils.translate_postgres_to_python(token_status_response.text))
+
+        # This particular annoying case in which a valid authorization token from a different installation is used in this case. In this case, the installation accepts the token, since it has the expected format, but internally it gets rejected
+        # because the credential pair that originated it obviously doesn't match! But somehow the API fails to mention this! Instead, the damn thing accepts the token and even returns HTTP 200 responses to my requests but these come back all
+        # empty, presumably because the internal authentication failed... because the tokens are wrong. Gee, what an unnecessary mess... If a case such as that is detected, simply get a new pair of tokens back. Most of these cases are solved by
+        # forcing a token refresh
+        if token_status_response.status_code != 200 or token_status_response.text == "":
             # Check the most usual case for a non-HTTP 200 return: HTTP 401 with sub-errorCode (its embedded in the response text) 11 - the authorization token has expired
             if token_status_response.status_code == 401 and eval(token_status_response.text)['errorCode'] == 11:
                 # Inform the user first
                 auth_token_log.warning("The authorization token for user type = {0} retrieved from {1}.{2} is expired. Requesting new one...".format(str(user_type), str(database_name), str(table_name)))
+            elif token_status_response.text == "":
+                auth_token_log.warning("The authorization provided was issued from a different ThingsBoard installation than this one! Need to issued a new pair...")
 
-                # Use the refresh token to retrieve a new authorization dictionary into the proper variable. No need to provide the refresh token: the tb_auth_controller.refresh_session_token method already takes care of retrieving it from the
-                # database. Create a dictionary to call this method by setting all user_types to False except the one that I want
-                new_auth_dict = {'sys_admin': False, 'tenant_admin': False, 'customer_user': False, user_type: True}
+            # Use the refresh token to retrieve a new authorization dictionary into the proper variable. No need to provide the refresh token: the tb_auth_controller.refresh_session_token method already takes care of retrieving it from the
+            # database. Create a dictionary to call this method by setting all user_types to False except the one that I want
+            new_auth_dict = {'sys_admin': False, 'tenant_admin': False, 'customer_user': False, user_type: True}
 
-                # NOTE: The call to the refresh_session_token method already verifies and deals with expired refreshTokens too.
+            # If I caught that annoying case in which a valid authorization token from a different ThingsBoard installation
+            if token_status_response.text == "":
+                new_auth_dict = tb_auth_controller.get_session_tokens(
+                    sys_admin=new_auth_dict['sys_admin'],
+                    tenant_admin=new_auth_dict['tenant_admin'],
+                    customer_user=new_auth_dict['customer_user']
+                )
+                auth_token_log.info("Got a new pair of authorization tokens for the {0} ThingsBoard installation.".format(str(user_config.access_info['host'])))
+            # Otherwise, its an expired token case. Deal with it properly then
+            # NOTE: The call to the refresh_session_token method already verifies and deals with expired refreshTokens too.
+            else:
                 new_auth_dict = tb_auth_controller.refresh_session_token(
                     sys_admin=new_auth_dict['sys_admin'],
                     tenant_admin=new_auth_dict['tenant_admin'],
                     customer_user=new_auth_dict['customer_user']
                 )
+                auth_token_log.info("Refreshed the authorization tokens for the {0} ThingsBoard installation.".format(str(user_config.access_info['host'])))
 
-                # If I got to this point, then my new_auth_dict has a fresh pair of authorization and refresh tokens under the user_type key entry (the previous call raises an Exception otherwise)
-                # In this case, I have the tokens in the database expired. Update these entries before returning the valid authorization token
-                sql_update = mysql_utils.create_update_sql_statement(column_list=column_list, table_name=table_name, trigger_column='user_type')
+            # From this point on, the process is the same for both cases considered above
 
-                # Populate the data tuple with values by replacing these directly from the column list and pass it as tuple casted argument
-                column_list[column_list.index('user_type')] = user_type
-                column_list[column_list.index('token')] = new_auth_dict[user_type]['token']
-                column_list[column_list.index('token_timestamp')] = datetime.datetime.now().replace(microsecond=0)
-                column_list[column_list.index('refreshToken')] = new_auth_dict[user_type]['refreshToken']
-                column_list[column_list.index('refreshToken_timestamp')] = datetime.datetime.now().replace(microsecond=0)
+            # If I got to this point, then my new_auth_dict has a fresh pair of authorization and refresh tokens under the user_type key entry (the previous call raises an Exception otherwise)
+            # In this case, I have the tokens in the database expired. Update these entries before returning the valid authorization token
+            sql_update = mysql_utils.create_update_sql_statement(column_list=column_list, table_name=table_name, trigger_column='user_type')
 
-                # And append one last user_type for the "WHERE" part of the UPDATE SQL statement (the update statement retrieved from the mysql_utils.create_update_sql_statement already has a 'WHERE user_type = %s' ready for this)
-                column_list.append(user_type)
+            # Prepare the data tuple for the UPDATE operation respecting the expected order: user_type, token, token_timestamp, refreshToken, refreshToken_timestamp and user_type again (because of the WHERE clause in the UPDATE)
+            update_data_tuple = (user_type, new_auth_dict[user_type]['token'], datetime.datetime.now().replace(microsecond=0), new_auth_dict[user_type]['refreshToken'], datetime.datetime.now().replace(microsecond=0), user_type)
 
-                # Execute the statement
-                change_cursor = mysql_utils.run_sql_statement(change_cursor, sql_update, tuple(column_list))
+            # Execute the statement
+            change_cursor = mysql_utils.run_sql_statement(change_cursor, sql_update, update_data_tuple)
 
-                # And check the execution results
-                if not change_cursor.rowcount:
-                    error_msg = "Could not update {0}.{1} with '{2}' statement...".format(str(database_name), str(table_name), str(change_cursor.statement))
-                    auth_token_log.error(error_msg)
-                    change_cursor.close()
-                    select_cursor.close()
-                    cnx.close()
-                    raise mysql_utils.MySQLDatabaseException(message=error_msg)
-                else:
-                    auth_token_log.info("Token database information for user_type = '{0}' updated successfully in {1}.{2}!".format(str(user_type), str(database_name), str(table_name)))
-                    cnx.commit()
-                    # Close the database access objects and return the valid token then
-                    change_cursor.close()
-                    select_cursor.close()
-                    cnx.close()
-                    return new_auth_dict[user_type]['token']
-
+            # And check the execution results
+            if not change_cursor.rowcount:
+                error_msg = "Could not update {0}.{1} with '{2}' statement...".format(str(database_name), str(table_name), str(change_cursor.statement))
+                auth_token_log.error(error_msg)
+                change_cursor.close()
+                select_cursor.close()
+                cnx.close()
+                raise mysql_utils.MySQLDatabaseException(message=error_msg)
+            else:
+                auth_token_log.info("Token database information for user_type = '{0}' updated successfully in {1}.{2}!".format(str(user_type), str(database_name), str(table_name)))
+                cnx.commit()
+                # Close the database access objects and return the valid token then
+                change_cursor.close()
+                select_cursor.close()
+                cnx.close()
+                return new_auth_dict[user_type]['token']
         # Check if the response returned has the user type (which would be under the 'authority' key in the response dictionary), matches the user_type provided (it would be quite weird if doesn't, but check it anyways)
-        elif token_status_dict['authority'].lower() != user_type:
+        elif token_status_dict is not None and token_status_dict['authority'].lower() != user_type:
             auth_token_log.warning("Attention: the authorization token retrieved from {0}.{1} for user type '{2}' provided is actually associated with a '{3}' user type! Resetting...".
                                    format(str(database_name), str(table_name), str(user_type), str(token_status_dict['authority'])))
             # Mismatch detected. Assuming that the ThingsBoard API only accepts user types from the set defined and since I've validated the user type provided as argument also, this means that my mismatch is at the MySQL database level,
@@ -227,9 +245,9 @@ def get_auth_token(user_type):
             cnx.close()
             return auth_token
 
-    # If I get to this point it means that no valid authorization token was found so far in the database. Yet, there is a possibility that some other token request may have be been placed in the logic above and now it needs the data retrieved to
-    # be sent to the database. I can detect this by looking at the new_auth_dict variable. If its None, it means that I need to request a new pair of tokens for this user_type.
-    if not new_auth_dict:
+    else:
+        # If I get to this point it means that no valid authorization token was found so far in the database. Yet, there is a possibility that some other token request may have be been placed in the logic above and now it needs the data retrieved to
+        # be sent to the database. I can detect this by looking at the new_auth_dict variable. If its None, it means that I need to request a new pair of tokens for this user_type.
         # Create a base for the new authorization dictionary by setting all user_types to False initially and then triggering just the one that needs new authorization tokens to True
         new_auth_dict = {'sys_admin': False, 'tenant_admin': False, 'customer_user': False, user_type: True}
 

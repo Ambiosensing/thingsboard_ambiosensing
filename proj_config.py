@@ -51,19 +51,23 @@ mysql_db_tables = {
 }
 # --------------------------------------------- TYPE VALIDATION ----------------------------------------------------------------------------------
 # Allowed entityTypes in the ThingsBoard platform
-valid_entity_types = ['TENANT', 'CUSTOMER', 'USER', 'DASHBOARD', 'ASSET', 'DEVICE', 'ALARM', 'RULE_CHAIN', 'RULE_NODE', 'ENTITY_VIEW', 'WIDGETS_BUNDLE', 'WIDGETS_TYPE']
+valid_entity_types = ["TENANT", "CUSTOMER", "USER", "DASHBOARD", "ASSET", "DEVICE", "ALARM", "RULE_CHAIN", "RULE_NODE", "ENTITY_VIEW", "WIDGETS_BUNDLE", "WIDGETS_TYPE"]
 
 # Allowed relation types
-valid_relation_type = ['COMMON', 'ALARM', 'DASHBOARD', 'RULE_CHAIN', 'RULE_NODE']
+valid_relation_type = ["COMMON", "ALARM", "DASHBOARD", "RULE_CHAIN", "RULE_NODE"]
 
 # Allowed direction (for relation queries)
-valid_direction = ['FROM', 'TO']
+valid_direction = ["FROM", "TO"]
 
 # Max search level for the query based services. I'm assuming that this is related to the deepness level in terms of relations that the considered query going to implement. In any case, just put in a higher value to make sure all results are returned
 max_query_level = 10
 
-# Standard flag in all services that require a query dictionary to execute. In this case, set this flag to false, since we are interested in all elements at all levels
-last_level_fetching = False
+# Standard flag in all services that require a query dictionary to execute. In this case, set this flag to false, since we are interested in all elements at all levels. NOTE: This parameter is a string of a boolean value rather than the boolean
+# itself. This is on purpose to get around the fact that, in Python, a boolean is either a 'True' or 'False' (emphasis on the uppercase first character) while in Postgres (and assuming in Cassandra too), a boolean is a 'true' or 'false' (again,
+# emphasis on the lowercase in the first character). The problem arises when I'm unable to set a lower cased boolean in Python without raise Exceptions and all sorts of Hell born creature... Fortunately, I found an out! It turns out that the
+# ThingsBoard API accepts a boolean parameter as a false or as a "false" (the usage of quotes here makes all the difference)! Because of this peculiarity, I can then define this parameter easily from the Python side as a string that happens to be
+# "false" that is going to be interpreted as a proper boolean on the other side. Problem solved!
+last_level_fetching = "false"
 
 # --------------------------------------------- LOGGER CONFIGURATION ----------------------------------------------------------------------------------
 # The next string establishes a base format for the lines output by the logger objects. The syntax used was defined by the logging module itself (its in its

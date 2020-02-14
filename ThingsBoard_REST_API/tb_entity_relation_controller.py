@@ -103,8 +103,14 @@ def findByQuery(entityType, entityId, direction, relationTypeGroup):
 
     # I have almost everything to call this service so far. This one needs a dictionary as data payload in which the dictionary contents are the search terms to be used in the database query on the remote API side. Build the damn thing then. Start
     # by setting the 'filters' value empty for now... at least until I figure out what the hell this field does...
-    data_payload = {'filters': [], 'parameters': {'entityId': {'entityType': entityType, 'id': entityId}}, 'rootId': entityId, 'rootType': entityType, 'direction': direction, 'relationTypeGroup': relationTypeGroup,
-                    'maxLevel': proj_config.max_query_level, 'fetchLastLevelOnly': proj_config.last_level_fetching}
+    data_payload = {"filters": [], "parameters": {"entityId": {"entityType": entityType, "id": entityId}, "rootId": entityId, "rootType": entityType, "direction": direction, "relationTypeGroup": relationTypeGroup,
+                    "maxLevel": proj_config.max_query_level, "fetchLastLevelOnly": proj_config.last_level_fetching}}
+
+    # Before submitting the data payload, it turns out that the ThingsBoard API is quite prickly with this one... It doesn't allow for single quotes (') as string delimiters - only double quotes allowed. Also, right now the data payload variable
+    # is in dict format, which is irrelevant for the API since this data is going to be transmitted to it via HTTP POST operation, which transforms everything into string format first before sending it to the remote client/server. So,
+    # to avoid plenty of headaches from here on (god knows how many I went through until finding out what the hell the API expects and doesn't expect...), cast the whole variable to string now and take the chance to replace any single quotes in it
+    # for double ones
+    data_payload = str(data_payload).replace("'", "\"")
 
     # Done. I'm ready to call the service then
     try:

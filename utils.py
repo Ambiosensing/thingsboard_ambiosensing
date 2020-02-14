@@ -637,7 +637,7 @@ def build_service_calling_info(auth_token, service_endpoint):
             "Accept": "application/json",
             "X-Authorization": "Bearer " + str(auth_token)
         },
-        "url": str(user_config.thingsboard_host) + ":" + str(user_config.thingsboard_port) + service_endpoint
+        "url": str(user_config.access_info['host']) + ":" + str(user_config.access_info['port']) + service_endpoint
     }
 
 

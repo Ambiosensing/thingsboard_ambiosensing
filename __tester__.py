@@ -10,8 +10,14 @@ ent_rel = True
 def __main__():
     if ent_rel:
         from ThingsBoard_REST_API import tb_entity_relation_controller as erc
-        entityType = 'ASSET'
+        # Local configs
         entityId = 'efa6d2d0-0ad9-11ea-8001-3975f352e04e'
+
+        # Remote Config
+        # entityId = "bdb78d60-946d-11e9-b2d7-a9d50a42a11e"
+
+        # The rest is common to both installations
+        entityType = 'ASSET'
         direction = 'FROM'
         relationTypeGroup = 'COMMON'
 
