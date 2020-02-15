@@ -1,11 +1,15 @@
-DROP TABLE IF EXISTS ambiosensing_thingsboard.thingsboard_asset_devices_table;
+DROP TABLE IF EXISTS ambiosensing_thingsboard.tb_asset_devices;
 
-CREATE TABLE IF NOT EXISTS ambiosensing_thingsboard.thingsboard_asset_devices_table
+CREATE TABLE IF NOT EXISTS ambiosensing_thingsboard.tb_asset_devices
 (
-    fromType            VARCHAR(30)     DEFAULT NULL NULL,  -- entity Type of the element in the 'From' (originator) side of the relation
+    fromEntityType      VARCHAR(30)     DEFAULT NULL NULL,  -- entity Type of the element in the 'From' (originator) side of the relation
     fromId              VARCHAR(100)    DEFAULT NULL NULL,  -- Respective entity Id of the previous element
-    toType              VARCHAR(30)     DEFAULT NULL NULL,  -- entity Type of the element in the 'To' (destination) side of the relation
+    fromName            VARCHAR(100)    DEFAULT NULL NULL,
+    fromType            VARCHAR(100)    DEFAULT NULL NULL,
+    toEntityType        VARCHAR(30)     DEFAULT NULL NULL,  -- entity Type of the element in the 'To' (destination) side of the relation
     toId                VARCHAR(100)    DEFAULT NULL NULL,  -- Respective entity Id of the previous element
+    toName              VARCHAR(100)    DEFAULT NULL NULL,
+    toType              VARCHAR(100)    DEFAULT NULL NULL,
     relationType        VARCHAR(50)     DEFAULT NULL NULL,
     relationGroup       VARCHAR(50)     DEFAULT NULL NULL,
     description         VARCHAR(999)    DEFAULT NULL NULL,

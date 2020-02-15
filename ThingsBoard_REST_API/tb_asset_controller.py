@@ -4,6 +4,7 @@ import requests
 import ambi_logger
 import utils
 import urllib.parse
+import user_config
 from mysql_database.python_database_modules import mysql_auth_controller as mac
 
 
@@ -156,7 +157,7 @@ def getTenantAssets(type=None, textSearch=None, idOffset=None, textOffset=None, 
         raise utils.InputValidationException(message=error_msg)
 
     # Setup the base endpoint
-    service_endpoint = "/api/tenant/devices?"
+    service_endpoint = "/api/tenant/assets?"
 
     url_strings = []
 
@@ -182,8 +183,8 @@ def getTenantAssets(type=None, textSearch=None, idOffset=None, textOffset=None, 
     # Concatenate the elements in the url_strings list into a single url string
     service_endpoint += '&'.join(url_strings)
 
-    # Get the standard dictionary to call the remote service
-    service_dict = utils.build_service_calling_info(mac.get_auth_token('customer_user'), service_endpoint=service_endpoint)
+    # Get the standard dictionary to call the remote service. It appears that different installations require different sets of user credentials... still trying to figure out what the hell is going on with this one
+    service_dict = utils.build_service_calling_info(mac.get_auth_token('tenant_admin' if user_config.remote_server else 'customer_user'), service_endpoint=service_endpoint)
 
     # And try to get a response from the remote API
     try:

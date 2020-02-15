@@ -1,11 +1,10 @@
-DROP TABLE IF EXISTS ambiosensing_thingsboard.thingsboard_devices_table;
+DROP TABLE IF EXISTS ambiosensing_thingsboard.tb_devices;
 
-CREATE TABLE IF NOT EXISTS ambiosensing_thingsboard.thingsboard_devices_table
+CREATE TABLE IF NOT EXISTS ambiosensing_thingsboard.tb_devices
 (
     entityType          VARCHAR(15)     DEFAULT NULL NULL,
     name                VARCHAR(100)    DEFAULT NULL NULL,
     type                VARCHAR(100)    DEFAULT NULL NULL,
-    label               VARCHAR(100)    DEFAULT NULL NULL,
     timeseriesKeys      VARCHAR(999)    DEFAULT NULL NULL,
     id                  VARCHAR(100)    DEFAULT NULL NULL,
     createdTime         DATETIME        DEFAULT NULL NULL,

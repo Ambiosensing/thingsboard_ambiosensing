@@ -82,7 +82,7 @@ def insert_table_data(data_dict, table_name, data_validated=False):
     db_column_list = mysql_utils.get_table_columns(database_name, table_name)
 
     if len(db_column_list) != len(data_pairs_list):
-        error_msg = "The number of key-values obtained from the data dictionary ({0}) doesn't the database table {1}.{2} columns ({3). Cannot continue..."\
+        error_msg = "The number of key-values obtained from the data dictionary ({0}) doesn't the database table {1}.{2} columns ({3}). Cannot continue..."\
             .format(str(len(data_pairs_list)), str(database_name), str(table_name), str(len(db_column_list)))
         insert_log.error(error_msg)
         select_cursor.close()

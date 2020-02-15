@@ -132,7 +132,7 @@ def getTenantDevices(type=None, textSearch=None, idOffset=None, textOffset=None,
 
     # Get the standard service dictionary from the utils method
 
-    service_dict = utils.build_service_calling_info(mac.get_auth_token('customer_user'), service_endpoint)
+    service_dict = utils.build_service_calling_info(mac.get_auth_token('tenant_admin' if user_config.remote_server else 'customer_user'), service_endpoint)
 
     # Try to get a response from the remote API
     try:

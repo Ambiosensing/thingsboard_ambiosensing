@@ -30,10 +30,12 @@ auth_data = {
 # This dictionary maps the complete table names in the ambiosensing database to a more simple term or name. This abstraction allows us to change the table names at will in the future, but as long as we maintain the same key in the next
 # dictionary and all the table names in further methods are obtained referencing the key instead of the table name, the operation should be trivial
 mysql_db_tables = {
-    'tenants': 'thingsboard_tenants_table',
-    'devices': 'thingsboard_devices_table',
-    'customers': 'thingsboard_customers_table',
-    'authentication': 'thingsboard_authentication_table'
+    'tenants': 'tb_tenants',
+    'tenant_assets': 'tb_tenant_assets',
+    'devices': 'tb_devices',
+    'customers': 'tb_customers',
+    'authentication': 'tb_authentication',
+    'asset_devices': 'tb_asset_devices',
 }
 # --------------------------------------------- TYPE VALIDATION ----------------------------------------------------------------------------------
 # Allowed entityTypes in the ThingsBoard platform

@@ -13,7 +13,7 @@ thingsboard_host = "http://62.48.174.118"
 thingsboard_port = 5044
 
 # Use the following parameters to switch between a local (remote_server = False) and a remote ThingsBoard installations (remote_server = True). Flip the flag accordingly
-remote_server = False
+remote_server = True
 
 # The main access info dictionary for all things accesses
 access_info = {
@@ -26,12 +26,12 @@ access_info = {
     },
 
     'tenant_admin': {
-        'username': 'rdlalmeida@gmail.com',
+        'username': 'rdlalmeida@gmail.com' if remote_server else 'rdl.almeida@campus.fct.unl.pt',
         'password': 'ambiosensing2019'
     },
 
     'customer_user': {
-        'username': 'rdl.almeida@campus.fct.unl.pt',
+        'username': 'rdl.almeida@campus.fct.unl.pt' if remote_server else 'rdlalmeida@gmail.com',
         'password': 'ambiosensing2019'
     },
     'postgres_database': {
