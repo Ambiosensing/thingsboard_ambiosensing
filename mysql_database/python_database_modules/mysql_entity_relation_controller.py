@@ -63,11 +63,8 @@ def update_asset_devices_table():
             # Query for related devices
             api_response = tb_entity_relation_controller.findByQuery(entityType=entityType, entityId=asset_info[0], relationTypeGroup=relationTypeGroup, direction=direction)
 
-            # Get rid of all non-Python terms in the response dictionary and cast it as so too
-            api_response_dict = eval(utils.translate_postgres_to_python(api_response.text))
-
-            # And extract the stuff that I'm interested into
-            relation_list = api_response_dict['data']
+            # Get rid of all non-Python terms in the response dictionary and cast it as a list too
+            relation_list = eval(utils.translate_postgres_to_python(api_response.text))
 
             # Now lets format this info accordingly and send it to the database
             for relation in relation_list:
@@ -92,12 +89,15 @@ def update_asset_devices_table():
                 }
 
                 # As always, take care with the stupid 'description'/'additionalInfo' issue...
-                try:
-                    # Try to get a 'description' from the returned dictionary from the 'additionalInfo' sub dictionary
-                    data_dict["description"] = relation["additionalInfo"]["description"]
-                # If the field wasn't set, instead of crashing the code
-                except KeyError:
-                    # Simply set this field to None and move on with it...
+                if relation["additionalInfo"] is not None:
+                    try:
+                        # Try to get a 'description' from the returned dictionary from the 'additionalInfo' sub dictionary
+                        data_dict["description"] = relation["additionalInfo"]["description"]
+                    # If the field wasn't set, instead of crashing the code
+                    except KeyError:
+                        # Simply set this field to None and move on with it...
+                        data_dict["description"] = None
+                else:
                     data_dict["description"] = None
 
                 # And now to get the data to use in the INSERT statement. For that I need to do a quick SELECT first since I need info from a different side too
@@ -108,14 +108,14 @@ def update_asset_devices_table():
                 change_cursor = mysql_utils.run_sql_statement(cursor=change_cursor, sql_statement=sql_select, data_tuple=data_tuple)
 
                 # Check if any results were returned. Use them if so, otherwise replace the missing results with 'Unknown'. In this case there's no point in raising Exceptions if I can't find the actual name or type of the related device
-                if change_cursor.rowcount == 2:
+                if change_cursor.rowcount > 0:
                     # I got the data I was looking for
-                    result = select_cursor.fetchone()
+                    result = change_cursor.fetchone()
                     data_dict["toName"] = result[0]
                     data_dict["toType"] = result[1]
 
                 # I have all the stuff needed to execute the INSERT. Convert the dictionary used to gather the data for the statement to a list first but with just the values. I don't need the rest anymore
-                data_list = list(data_dict.keys())
+                data_list = list(data_dict.values())
 
                 # And try to run the INSERT statement looking for a Duplicate result exception (if the data already is in the database)
                 try:

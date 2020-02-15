@@ -184,7 +184,7 @@ def getTenantAssets(type=None, textSearch=None, idOffset=None, textOffset=None, 
     service_endpoint += '&'.join(url_strings)
 
     # Get the standard dictionary to call the remote service. It appears that different installations require different sets of user credentials... still trying to figure out what the hell is going on with this one
-    service_dict = utils.build_service_calling_info(mac.get_auth_token('tenant_admin' if user_config.remote_server else 'customer_user'), service_endpoint=service_endpoint)
+    service_dict = utils.build_service_calling_info(mac.get_auth_token('tenant_admin'), service_endpoint=service_endpoint)
 
     # And try to get a response from the remote API
     try:
