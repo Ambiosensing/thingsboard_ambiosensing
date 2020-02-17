@@ -30,6 +30,8 @@ data_payload = {"method": "getTemperature", "params": {}}
 # Now the topics to which ThingsBoard processes Requests and Responses. Basically, to send RPC commands to the server (ThingsBoard installation) send a PUBLISH type message to the request topic/endpoint
 # The server then uses the response topic to PUBLISH responses to those requests, hence why this application starts by making the client (the Raspberry Pi or the virtual device Controller A used in this example) subscribe to that topic in order to
 # grab any replies from the server side
+
+# Subscribe for RPC commands using the requests_topic
 request_topic = "v1/devices/me/rpc/request/1"
 response_topic = "v1/devices/me/rpc/response/+"
 

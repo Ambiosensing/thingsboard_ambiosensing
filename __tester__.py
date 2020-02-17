@@ -3,8 +3,8 @@
 #  require an id or specific token of some kind to return any meaningful data). Use it to navigate until getting deviceId values via API calls instead of using
 #  the ThingsBoard web interface
 
-auth_ctrl = False
-ent_rel = True
+auth_ctrl = True
+ent_rel = False
 asset_ctrl = False
 mysql_test = False
 mysql_device = False

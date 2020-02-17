@@ -1,5 +1,7 @@
 Ambi-05 device (Raspberry Pi with multi-sensor module):
 
+----------------------------------------------------------------------------------------------------------------------------------------------------------
+
 RICARDO-NTBOOK
 Ambi-05 deviceId: 520bbec0-4826-11ea-91aa-d53c594a2db8
 Ambi-05 access Token: rizPJk2E0yXMugHeJZuQ
@@ -20,6 +22,13 @@ Controller A (RPC Example)
 deviceId: a23c4040-4dad-11ea-b28e-135aeeb5f5fd
 access Token: KtPKsFFUWoQDfFUQnPJN
 
+Temperature controller (RPC control example)
+deviceId = 39297590-51aa-11ea-89dc-25d13d30f848
+access Token = v5JLj4EGL1qB7haqBspq
+entityViewId = 0f202b60-51ad-11ea-89dc-25d13d30f848
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------
+
 HA-RALMEIDA-P1
 Ambi-05 deviceId: 74fe2c20-4866-11ea-9613-8dbf86e66a64
 Ambi-05 access Token: XJCv4VjHvhvtEaVoHGFK
@@ -32,6 +41,7 @@ Rotating System (emulated)
 deviceId: 5dfed5f0-4d17-11ea-885a-ed86f736f3ee
 access Token: NBeMl5WdnWAd4D8gFyWh
 
+----------------------------------------------------------------------------------------------------------------------------------------------------------
 
 json request format:
 {
@@ -49,3 +59,16 @@ json request format:
   "enabled": 1
 }
 }
+
+{
+"method": "setValue",
+"params": {
+  "test_temperature": "75",
+  "enabled": 1
+}
+}
+
+
+def setValue(params):
+    sensor_data['test_temperature'] = params
+    print("Temperature Set: ", params, " ºC")
