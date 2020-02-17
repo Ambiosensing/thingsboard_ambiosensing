@@ -7,7 +7,7 @@ from DAOAmbiosensing.building import Building
 from DAOAmbiosensing.device_configuration import Device_configuration
 from DAOAmbiosensing.environmental_variable import Environmental_variable
 from DAOAmbiosensing.env_variable_configuration import Env_variable_configuration
-from DAOAmbiosensing.activation_strategy import Activation_strategy, Strategy_occupation, Strategy_temporal
+
 import mysql.connector as mysqlc
 from mysql_database.python_database_modules.mysql_utils import MySQLDatabaseException
 
@@ -29,20 +29,22 @@ class DAO_ambiosensing:
         if self.cnx!=None:
             self.cnx.close()
 
-
-    def save_profile(self, profile):
+    # save on database a profile
+    def save_profile(self, profile,space):
         dict_column_list=['profile_name','state','space_id']
-        value_list=[profile.profile_name,profile.state,profile.space.id_space]
+        value_list=[profile.profile_name,profile.state,space.id_space]
         index=self.__insert_data_in_table(dict_column_list,value_list,'profile')
         profile.id_profile=index
         return index
 
+    # update a profile
     def update_profile(self,profile):
         id = profile.id_profile
-        dict_column_list = ['profile_name', 'state', 'space_id']
-        value_list = [profile.profile_name,profile.state, profile.space.id_space]
+        dict_column_list = ['profile_name', 'state']
+        value_list = [profile.profile_name,profile.state]
         self.__update_data_in_table(dict_column_list, value_list, 'idprofile',id, 'profile')
 
+    # save on database a building
     def save_building(self, building):
         dict_column_list = ['name']
         value_list = [building.name]
@@ -50,6 +52,7 @@ class DAO_ambiosensing:
         building.id_building=index
         return index
 
+    # save on database a space
     def save_space(self, space):
         dict_column_list = ['name','area','occupation_type','building_id']
         value_list = [space.name,space.area,space.occupation_type,space.building.id_building]
@@ -63,6 +66,7 @@ class DAO_ambiosensing:
          id = self.__insert_data_in_table(dict_column_list, value_list, 'activation_strategy')
          return id
 
+    # save on database activation strategy of occupation type
     def save_activationSt_occupation(self,strategy_occupation,profile):
         id=self.__create_activationST(strategy_occupation,profile)
         dict_column_list = ['min', 'max', 'activation_strategy_id_activation_strategy']
@@ -70,6 +74,7 @@ class DAO_ambiosensing:
         index=self.__insert_data_in_table(dict_column_list, value_list, 'strategy_occupation')
         return index
 
+    # save on database activation strategy of temporal type
     def save_activationSt_temporal(self, strategy_temporal, profile):
         id = self.__create_activationST(strategy_temporal, profile)
         dict_column_list = ['monday','tuesday','wednesday','thursday','friday',
@@ -79,6 +84,7 @@ class DAO_ambiosensing:
         index = self.__insert_data_in_table(dict_column_list, value_list, 'strategy_temporal')
         return index
 
+    # save on database a schedule of a specific profile
     def save_schedule(self, schedule, profile):
         dict_column_list = ['start', 'end','profile_idprofile']
         value_list = [schedule.start, schedule.end,profile.id_profile]
@@ -86,43 +92,28 @@ class DAO_ambiosensing:
         schedule.id=id;#update id with the index returned
         return id
 
-    def save_device_configuration(self, device_configuration,schedule, device):
+    # save on database a devicee_configuration, related with an device, related to a schedule
+    def save_device_configuration(self, device_configuration,schedule):
         dict_column_list = ['state', 'operation_value', 'device_id', 'schedule_idshedule']
 
         value_list = [device_configuration.state, device_configuration.operation_value,
-                      device.id_device,schedule.id]
+                      device_configuration.id_device,schedule.id]
         id = self.__insert_data_in_table(dict_column_list, value_list, 'device_configuration')
         device_configuration.id = id;  # update id with the index returned
         return id
-
-    def save_env_variable_configuration(self, env_variable_configuration,environmental_variable,schedule):
+    # save on database a env_variable_configuration, related with an envronment_variable, related to a schedule
+    def save_env_variable_configuration(self, env_variable_configuration,schedule):
         dict_column_list = ['min', 'max', 'environmental_variables_id', 'schedule_idshedule']
 
         value_list = [env_variable_configuration.min,env_variable_configuration.max,
-                      environmental_variable.id,schedule.id]
+                      env_variable_configuration.id_env_variable,schedule.id]
         id = self.__insert_data_in_table(dict_column_list, value_list, 'env_variable_configuration')
         env_variable_configuration.id = id;  # update id with the index returned
         return id
 
 
-
-    def remove_profile(self, id_profile):
-        # to replace by update/delete to database
-        print("removing profile.....")
-        print(id_profile)
-
-    def load_device(self, id):
-        # to replace by a query to database
-        result = self.__select_data_from_table("device", "id", id)
-        if len(result) > 0:
-            row = result[0]
-            device = Device(id=row[0], name=row[1], type=row[2], id_thingsboard=row[3])
-            return device
-        else:
-            return None
-
+    # RETURN a list of all the  environment variables
     def load_environmental_variable(self, id):
-        # to replace by a query to database
         result = self.__select_data_from_table("environmental_variables", "id", id)
         if len(result) > 0:
             row = result[0]
@@ -131,25 +122,44 @@ class DAO_ambiosensing:
         else:
             return None
 
-    def load_environmental_variable_by_space(self, space):
-        # to replace by a query to database
+    # RETURN a list of the  environment variables of a specific space
+    def load_environmental_variables_by_space(self, space):
         result = self.__select_data_from_table("environmental_variables", "space_id", space.id_space)
-        if len(result) > 0:
-            row = result[0]
-            ev = Environmental_variable(id=row[0], name=row[1], value=row[2], unit_type=row[3])
-            return ev
-        else:
-            return None
-
-    def load_env_variable_configuration_bySchedule(self,schedule):
-        result = self.__select_data_from_table("env_variable_configuration", "schedule_idschedule")
         list = []
         for row in result:
-            ev_config = Env_variable_configuration(id=row[0], min=row[1], max=row[2])
-            list.append(ev_config)
+            row = result[0]
+            ev = Environmental_variable(id=row[0], name=row[1], value=row[2], unit_type=row[3])
+            list.append(ev)
         return list
 
-    def load_allEnvironmentVariables(self):
+    # RETURN a list of variable_configuration for a specific schedule
+    def load_env_variable_configuration_by_schedule(self,schedule):
+        result = self.__select_data_from_table("env_variable_configuration", "schedule_idschedule", schedule.id)
+        list = []
+        for row in result:
+            ev_config = Env_variable_configuration(id=row[0], min=row[1], max=row[2],id_env_variable=row[3])
+            list.append(ev_config)
+        return list
+     #RETURN a list of device_configuration for a specific schedule
+    def load_device_configuration_by_schedule(self, schedule):
+        result = self.__select_data_from_table("device_configuration", "schedule_idschedule", schedule.id)
+        list = []
+        for row in result:
+            device_config = Device_configuration(id=row[0], min=row[1], max=row[2], id_device=row[3])
+            list.append(device_config)
+        return list
+
+    # RETURN a list of shedule for a specific profile
+    def load_schedule_by_profile(self, profile):
+        result = self.__select_data_from_table("schedule", "profile_idprofile", profile.id_profile)
+        list = []
+        for row in result:
+            schedule = Schedule(id=row[0], start=row[1], end=row[2])
+            list.append(schedule)
+        return list
+
+    # RETURN a list of ALL environment variables
+    def load_all_environment_variables(self):
         result = self.__select_data_from_table("environmental_variables")
         list = []
         for row in result:
@@ -157,17 +167,18 @@ class DAO_ambiosensing:
             list.append(ev)
         return list
 
-    def load_devicesFromSpace(self, space):
+    # RETURN a list of the  devices of a specific space
+    def load_devices_by_space(self, space):
         # load all devices from a specific space
         result = self.__select_data_from_table("device", "space_id", space.id_space)
-        if len(result) > 0:
+        list = []
+        for row in result:
             row = result[0]
             device = Device(id=row[0], name=row[1], type=row[2], id_thingsboard=row[3])
-            return device
-        else:
-            return None
-
-    def load_allDevices(self):
+            list.append(device)
+        return list
+    # return a list with all devices
+    def load_all_devices(self):
         result = self.__select_data_from_table("device")
         list = []
         for row in result:
@@ -175,6 +186,18 @@ class DAO_ambiosensing:
             list.append(device)
         return list
 
+        # RETURN a list of a specific device
+        def load_device(self, id):
+            # to replace by a query to database
+            result = self.__select_data_from_table("device", "id", id)
+            if len(result) > 0:
+                row = result[0]
+                device = Device(id=row[0], name=row[1], type=row[2], id_thingsboard=row[3])
+                return device
+            else:
+                return None
+
+    # return a specific building
     def load_building(self,id_building):
         result = self.__select_data_from_table("building", "id", id_building)
         if len(result) > 0 :
@@ -184,6 +207,7 @@ class DAO_ambiosensing:
         else :
             return None
 
+    #list with all the variables  devices and profiles associated
     def load_space(self,id_space):
         result = self.__select_data_from_table("space", "id", id_space)
         if len(result) >0 :
@@ -191,17 +215,33 @@ class DAO_ambiosensing:
             building = self.load_building(row[4])
             space= Space(id_space=row[0],name=row[1],area=row[2],occupation_type=row[3],
                          building=building)
+            variables=self.load_environmental_variable_by_space(id_space)
+            devices=self.load_devices_by_space(id_space)
+            profiles = self.load_profiles_by_space(id_space)
+            space.add_environment_vars(variables)
+            space.add_devices(devices)
+            space.add_profiles(profiles)
             return space
         else :
-            return  None
+            return None
 
+    # return a list of all devices
     def load_profiles(self):
-        # to replace by a query to database
         result= self.__select_data_from_table("profile")
         list=[]
         for row in result:
             space = self.load_space(id_space=row[3])
-            profile = Profile(id_profile=row[0],profile_name=row[1],state=row[2],space=space)
+            profile = Profile(id_profile=row[0],profile_name=row[1],state=row[2])
+            list.append(profile)
+        return list
+
+    # return a list of the devices of a specific space
+    def load_profiles_by_space(self,id_space):
+        result = self.__select_data_from_table("profile", column='space_id', value=id_space)
+        list=[]
+        for row in result:
+            space = self.load_space(id_space=row[3])
+            profile = Profile(id_profile=row[0],profile_name=row[1],state=row[2])
             list.append(profile)
         return list
 
@@ -209,8 +249,7 @@ class DAO_ambiosensing:
         result = self.__select_data_from_table("profile",column='idprofile',value=id)
         if len(result) > 0:
             row=result[0]
-            space = self.load_space(id_space=row[3])
-            profile = Profile(id_profile=row[0], profile_name=row[1], state=row[2], space=space)
+            profile = Profile(id_profile=row[0], profile_name=row[1], state=row[2])
             return profile
         else:
             return None
@@ -236,8 +275,6 @@ class DAO_ambiosensing:
         index=self.__sql_getLastIndex(change_cursor)
         change_cursor.close()
         return index
-
-
 
     def __update_data_in_table(self, dict_column_list, value_list, column,value, table_name):
         sql_update = self.__create_update_sql_statement(column_list=dict_column_list,

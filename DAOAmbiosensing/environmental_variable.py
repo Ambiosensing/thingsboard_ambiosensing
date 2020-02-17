@@ -5,3 +5,5 @@ class Environmental_variable:
         self.nome = nome
         self.value = value
         self.unit_type = unit_type
+
+

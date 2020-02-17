@@ -1,14 +1,10 @@
 
-
 class Device_configuration:
-    def __init__(self, id, state, operation_value):
+    def __init__(self,state, operation_value, id_device,id=None):
         self.id = id
         self.state = state
         self.operation_value = operation_value
-        self.list_devices = []                      #list of devices assigned to this device configuration
+        self.id_device=id_device ## in order to have teh id of the device
 
-    def __init__(self, id, state, operation_value, list_devices):
-        self.id = id
-        self.state = state
-        self.operation_value = operation_value
-        self.list_devices = list_devices            # list of devices assigned to this device configuration
+
+

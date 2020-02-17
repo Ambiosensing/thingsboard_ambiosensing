@@ -20,6 +20,15 @@ class Space:
     def add_environment_var(self, environment_var):
         self.environment_vars.append(environment_var)
 
+    def add_profiles(self, list):
+        self.profiles.extend(list)
+
+    def add_devices(self, list):
+        self.devices.extend(list)
+
+    def add_environment_vars(self, list):
+        self.environment_vars.extend(list)
+
     def to_string(self):
         return "Space id: " + str(self.id_space) + " Space id TB: " + str(self.id_thingsboard) +\
                " Name: " + self.name + " Area:" + str(self.area) +\
