@@ -17,6 +17,11 @@ UPDATE thingsboard_devices_table SET entityType = 'DEVICE', id = 'fa9d0090-0f13-
 USE ambiosensing_thingsboard;
 SELECT entityType, id, timeseriesKey FROM thingsboard_devices_table WHERE name LIKE 'Water%';
 
-SELECT * FROM ambiosensing_thingsboard.thingsboard_customers_table;
-SELECT * FROM ambiosensing_thingsboard.thingsboard_devices_table;
-SELECT * FROM ambiosensing_thingsboard.thingsboard_tenants_table;
+SELECT * FROM ambiosensing_thingsboard.tb_customers;
+SELECT * FROM ambiosensing_thingsboard.tb_devices WHERE id = '9e391040-04ab-11ea-8d16-d75afdb8a7ce';
+SELECT * FROM ambiosensing_thingsboard.tb_tenants;
+SELECT * FROM ambiosensing_thingsboard.tb_authentication;
+
+SELECT * FROM ambiosensing_thingsboard.tb_tenant_assets WHERE id = "efa6d2d0-0ad9-11ea-8001-3975f352e04e";
+
+SELECT * FROM ambiosensing_thingsboard.tb_asset_devices;

@@ -41,6 +41,10 @@ Rotating System (emulated)
 deviceId: 5dfed5f0-4d17-11ea-885a-ed86f736f3ee
 access Token: NBeMl5WdnWAd4D8gFyWh
 
+Temperature controller (RPC control example)
+deviceId = 16d67360-5355-11ea-a3d3-2392eb368178
+accessToken = Cloy4nszTD6j7wvOxmUW
+
 ----------------------------------------------------------------------------------------------------------------------------------------------------------
 
 json request format:
@@ -62,13 +66,14 @@ json request format:
 
 {
 "method": "setValue",
-"params": {
-  "test_temperature": "75",
-  "enabled": 1
-}
+"params": 73
 }
 
+{
+"method": "getValue",
+"params": 0
+}
 
-def setValue(params):
-    sensor_data['test_temperature'] = params
-    print("Temperature Set: ", params, " ºC")
+https://www.tecmint.com/darkstat-web-based-linux-network-traffic-analyzer/
+https://www.tecmint.com/ngrep-network-packet-analyzer-for-linux/
+https://www.tecmint.com/12-tcpdump-commands-a-network-sniffer-tool/

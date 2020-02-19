@@ -8,14 +8,28 @@ import datetime
 
 
 # ThingsBoard server credentials - The IP address that my remote Raspberry Pi Ambi-05 'sees' my TB local installation, i.e., the IP address of the machine that has that TB installation in the local network's context
-# THINGSBOARD_HOST = '10.172.66.223'
-THINGSBOARD_HOST = 'localhost'
 
-# Access token for the Ambi-05 device, as provided by the ThingsBoard local installation
+# Typical host for my RICARDO-NTBOOK machine (on the Uninova's LAN)
+# THINGSBOARD_HOST = '10.172.66.223'
+
+# Typical host for my HA-RALMEIDA-P1 (On my home's LAN)
+THINGSBOARD_HOST = '192.168.1.24'
+
+# THINGSBOARD_HOST = 'localhost'
+
+# Access token for the Ambi-05 device, as provided by the ThingsBoard local installation in the RICARDO-NTBOOK machine
 # ACCESS_TOKEN = 'rizPJk2E0yXMugHeJZuQ'
 
+# Access token for the Ambi-05 device when configured in my HA-RALMEIDA-P1 machine's local ThingsBoard installation
+# Device type (for configuring the dashboard alias): temperature_controller
+ACCESS_TOKEN = 'XJCv4VjHvhvtEaVoHGFK'
+
 # Access token for the emulated Temperature controller interface
-ACCESS_TOKEN = 'v5JLj4EGL1qB7haqBspq'
+# For my RICARDO-NTBOOK machine
+# ACCESS_TOKEN = 'v5JLj4EGL1qB7haqBspq'
+
+# For my HA-RALMEIDA-P1 machine
+# ACCESS_TOKEN = 'Cloy4nszTD6j7wvOxmUW'
 
 sensor_data = {'test_temperature': 25}
 
