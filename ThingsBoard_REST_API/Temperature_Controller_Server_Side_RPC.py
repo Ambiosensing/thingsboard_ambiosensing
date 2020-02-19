@@ -6,6 +6,7 @@ from threading import Thread
 import time
 import datetime
 
+
 # ThingsBoard server credentials - The IP address that my remote Raspberry Pi Ambi-05 'sees' my TB local installation, i.e., the IP address of the machine that has that TB installation in the local network's context
 # THINGSBOARD_HOST = '10.172.66.223'
 THINGSBOARD_HOST = 'localhost'
@@ -32,7 +33,7 @@ def publishValue(client):
     next_reading = time.time()
     while True:
         client.publish(telemetry_topic, json.dumps(sensor_data), 1)
-        print("Published '{0}' into {1} at {2}.Sleeping now...".format(str(sensor_data), str(THINGSBOARD_HOST), str(datetime.datetime.now().replace(microsecond=0))))
+        print("Published '{0}' into {1} at {2}. Sleeping now...".format(str(sensor_data), str(THINGSBOARD_HOST), str(datetime.datetime.now().replace(microsecond=0))))
         next_reading += INTERVAL
         sleep_time = next_reading - time.time()
 
@@ -47,6 +48,22 @@ def read_temperature():
 
 # Function will set the temperature value in device
 def setValue(params):
+    """How to execute this method using a server side RPC call:
+    API service to call: rpc-controller.handleTwoWayDeviceRPCRequest
+    Arguments: deviceId: the identification string obtainable by configuring the device in the ThingsBoard installation acting as server. This field expects a 32 byte hexadecimal string, with a dash '-' separating blocks of 8, 4, 4,
+    4 and 12 bytes respectively. E.g: 39297590-51aa-11ea-89dc-25d13d30f848
+    requestBody: A JSON dictionary in the following format:
+    data =
+    {
+        "method": "setValue",
+        "params":
+        {
+            "test_temperature": int
+        }
+    }
+    , where in this basic example, the method to be executed from the client side (device) has to be properly identified under the "method" key (respecting the lower casing too) and the value to set has to come under the "params" key. Check the
+    on_message method definition to see why this has to be this way and how to change it if necessary
+    """
     sensor_data['test_temperature'] = params
     print("Temperature Set: ", params, " ºC")
 
