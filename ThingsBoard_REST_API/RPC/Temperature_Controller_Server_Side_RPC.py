@@ -22,7 +22,7 @@ THINGSBOARD_HOST = '192.168.1.24'
 
 # Access token for the Ambi-05 device when configured in my HA-RALMEIDA-P1 machine's local ThingsBoard installation
 # Device type (for configuring the dashboard alias): temperature_controller
-ACCESS_TOKEN = 'XJCv4VjHvhvtEaVoHGFK'
+# ACCESS_TOKEN = 'XJCv4VjHvhvtEaVoHGFK'
 
 # Access token for the emulated Temperature controller interface
 # For my RICARDO-NTBOOK machine
@@ -30,6 +30,12 @@ ACCESS_TOKEN = 'XJCv4VjHvhvtEaVoHGFK'
 
 # For my HA-RALMEIDA-P1 machine
 # ACCESS_TOKEN = 'Cloy4nszTD6j7wvOxmUW'
+
+# Access token for my emulated Remote Temperature controller interface
+# ACCESS_TOKEN = 'cEmakz5lvZY0FyQq9NoZ'
+
+# Access token for the emulated Remote Ambi-05
+ACCESS_TOKEN = 'zu1ucD1IxvlR2O2qi9nZ'
 
 sensor_data = {'test_temperature': 25}
 
@@ -47,7 +53,7 @@ def publishValue(client):
     next_reading = time.time()
     while True:
         client.publish(telemetry_topic, json.dumps(sensor_data), 1)
-        print("Published '{0}' into {1} at {2}. Sleeping now...".format(str(sensor_data), str(THINGSBOARD_HOST), str(datetime.datetime.now().replace(microsecond=0))))
+        print("Published '", str(sensor_data), "' into ", str(THINGSBOARD_HOST), " at ", str(datetime.datetime.now().replace(microsecond=0)), ". Sleeping now...")
         next_reading += INTERVAL
         sleep_time = next_reading - time.time()
 
@@ -61,7 +67,7 @@ def read_temperature():
 
 
 # Function will set the temperature value in device
-def setValue(params):
+def setValue(params, msg):
     """How to execute this method using a server side RPC call:
     API service to call: rpc-controller.handleTwoWayDeviceRPCRequest
     Arguments: deviceId: the identification string obtainable by configuring the device in the ThingsBoard installation acting as server. This field expects a 32 byte hexadecimal string, with a dash '-' separating blocks of 8, 4, 4,
@@ -78,8 +84,13 @@ def setValue(params):
     , where in this basic example, the method to be executed from the client side (device) has to be properly identified under the "method" key (respecting the lower casing too) and the value to set has to come under the "params" key. Check the
     on_message method definition to see why this has to be this way and how to change it if necessary
     """
+    old_temp = sensor_data['test_temperature']
     sensor_data['test_temperature'] = params
-    print("Temperature Set: ", params, " ºC")
+    new_temp = sensor_data['test_temperature']
+    pub_msg = "Changed temperature from " + str(old_temp) + " C to " + str(new_temp) + " C."
+    print("Temperature Set: ", params, " C")
+    requestId = msg.topic[len(request_base_topic):len(msg.topic)]
+    client.publish(response_base_topic + requestId, json.dumps(pub_msg), 1)
 
 
 # MQTT on_connect callback function
@@ -104,7 +115,7 @@ def on_message(client, userdata, msg):
         if data['method'] == 'setValue':
             # print("setvalue request\n")
             params = data['params']
-            setValue(params)
+            setValue(params=params, msg=msg)
 
 
 # Create a client instance

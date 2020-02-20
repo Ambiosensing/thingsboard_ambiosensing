@@ -42,8 +42,22 @@ deviceId: 5dfed5f0-4d17-11ea-885a-ed86f736f3ee
 access Token: NBeMl5WdnWAd4D8gFyWh
 
 Temperature controller (RPC control example)
+deviceType = temperature_controller
 deviceId = 16d67360-5355-11ea-a3d3-2392eb368178
 accessToken = Cloy4nszTD6j7wvOxmUW
+
+Remote temperature controller (RPC control example)
+deviceType = temperature_controller
+deviceId = 710717b0-53f3-11ea-aa0c-135d877fb643
+accessToken = cEmakz5lvZY0FyQq9NoZ
+
+Remote Ambi-05 (RPC control example)
+deviceId = 09a97730-53f7-11ea-aa0c-135d877fb643
+accessToken = zu1ucD1IxvlR2O2qi9nZ
+
+RelayController (Emulation of the RPi Relay Board that is mounted in the Ambi-05 Raspberry Pi Unit)
+deviceId = 3806ac00-5411-11ea-aa0c-135d877fb643
+accessToken = OTPl99XqUaQNPMAtmdy4
 
 ----------------------------------------------------------------------------------------------------------------------------------------------------------
 
