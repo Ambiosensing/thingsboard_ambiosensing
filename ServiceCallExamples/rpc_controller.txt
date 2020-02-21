@@ -25,7 +25,10 @@ access Token: KtPKsFFUWoQDfFUQnPJN
 Temperature controller (RPC control example)
 deviceId = 39297590-51aa-11ea-89dc-25d13d30f848
 access Token = v5JLj4EGL1qB7haqBspq
-entityViewId = 0f202b60-51ad-11ea-89dc-25d13d30f848
+
+Relay Controller (Emulation of the RPi Relay Board that is mounted in the Ambi-05 Raspberry Pi Unit)
+deviceId = 9e35beb0-54a9-11ea-baa1-bd1d876ee3ed
+accessToken = u5TQoEr0zGpfHNY6Le4F
 
 ----------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -90,11 +93,7 @@ json request format:
 
 JSON requests for the RelayController
 {
-	"method": "getRelayStatus"
-}
-
-{
-	"method": "setRelay",
+	"method": "getRelayStatus",
 	"params": 
 	{
 		"relay": 3,
@@ -102,6 +101,34 @@ JSON requests for the RelayController
 	}
 }
 
+{
+	"method": "setRelayMode",
+	"params": 
+	{
+		"relay": 3,
+		"value": "ON"
+	}
+}
+
+{
+	"method": "setRelay",
+	"params": 
+	{
+		"relay": 2,
+		"value": "ON"
+	}
+}
+
 https://www.tecmint.com/darkstat-web-based-linux-network-traffic-analyzer/
 https://www.tecmint.com/ngrep-network-packet-analyzer-for-linux/
 https://www.tecmint.com/12-tcpdump-commands-a-network-sniffer-tool/
+
+
+curl -X POST --header 'Content-Type: application/json' --header 'Accept: application/json' --header 'X-Authorization: Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJyZGwuYWxtZWlkYUBjYW1wdXMuZmN0LnVubC5wdCIsInNjb3BlcyI6WyJURU5BTlRfQURNSU4iXSwidXNlcklkIjoiZWJhMTczNDAtZWY2Ni0xMWU5LTk2N2MtYzMyNmU0NGM2MjI4IiwiZmlyc3ROYW1lIjoiUmljYXJkbyIsImxhc3ROYW1lIjoiQWxtZWlkYSIsImVuYWJsZWQiOnRydWUsImlzUHVibGljIjpmYWxzZSwidGVuYW50SWQiOiJiYmNkN2UyMC1lZjY2LTExZTktOTY3Yy1jMzI2ZTQ0YzYyMjgiLCJjdXN0b21lcklkIjoiMTM4MTQwMDAtMWRkMi0xMWIyLTgwODAtODA4MDgwODA4MDgwIiwiaXNzIjoidGhpbmdzYm9hcmQuaW8iLCJpYXQiOjE1ODIyOTgwMzksImV4cCI6MTU4MjMwNzAzOX0.0m30pJp-InHDk2Bz3WnMHiMkuZ3Rgaw11AcHMoog9apA1F2AO7RAvRwHN1yB1IG0khqCTzSdJKp0PyzoVMQnJQ' -d '{ \
+ 	"method": "setRelay3", \
+ 	"params":  \
+ 	{ \
+ "relay": 1, \
+ 		"value": 0 \
+ 	} \
+ }' 'http://localhost:8080/api/plugins/rpc/twoway/9e35beb0-54a9-11ea-baa1-bd1d876ee3ed'

@@ -1,0 +1,244 @@
+{
+  "title": "Relay Controller dashboard",
+  "configuration": {
+    "description": "Simple dashboard to control the Relay units in the RPi Relay Board with a touch of a button",
+    "widgets": {
+      "6183a756-a87e-cb57-9e58-72482db3d4ae": {
+        "isSystemType": true,
+        "bundleAlias": "control_widgets",
+        "typeAlias": "round_switch",
+        "type": "rpc",
+        "title": "New widget",
+        "sizeX": 6,
+        "sizeY": 7,
+        "config": {
+          "targetDeviceAliases": [],
+          "showTitle": false,
+          "backgroundColor": "#fff",
+          "color": "rgba(0, 0, 0, 0.87)",
+          "padding": "0px",
+          "settings": {
+            "requestTimeout": 500,
+            "initialValue": false,
+            "getValueMethod": "getRelay1Status",
+            "setValueMethod": "setRelay1",
+            "title": "Relay 1 Control",
+            "retrieveValueMethod": "rpc",
+            "valueKey": "value",
+            "parseValueFunction": "return data ? true : false;",
+            "convertValueFunction": "return {\"value\": value};"
+          },
+          "title": "Relay 1 Switch",
+          "dropShadow": true,
+          "enableFullscreen": false,
+          "widgetStyle": {},
+          "titleStyle": {
+            "fontSize": "16px",
+            "fontWeight": 400
+          },
+          "useDashboardTimewindow": true,
+          "showLegend": false,
+          "actions": {},
+          "decimals": 2,
+          "datasources": [],
+          "showTitleIcon": false,
+          "titleIcon": null,
+          "iconColor": "rgba(0, 0, 0, 0.87)",
+          "iconSize": "24px",
+          "titleTooltip": "",
+          "displayTimewindow": true,
+          "targetDeviceAliasIds": [
+            "bb63bc93-3e13-6ca2-31f4-24c46931f216"
+          ]
+        },
+        "id": "6183a756-a87e-cb57-9e58-72482db3d4ae"
+      },
+      "132cf6e0-02b4-0cfb-685e-be507f0dcfc8": {
+        "isSystemType": true,
+        "bundleAlias": "control_widgets",
+        "typeAlias": "round_switch",
+        "type": "rpc",
+        "title": "New widget",
+        "sizeX": 6,
+        "sizeY": 7,
+        "config": {
+          "targetDeviceAliases": [],
+          "showTitle": false,
+          "backgroundColor": "#fff",
+          "color": "rgba(0, 0, 0, 0.87)",
+          "padding": "0px",
+          "settings": {
+            "requestTimeout": 500,
+            "initialValue": false,
+            "getValueMethod": "getRelay2Status",
+            "setValueMethod": "setRelay2",
+            "title": "Relay 2 Control",
+            "retrieveValueMethod": "rpc",
+            "valueKey": "value",
+            "parseValueFunction": "return data ? true : false;",
+            "convertValueFunction": "return {\"value\": value};"
+          },
+          "title": "Relay 2 Switch",
+          "dropShadow": true,
+          "enableFullscreen": false,
+          "widgetStyle": {},
+          "titleStyle": {
+            "fontSize": "16px",
+            "fontWeight": 400
+          },
+          "useDashboardTimewindow": true,
+          "showLegend": false,
+          "actions": {},
+          "decimals": 2,
+          "datasources": [],
+          "showTitleIcon": false,
+          "titleIcon": null,
+          "iconColor": "rgba(0, 0, 0, 0.87)",
+          "iconSize": "24px",
+          "titleTooltip": "",
+          "displayTimewindow": true,
+          "targetDeviceAliasIds": [
+            "bb63bc93-3e13-6ca2-31f4-24c46931f216"
+          ]
+        },
+        "id": "132cf6e0-02b4-0cfb-685e-be507f0dcfc8"
+      },
+      "864ba53d-5649-6bbb-8586-4d10a377ce91": {
+        "isSystemType": true,
+        "bundleAlias": "control_widgets",
+        "typeAlias": "round_switch",
+        "type": "rpc",
+        "title": "New widget",
+        "sizeX": 6,
+        "sizeY": 7,
+        "config": {
+          "targetDeviceAliases": [],
+          "showTitle": false,
+          "backgroundColor": "#fff",
+          "color": "rgba(0, 0, 0, 0.87)",
+          "padding": "0px",
+          "settings": {
+            "requestTimeout": 500,
+            "initialValue": false,
+            "getValueMethod": "getRelay3Status",
+            "setValueMethod": "setRelay3",
+            "title": "Relay 3 Control",
+            "retrieveValueMethod": "rpc",
+            "valueKey": "value",
+            "parseValueFunction": "return data ? true : false;",
+            "convertValueFunction": "return {\"value\": value};"
+          },
+          "title": "Relay 1 Switch",
+          "dropShadow": true,
+          "enableFullscreen": false,
+          "widgetStyle": {},
+          "titleStyle": {
+            "fontSize": "16px",
+            "fontWeight": 400
+          },
+          "useDashboardTimewindow": true,
+          "showLegend": false,
+          "actions": {},
+          "decimals": 2,
+          "datasources": [],
+          "showTitleIcon": false,
+          "titleIcon": null,
+          "iconColor": "rgba(0, 0, 0, 0.87)",
+          "iconSize": "24px",
+          "titleTooltip": "",
+          "displayTimewindow": true,
+          "targetDeviceAliasIds": [
+            "bb63bc93-3e13-6ca2-31f4-24c46931f216"
+          ]
+        },
+        "id": "864ba53d-5649-6bbb-8586-4d10a377ce91"
+      }
+    },
+    "states": {
+      "default": {
+        "name": "Relay Controller dashboard",
+        "root": true,
+        "layouts": {
+          "main": {
+            "widgets": {
+              "6183a756-a87e-cb57-9e58-72482db3d4ae": {
+                "sizeX": 6,
+                "sizeY": 7,
+                "row": 0,
+                "col": 0
+              },
+              "132cf6e0-02b4-0cfb-685e-be507f0dcfc8": {
+                "sizeX": 6,
+                "sizeY": 7,
+                "row": 0,
+                "col": 7
+              },
+              "864ba53d-5649-6bbb-8586-4d10a377ce91": {
+                "sizeX": 6,
+                "sizeY": 7,
+                "row": 0,
+                "col": 14
+              }
+            },
+            "gridSettings": {
+              "backgroundColor": "#eeeeee",
+              "color": "rgba(0,0,0,0.870588)",
+              "columns": 24,
+              "margins": [
+                10,
+                10
+              ],
+              "backgroundSizeMode": "100%"
+            }
+          }
+        }
+      }
+    },
+    "entityAliases": {
+      "bb63bc93-3e13-6ca2-31f4-24c46931f216": {
+        "id": "bb63bc93-3e13-6ca2-31f4-24c46931f216",
+        "alias": "RelayControllerAlias",
+        "filter": {
+          "type": "deviceType",
+          "resolveMultiple": false,
+          "deviceType": "raspberry-pi",
+          "deviceNameFilter": "Relay"
+        }
+      }
+    },
+    "timewindow": {
+      "displayValue": "",
+      "selectedTab": 0,
+      "hideInterval": false,
+      "hideAggregation": false,
+      "hideAggInterval": false,
+      "realtime": {
+        "interval": 1000,
+        "timewindowMs": 60000
+      },
+      "history": {
+        "historyType": 0,
+        "interval": 1000,
+        "timewindowMs": 60000,
+        "fixedTimewindow": {
+          "startTimeMs": 1582214480419,
+          "endTimeMs": 1582300880419
+        }
+      },
+      "aggregation": {
+        "type": "AVG",
+        "limit": 25000
+      }
+    },
+    "settings": {
+      "stateControllerId": "entity",
+      "showTitle": false,
+      "showDashboardsSelect": true,
+      "showEntitiesSelect": true,
+      "showDashboardTimewindow": true,
+      "showDashboardExport": true,
+      "toolbarAlwaysOpen": true
+    }
+  },
+  "name": "Relay Controller dashboard"
+}
