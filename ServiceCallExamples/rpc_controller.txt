@@ -88,6 +88,20 @@ json request format:
 "params": 0
 }
 
+JSON requests for the RelayController
+{
+	"method": "getRelayStatus"
+}
+
+{
+	"method": "setRelay",
+	"params": 
+	{
+		"relay": 3,
+		"value": "ON"
+	}
+}
+
 https://www.tecmint.com/darkstat-web-based-linux-network-traffic-analyzer/
 https://www.tecmint.com/ngrep-network-packet-analyzer-for-linux/
 https://www.tecmint.com/12-tcpdump-commands-a-network-sniffer-tool/
