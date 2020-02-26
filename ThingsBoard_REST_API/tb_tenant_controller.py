@@ -61,8 +61,8 @@ def getTenants(textSearch=None, idOffset=None, textOffset=None, limit=10):
         'textSearchBound': str,
         'textOffset': str,
         'idOffset': str
-  }
-  while the 'hasNext' (a boolean) key is set to either False if the limit argument was high enough or True if there are still results left to return from the remote ThingsBoard API
+    }
+    while the 'hasNext' (a boolean) key is set to either False if the limit argument was high enough or True if there are still results left to return from the remote ThingsBoard API
     """
 
     # Fetch a local logger for this method only
@@ -139,7 +139,3 @@ def getTenants(textSearch=None, idOffset=None, textOffset=None, limit=10):
 
         # I'm done. Send back the response data
         return response
-
-
-
-

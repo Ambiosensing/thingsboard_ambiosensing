@@ -132,3 +132,14 @@ curl -X POST --header 'Content-Type: application/json' --header 'Accept: applica
  		"value": 0 \
  	} \
  }' 'http://localhost:8080/api/plugins/rpc/twoway/9e35beb0-54a9-11ea-baa1-bd1d876ee3ed'
+ 
+ 
+ 
+ curl -X POST --header 'Content-Type: application/json' --header 'Accept: application/json' --header 'X-Authorization: Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJyZGwuYWxtZWlkYUBjYW1wdXMuZmN0LnVubC5wdCIsInNjb3BlcyI6WyJURU5BTlRfQURNSU4iXSwidXNlcklkIjoiZWJhMTczNDAtZWY2Ni0xMWU5LTk2N2MtYzMyNmU0NGM2MjI4IiwiZmlyc3ROYW1lIjoiUmljYXJkbyIsImxhc3ROYW1lIjoiQWxtZWlkYSIsImVuYWJsZWQiOnRydWUsImlzUHVibGljIjpmYWxzZSwidGVuYW50SWQiOiJiYmNkN2UyMC1lZjY2LTExZTktOTY3Yy1jMzI2ZTQ0YzYyMjgiLCJjdXN0b21lcklkIjoiMTM4MTQwMDAtMWRkMi0xMWIyLTgwODAtODA4MDgwODA4MDgwIiwiaXNzIjoidGhpbmdzYm9hcmQuaW8iLCJpYXQiOjE1ODIyOTgwMzksImV4cCI6MTU4MjMwNzAzOX0.0m30pJp-InHDk2Bz3WnMHiMkuZ3Rgaw11AcHMoog9apA1F2AO7RAvRwHN1yB1IG0khqCTzSdJKp0PyzoVMQnJQ' -d '{ \ 
+ 	"method": "setRelayMode", \ 
+ 	"params":  \ 
+ 	{ \ 
+ 		"relay": 3, \ 
+ 		"value": "ON" \ 
+ 	} \ 
+ }' 'http://localhost:8080/api/plugins/rpc/oneway/9e35beb0-54a9-11ea-baa1-bd1d876ee3ed'

@@ -12,6 +12,7 @@ def getDeviceTypes():
     """ Simple GET method to retrieve the list of all device types stored in the ThingsBoard platform
     @:type user_types allowed for this service: TENANT_ADMIN, CUSTOMER_USER
     @:return standard request response """
+    device_types_log = ambi_logger.get_logger(__name__)
 
     # The service endpoint to call
     service_endpoint = "/api/device/types"
@@ -19,7 +20,12 @@ def getDeviceTypes():
     service_dict = utils.build_service_calling_info(mac.get_auth_token(user_type='tenant_admin'), service_endpoint)
 
     # Execute the service call
-    response = requests.get(url=service_dict["url"], headers=service_dict["headers"])
+    try:
+        response = requests.get(url=service_dict["url"], headers=service_dict["headers"])
+    except (requests.ConnectionError, requests.ConnectTimeout) as ce:
+        error_msg = "Could not get a response from {0}...".format(str(service_dict['url']))
+        device_types_log.error(error_msg)
+        raise ce
 
     return response
 

@@ -89,7 +89,12 @@ def getSecuritySettings():
     service_endpoint = "/api/admin/securitySettings"
     service_dict = utils.build_service_calling_info(mac.get_auth_token(user_type='sys_admin'), service_endpoint)
 
-    response = requests.get(url=service_dict["url"], headers=service_dict["headers"])
+    try:
+        response = requests.get(url=service_dict["url"], headers=service_dict["headers"])
+    except (requests.ConnectionError, requests.ConnectTimeout) as ce:
+        error_msg = "Could not get a response from {0}...".format(str(service_dict['url']))
+        security_set_log.error(error_msg)
+        raise ce
 
     # There's a possibility that a non-admin authorization token can be used at this point. If that's the case, the request will return the appropriate response
     if response.status_code == 403 and ast.literal_eval(response.text)["errorCode"] == 20:
@@ -110,10 +115,16 @@ def checkUpdates():
                   "updateAvailable": true
                 }
     """
+    check_updates_log = ambi_logger.get_logger(__name__)
     service_endpoint = "/api/admin/updates"
 
     service_dict = utils.build_service_calling_info(mac.get_auth_token(user_type='sys_admin'), service_endpoint)
 
-    response = requests.get(url=service_dict["url"], headers=service_dict["headers"])
+    try:
+        response = requests.get(url=service_dict["url"], headers=service_dict["headers"])
+    except (requests.ConnectionError, requests.ConnectTimeout) as ce:
+        error_msg = "Could not get a response from {0}...".format(str(service_dict['url']))
+        check_updates_log.error(error_msg)
+        raise ce
 
     return response

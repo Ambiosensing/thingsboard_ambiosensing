@@ -3,12 +3,12 @@
 #  require an id or specific token of some kind to return any meaningful data). Use it to navigate until getting deviceId values via API calls instead of using
 #  the ThingsBoard web interface
 
-auth_ctrl = False
+auth_ctrl = True
 ent_rel = False
 asset_ctrl = False
 mysql_test = False
 mysql_device = False
-rpc_one_way = True
+rpc_one_way = False
 
 
 def __main__():
@@ -30,12 +30,13 @@ def __main__():
 
     if rpc_one_way:
         from ThingsBoard_REST_API import tb_rpc_controller as trc
-        method = "setRelay1"
-        param_dict = {"value": False}
+        method = "setRelayMode"
+        param_dict = {"relay": 2, "value": False}
         deviceId = "9e35beb0-54a9-11ea-baa1-bd1d876ee3ed"
 
-        resp = trc.handleOneWayDeviceRPCRequests(deviceId=deviceId, remote_method=method, param_dict=param_dict)
-        print("RPC command returned HTTP " + str(resp))
+        # response = trc.handleOneWayDeviceRPCRequests(deviceId=deviceId, remote_method=method, param_dict=param_dict)
+        response = trc.handleTwoWayDeviceRPCRequest(deviceId=deviceId, remote_method=method, param_dict=param_dict)
+        print("RPC command returned HTTP " + str(response))
 
     if mysql_test:
         from mysql_database.python_database_modules import mysql_utils

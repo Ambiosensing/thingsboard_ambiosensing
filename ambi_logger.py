@@ -2,7 +2,7 @@
 
 import logging
 import sys
-from logging.handlers import TimedRotatingFileHandler
+import logging.handlers
 import proj_config
 import utils
 
@@ -31,14 +31,16 @@ def get_file_handler(file_location=None):
     rotates around a specific time indicated in its properties.
     @:raise FileNotFoundError - If the file location provided has problems (missing directories and/or files)
     """
-    if file_location:
-        file_handler = TimedRotatingFileHandler(file_location, when="midnight", interval=1, backupCount=5)
-    else:
-        file_handler = TimedRotatingFileHandler(proj_config.LOG_FILE_LOCATION, when="midnight", interval=1, backupCount=5)
+    if file_location is None:
+        file_location = proj_config.LOG_FILE_LOCATION
 
-    # Set the standard format to the log messages
+    # Set a file handler by creating a file identified (path + filename) in the variable file_location, set in 'append' mode (subsequent messages are appended to the end of the file instead of replacing the existing one), with a 1MB size limit (
+    # 1x10^6 Bytes) and a pool of 10 names to rotate within, i.e, once a file exceeds the maxBytes limit, a new one is created by appending a '1', '2', etc... to the end of the filename identified in file_location. The pool holds 10 files maximum
+    # (its what the backupCount argument does). Once file #10 exceeds the maxBytes size, the initial file is re-set.
+    file_handler = logging.handlers.RotatingFileHandler(filename=file_location, mode='a', maxBytes=1000000, backupCount=10)
+
+    # Set the base log format
     file_handler.setFormatter(proj_config.LOG_FORMATTER)
-
     return file_handler
 
 

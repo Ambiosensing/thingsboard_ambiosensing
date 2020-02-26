@@ -61,7 +61,71 @@ def handleOneWayDeviceRPCRequests(deviceId, remote_method, param_dict=None):
     service_dict = utils.build_service_calling_info(mac.get_auth_token(user_type="tenant_admin"), service_endpoint=service_endpoint)
 
     # Done. Set things in motion then
-
-    response = requests.post(url=service_dict["url"], headers=service_dict["headers"], data=json.dumps(data))
+    try:
+        response = requests.post(url=service_dict["url"], headers=service_dict["headers"], data=json.dumps(data))
+    except (requests.ConnectionError, requests.ConnectTimeout) as ce:
+        error_msg = "Could not get a response from {0}...".format(str(service_dict['url']))
+        one_way_log.error(error_msg)
+        raise ce
 
     return response.status_code
+
+
+def handleTwoWayDeviceRPCRequest(deviceId, remote_method, param_dict=None):
+    """POST method to execute bidirectional RPC calls to a specific method and a specific device, all identified through the argument list passed to this method. If the method to execute requires arguments itself, use the param_dict argument to
+    provide a dictionary with these arguments, in a key-value scheme (key is the name of the argument with the actual value passes as... value).
+    This method implements a reply-response dynamic, as opposed to the previous 'fire-and-forget' approach. The server submits a RPC requests and then listens for a response with the same requestId in the response topic. The method blocks for a
+    while until a valid response can be returned.
+    The usage of this method is identical to the previous one.
+
+    @:param deviceId (str) - The typical 32-byte, dash separated hexadecimal string that uniquely identifies the device in the intended ThingsBoard installation.
+    @:param remote_method (str) - The name of the method that is defined client-side that is to be executed with this call.
+    @:param param_dict (dict) - If the remote method requires arguments to be executed, use this dictionary argument to provide them.
+    @:raise utils.InputValidationException - If any of the input fails initial validation
+    @:raise utils.ServiceEndpointException - If the request was not properly executed
+    @:return response (request.models.Response) - This method returns the object that comes back from the HTTP request using the 'requests' package. This object has loads of interesting information regarding the original request that created it.
+    For this context, the most relevant fields are response.status_code (int), which has the HTTP response code of the last execution, and the response.text, which contains the response of the method that was called, if any. If the remote method
+    doesn't return anything, this field comes back empty.
+    """
+    two_way_log = ambi_logger.get_logger(__name__)
+
+    # Validate inputs
+    utils.validate_input_type(deviceId, str)
+    utils.validate_id(entity_id=deviceId)
+
+    utils.validate_input_type(remote_method, str)
+
+    if param_dict:
+        utils.validate_input_type(param_dict, dict)
+
+    # Set the endpoint
+    service_endpoint = '/api/plugins/rpc/twoway/' + deviceId
+
+    # Create the data payload as a dictionary
+    data = {
+        "method": str(remote_method),
+        "params": param_dict
+    }
+
+    service_dict = utils.build_service_calling_info(mac.get_auth_token(user_type="tenant_admin"), service_endpoint=service_endpoint)
+
+    # Send the request to the server. The response, if obtained, contains the response data
+    try:
+        response = requests.post(url=service_dict['url'], headers=service_dict['headers'], data=json.dumps(data))
+    except (requests.ConnectionError, requests.ConnectTimeout) as ce:
+        error_msg = "Could not get a response from {0}...".format(str(service_dict['url']))
+        two_way_log.error(error_msg)
+        raise ce
+
+    # Watch out for HTTP 408. In this project, when that code is returned (server timeout), it normally means that communication with the remote device was not established properly, by whatever reason
+    if response.status_code == 408:
+        error_msg = "Received a HTTP 408 - Server timed out. Could not get a response from device with id = {0}...".format(str(deviceId))
+        two_way_log.error(error_msg)
+        raise utils.ServiceEndpointException
+    elif response.status_code == 200 and response.text == "":
+        warn_msg = "Received a HTTP 200 - OK - But no response was returned..."
+        two_way_log.warning(warn_msg)
+        # Send back the result as a string, because that's what this method returns
+        return "200"
+    else:
+        return response.text
