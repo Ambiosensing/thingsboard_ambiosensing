@@ -15,7 +15,15 @@ class Profiles_Manager:
 
     def __init__(self,connection):
         self.dao = DAO_ambiosensing()
+    ## alterar nomes dos metodos para ser a laPhyton
+    def getAllSpaces(self):
+        list= self.dao.load_spaces() #fazer no DAO
 
+    def get_active_profile(self):
+        #to implement
+        return None
+    ##def remove_profile(self):
+    # check if is not ative and remove all associated.
     def getAtualSpace(self):
         return self.space_actual
 
@@ -30,7 +38,7 @@ class Profiles_Manager:
     #get list of profiles from atual space
     def getProfiles(self):
         list=self.dao.load_profiles_by_space()
-
+    def getActiveProfile
     def setActualProfile(self,id_profile):
         self.profile_actual=self.dao.load_profiles_by_space(self.space_actual.id_space)
 
@@ -60,6 +68,12 @@ class Profiles_Manager:
         index= self.dao.save_schedule(schedule,self.profile_actual)
         if index != -1 :
             return schedule
+        return None
+
+    # get all schedule for the specific profile
+    def get_schedules(self):
+        list=self.dao.load_schedule_by_profile(self.profile_actual)
+        return list
 
     def add_device_configuration(self,state, value, device, schedule):
         device_configuration= Device_configuration(state=state, operation_value=value,id_device=device.id_device)
@@ -83,6 +97,11 @@ class Profiles_Manager:
             if conf.id_env_variable == env_variable.id:
                 return conf
         return None
+
+    # get all configuration for a specific schedule
+    def get_env_variable_configurations(self,schedule):
+        list_configurations = self.dao.load_env_variable_configuration_by_schedule(schedule)
+        return list_configurations
 
     def get_device_configuration(self,device,schedule):
         list_configurations = self.dao.load_device_configuration_by_schedule(schedule)
