@@ -37,8 +37,27 @@ class Profiles_Manager:
 
     #get list of profiles from atual space
     def getProfiles(self):
-        list=self.dao.load_profiles_by_space()
-    def getActiveProfile
+        list=self.dao.load_profiles_by_space(self.space_actual)
+        return list
+
+    #get the profile activated in atual-space
+    def getActiveProfile(self):
+        list=self.getProfiles()
+        for profile in list:
+            if profile.state:
+                return profile
+        return None
+
+    #activate a profile of a specific space
+    def activateProfile(self,profile):
+        profile.state=1
+        self.dao.update_profile()
+
+    # desactivate a profile of a specific space
+    def desactivateProfile(self, profile):
+            profile.state = 0
+            self.dao.update_profile()
+
     def setActualProfile(self,id_profile):
         self.profile_actual=self.dao.load_profiles_by_space(self.space_actual.id_space)
 
@@ -91,6 +110,7 @@ class Profiles_Manager:
             return env_variable_configuration
         return None
 
+    # get  configuration variable for a specific schedule end a specific env_variable
     def get_env_variable_configuration(self,env_variable,schedule):
         list_configurations = self.dao.load_env_variable_configuration_by_schedule(schedule)
         for conf in list_configurations :
@@ -117,6 +137,24 @@ class Profiles_Manager:
             self.profile_actual.set_activationStrategy(strategy_occupation)
             return strategy_occupation
         return None
+
+        def change__activation_strategy_occupation(self, strategy_occupation, name, min, max):
+        # change fields
+        strategy_occupation.min = min
+        strategy_occupation.max = max
+        strategy_occupation.name = name
+        # update in database
+        self.dao.update_activationSt_occupation(strategy_occupation)
+        return strategy_occupation
+
+    def change__activation_strategy_temporal(self, strategy_temporal, name, days, seasons):
+        #change fields
+        strategy_temporal.list_seasons=seasons;
+        strategy_temporal.list_weekdays=days;
+        strategy_temporal.name = name
+        #update in database
+        self.dao.update_activationSt_temporal(strategy_temporal)
+        return strategy_temporal
 
     def create_activation_strategy_temporal(self, name, list_weekdays, list_seasons):
         strategy_temporal = Strategy_temporal(name=name, list_weekdays=list_weekdays, list_seasons=list_seasons)

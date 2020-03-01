@@ -66,12 +66,26 @@ class DAO_ambiosensing:
          id = self.__insert_data_in_table(dict_column_list, value_list, 'activation_strategy')
          return id
 
+    def __update_activationST(self,strategy)
+        dict_column_list = ['name']
+        value_list = [strategy.name]
+        self.__update_data_in_table(dict_column_list, value_list,' id_activation_strategy',strategy.id,'activation_strategy')
+
     # save on database activation strategy of occupation type
     def save_activationSt_occupation(self,strategy_occupation,profile):
         id=self.__create_activationST(strategy_occupation,profile)
         dict_column_list = ['min', 'max', 'activation_strategy_id_activation_strategy']
         value_list = [strategy_occupation.min, strategy_occupation.max, id]
         index=self.__insert_data_in_table(dict_column_list, value_list, 'strategy_occupation')
+        return index
+        # save on database activation strategy of occupation type
+
+    #update activation strategy occuppation IMPORTANT TESTE
+    def update_activationSt_occupation(self, strategy_occupation):
+        self.__udate_activationST(strategy_occupation)
+        dict_column_list = ['min', 'max', 'activation_strategy_id_activation_strategy']
+        value_list = [strategy_occupation.min, strategy_occupation.max, strategy_occupation.id]
+        index = self.__update_data_in_table(dict_column_list, value_list,'activation_strategy_id_activation_strategy', strategy_occupation.id, 'strategy_occupation')
         return index
 
     # save on database activation strategy of temporal type
@@ -83,7 +97,17 @@ class DAO_ambiosensing:
         value_list = strategy_temporal.list_weekdays +  strategy_temporal.list_seasons + [id]
         index = self.__insert_data_in_table(dict_column_list, value_list, 'strategy_temporal')
         return index
+        # update activation strategy occuppation IMPORTANT TESTE
 
+    def update_activationSt_temporal(self, strategy_temporal):
+        self.__udate_activationST(strategy_temporal)
+        dict_column_list = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday',
+                            'saturday', 'sunday', 'spring', 'summer', 'autumn', 'winter',
+                            'activation_strategy_id_activation_strategy']
+        value_list = strategy_temporal.list_weekdays + strategy_temporal.list_seasons + [id]
+        self.__update_data_in_table(dict_column_list, value_list, 'activation_strategy_id_activation_strategy',
+                                            strategy_temporal.id, 'strategy_temporal')
+        return index
     # save on database a schedule of a specific profile
     def save_schedule(self, schedule, profile):
         dict_column_list = ['start', 'end','profile_idprofile']
@@ -187,15 +211,14 @@ class DAO_ambiosensing:
         return list
 
         # RETURN a list of a specific device
-        def load_device(self, id):
-            # to replace by a query to database
-            result = self.__select_data_from_table("device", "id", id)
-            if len(result) > 0:
-                row = result[0]
-                device = Device(id=row[0], name=row[1], type=row[2], id_thingsboard=row[3])
-                return device
-            else:
-                return None
+    def load_device(self, id):
+        result = self.__select_data_from_table("device", "id", id)
+        if len(result) > 0:
+           row = result[0]
+           device = Device(id=row[0], name=row[1], type=row[2], id_thingsboard=row[3])
+           return device
+        else:
+           return None
 
     # return a specific building
     def load_building(self,id_building):
