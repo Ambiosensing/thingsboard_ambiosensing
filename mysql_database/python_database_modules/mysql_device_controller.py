@@ -22,13 +22,14 @@ def update_devices_table(customer_name=False):
     module_table_key = 'devices'
     # Use the same limit value for both calls
     limit = 50
-    update_devices_log = ambi_logger.get_logger(__name__)
+    update_devices_log = ambi_logger.get_logger(__name__)  # __name__ is a method fingerprint (from python native) and contains a unique path
 
     # Get the base response using just tenant data
     tenant_response = tb_device_controller.getTenantDevices(limit=limit)
 
     # Translate the stuff that comes from the ThingsBoard API as PostGres-speak to Python-speak before forwarding the data
-    tenant_response_dict = eval(utils.translate_postgres_to_python(tenant_response.text))
+    tenant_response_dict = eval(utils.translate_postgres_to_python(tenant_response.text))  # Converts the response.text into a dictionary (eval is a python native method :D )
+
 
     # Test if all results came back with the current limit setting
     if tenant_response_dict['hasNext']:
@@ -106,6 +107,6 @@ def update_devices_table(customer_name=False):
         # For example, querying for the timeseries values from a device with 4 sensors attached that can produce 4 types of different readings implies the following endpoint to be sent in a URL to the remote service:
         # http://localhost:8080/api/plugins/telemetry/DEVICE/3f0e8760-3874-11ea-8da5-2fbefd4cb87e/values/timeseries?limit=3&agg=NONE&keys=humidity,temperature,pressure,lux&startTs=1579189110790&endTs=1579193100786
         # The 'keys' part of the last string shows how this request must be constructed and that implies all parameters in a single string, separated by commas and without any spaces in between.
-        device['timeseriesKeys'] = ",".join(timeseries_keys)
+        device['timeseriesKeys'] = ",".join(timeseries_keys)  if hasattr(timeseries_keys, "__iter__") else ""
         # Done. Carry on with the database stuff
         database_table_updater.insert_table_data(device, proj_config.mysql_db_tables[module_table_key])
