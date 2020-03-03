@@ -1,7 +1,7 @@
 import user_config
 from mysql_database.python_database_modules import mysql_entity_relation_controller as erc
 from mysql_database.python_database_modules import mysql_utils as sql
-from DAOAmbiosensing.DAO_ambiosensing import DAO_ambiosensing, Space, Building
+from DAOAmbiosensing.DAO_ambiosensing import DAO_ambiosensing, Space, Building, Device
 
 
 def get_update_from_TB():
@@ -14,40 +14,53 @@ def get_update_from_TB():
     trigger_column_list = ['fromEntityType', 'toEntityType', 'relationType']
     data_tuple = ('ASSET', 'DEVICE', 'Contains')
 
-    # result is a list with the values of the selected columns
+    # result is a list with the values of the selected columns:
+    # result[i][0] -> id_thingsboard_asset
+    # result[i][1] -> name_asset
+    # result[i][2] -> occupation_type_asset
+    # result[i][3] -> id_thingsboard_device
+    # result[i][4] -> name_device
+    # result[i][5] -> type_device
     result = __select_data_from_table(cnx, "tb_asset_devices", column_list, trigger_column_list, data_tuple)
 
-    dao_ambi = DAO_ambiosensing()
     # in the future this should come in the result set...
     building = Building('EdificioE', 2)
     #dao_ambi.save_building(building)
-    # now is going to populate the space table
+    dao_ambi = DAO_ambiosensing()
+    # populates the space table using the DAO
     populate_space(dao_ambi, building, result)
-
-    # VOU AQUI
-    #for space in building.spaces:
-    #    if
-
-print("DONE\n")
+    # populates the device table according to space
+    populate_device(dao_ambi, building, result)
+    print("DONE\n")
 
 
 def populate_space(dao_ambi, building, result=None):
     if result is None:
         print("Error: Could not populate space table")
         return
-
     for i in range (len(result)):
         elem = result[i]
         new_space = Space(id_thingsboard=elem[0], name=elem[1], area=-1, occupation_type=elem[2], building=building)
         print('*******************************\n')
         print(new_space.to_string())
+        # TO-DO Guarantee that the space to save is unique! , i.e. it is not allowed duplicated spaces on our DB!!
         dao_ambi.save_space(new_space)
         building.add_space(new_space)
 
-def populate_device(dao_ambi, space, result=None):
+def populate_device(dao_ambi, building, result=None):
     if result is None:
         print("Error: Could not populate device table")
         return
+    for space in building.spaces:
+        id_tb_space = space.id_thingsboard
+        for i in range (len(result)):
+            if result[i][0] == id_tb_space:
+                new_device = Device(id_thingsboard=result[i][3], name=result[i][4], type=result[i][5])
+                print('*******************************\n')
+                print(new_device.to_string())
+                ## MISSING: dao_save_device
+                space.add_device(new_device)
+                print(space.to_string())
 
 
 # sql related methods (to put in a class in the future!!!)

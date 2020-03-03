@@ -30,14 +30,15 @@ class Space:
         self.environment_vars.extend(list)
 
     def to_string(self):
-        str_res = "Space id TB: " + str(self.id_thingsboard) +\
-               "| Name: " + self.name + "| Area:" + str(self.area) +\
-               "| Occupation type:" + self.occupation_type
+        str_res = "Space -> Name: " + self.name + " | Space id TB: " + str(self.id_thingsboard) + "| Area: " + str(self.area) + \
+                  " | Occupation type: " + self.occupation_type + " | Devices: ["
 
-        if self.id_space is None or self.building.id_building is None:
-            return str_res
-        else:
-            return "Space id: " + str(self.id_space) + " | " + str_res + "| Building id: " + self.building.id_building
+        for device in self.devices:
+            str_res += " { " + device.to_string() + " } "
+        str_res += "]"
+
+        return str_res
+
 
 
 
