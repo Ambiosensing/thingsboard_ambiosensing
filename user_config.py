@@ -43,9 +43,9 @@ access_info = {
     'mysql_database': {
         'host': 'http://localhost',
         'port': 3306,
-        'username': 'ambiosensing',
+        'username': 'root',
         'password': 'ambiosensing2019',
-        'database': 'ambiosensing_thingsboard'
+        'database': 'ambiosensing_bd'
     }
 }
 
@@ -85,14 +85,14 @@ thingsboard_database = {
 # --------------------------------------------- MySQL DATABASE ACCESS CONFIGURATION ----------------------------------------------------------------------------------
 # The logic here is: the database name is the key and the corresponding value are the access credentials
 mysql_db_access = {
-    'username': 'ambiosensing',
+    'username': 'root',
     'password': 'ambiosensing2019',
     'host': 'localhost',
-    'database': 'ambiosensing_thingsboard'
+    'database': 'ambiosensing_bd'
 }
 
 mysql_db_accessUni = {
-    'username': 'ambiosensing',
+    'username': 'root',
     'password': 'ambiosensing2019',
     'host': 'localhost',
     'database': 'ambiosensing_bd'

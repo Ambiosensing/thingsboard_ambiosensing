@@ -54,8 +54,8 @@ class DAO_ambiosensing:
 
     # save on database a space
     def save_space(self, space):
-        dict_column_list = ['name','area','occupation_type','building_id']
-        value_list = [space.name,space.area,space.occupation_type,space.building.id_building]
+        dict_column_list = ['name','area','occupation_type','id_thingsboard','building_id']
+        value_list = [space.name,space.area,space.occupation_type,space.id_thingsboard,space.building.id_building]
         index=self.__insert_data_in_table(dict_column_list, value_list, 'space')
         space.id_space=index
         return index
@@ -66,7 +66,7 @@ class DAO_ambiosensing:
          id = self.__insert_data_in_table(dict_column_list, value_list, 'activation_strategy')
          return id
 
-    def __update_activationST(self,strategy)
+    def __update_activationST(self,strategy):
         dict_column_list = ['name']
         value_list = [strategy.name]
         self.__update_data_in_table(dict_column_list, value_list,' id_activation_strategy',strategy.id,'activation_strategy')
@@ -277,6 +277,7 @@ class DAO_ambiosensing:
         else:
             return None
 
+    # We should put these methods public in order to be used by other classes
     def __select_data_from_table(self,table_name,column="",value=""):
         if column == "":
             sql_select = self.__create_all_sql_statement(table_name)
@@ -285,7 +286,7 @@ class DAO_ambiosensing:
         change_cursor = self.cnx.cursor(buffered=True)
         result = self.__run_sql_select_statement(change_cursor, sql_select)
         change_cursor.close()
-        return result;
+        return result
 
     def __insert_data_in_table(self,dict_column_list, value_list, table_name):
         sql_insert = self.__create_insert_sql_statement(dict_column_list, table_name)

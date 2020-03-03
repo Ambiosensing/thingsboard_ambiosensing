@@ -138,7 +138,7 @@ class Profiles_Manager:
             return strategy_occupation
         return None
 
-        def change__activation_strategy_occupation(self, strategy_occupation, name, min, max):
+    def change__activation_strategy_occupation(self, strategy_occupation, name, min, max):
         # change fields
         strategy_occupation.min = min
         strategy_occupation.max = max
