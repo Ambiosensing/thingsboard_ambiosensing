@@ -10,24 +10,41 @@ from DAOAmbiosensing.env_variable_configuration import Env_variable_configuratio
 
 import mysql.connector as mysqlc
 from mysql_database.python_database_modules.mysql_utils import MySQLDatabaseException
-
+#Class Singleton
 class DAO_ambiosensing:
-    cnx=None #connection to database
+    __cnx=None #connection to database
+    __instance=None
+
     def __init__(self):
-        database_name = user_config.mysql_db_accessUni['database']
-        connection_dict = user_config.mysql_db_accessUni
-        try:
-            self.cnx = mysqlc.connect(user=connection_dict['username'],
-                                 password=connection_dict['password'],
-                                 host=connection_dict['host'],
-                                 database=connection_dict['database'])
-        except:
-            print("error connection")
+        """ Virtually private constructor. """
+        if DAO_ambiosensing.__instance != None:
+            raise Exception("This class is a singleton!")
+        else:
+            DAO_ambiosensing.__instance = self
+            self.__connect()
+
+    @staticmethod
+    def getInstance():
+        """ Static access method. """
+        if DAO_ambiosensing.__instance == None:
+            DAO_ambiosensing()
+        return DAO_ambiosensing.__instance
 
 
     def __del__(self):
-        if self.cnx!=None:
-            self.cnx.close()
+        if self.__cnx!=None:
+            self.__cnx.close()
+
+    def _connect(self):
+        database_name = user_config.mysql_db_accessUni['database']
+        connection_dict = user_config.mysql_db_accessUni
+        try:
+            self.__cnx = mysqlc.connect(user=connection_dict['username'],
+                                      password=connection_dict['password'],
+                                      host=connection_dict['host'],
+                                      database=connection_dict['database'])
+        except:
+            print("error connection")
 
     # save on database a profile
     def save_profile(self, profile,space):
@@ -300,7 +317,7 @@ class DAO_ambiosensing:
             sql_select = self.__create_all_sql_statement(table_name)
         else:
             sql_select = self.__create_value_sql_statement(value=value, col=column,table_name=table_name)
-        change_cursor = self.cnx.cursor(buffered=True)
+        change_cursor = self.__cnx.cursor(buffered=True)
         result = self.__run_sql_select_statement(change_cursor, sql_select)
         change_cursor.close()
         return result
@@ -308,11 +325,11 @@ class DAO_ambiosensing:
     def __insert_data_in_table(self,dict_column_list, value_list, table_name):
         sql_insert = self.__create_insert_sql_statement(dict_column_list, table_name)
         print(sql_insert)
-        change_cursor = self.cnx.cursor(buffered=True)
+        change_cursor = self.__cnx.cursor(buffered=True)
         self.__run_sql_exec_statement(change_cursor, sql_insert, tuple(value_list))
-        self.cnx.commit()
+        self.__cnx.commit()
         change_cursor.close()
-        change_cursor = self.cnx.cursor(buffered=True)
+        change_cursor = self.__cnx.cursor(buffered=True)
         index=self.__sql_getLastIndex(change_cursor)
         change_cursor.close()
         return index
@@ -321,9 +338,9 @@ class DAO_ambiosensing:
         sql_update = self.__create_update_sql_statement(column_list=dict_column_list,
                                                       column=column, value=value,table_name=table_name)
         print(sql_update)
-        change_cursor = self.cnx.cursor(buffered=True)
+        change_cursor = self.__cnx.cursor(buffered=True)
         self.__run_sq_exec_statement(change_cursor, sql_update, tuple(value_list))
-        self.cnx.commit()
+        self.__cnx.commit()
         change_cursor.close()
 
     def __sql_getLastIndex(self,cursor):

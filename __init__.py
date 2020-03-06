@@ -5,7 +5,7 @@ from mysql_database.python_database_modules import mysql_auth_controller as mac
 #from DAOAmbiosensing.space import Space
 #from DAOAmbiosensing.activation_strategy import Activation_strategy, Strategy_temporal, Strategy_occupation
 
-from profileManager.update_from_TB import get_update_from_TB
+from AmbiosensingManager.update_from_TB import get_update_from_TB
 
 
 def __main__():

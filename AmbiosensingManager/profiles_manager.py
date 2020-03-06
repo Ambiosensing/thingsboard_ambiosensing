@@ -14,7 +14,7 @@ class Profiles_Manager:
     profile_actual=None
 
     def __init__(self,connection):
-        self.dao = DAO_ambiosensing()
+        self.dao = DAO_ambiosensing().getInstance();
     ## alterar nomes dos metodos para ser a laPhyton
     def getAllSpaces(self):
         list= self.dao.load_spaces() #fazer no DAO
