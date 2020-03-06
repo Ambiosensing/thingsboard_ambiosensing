@@ -58,7 +58,7 @@ def populate_device(dao_ambi, building, result=None):
                 new_device = Device(id_thingsboard=result[i][3], name=result[i][4], type=result[i][5])
                 print('*******************************\n')
                 print(new_device.to_string())
-                ## MISSING: dao_save_device
+                dao_ambi.save_space(new_device,space)
                 space.add_device(new_device)
                 print(space.to_string())
 

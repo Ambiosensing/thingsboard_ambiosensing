@@ -53,11 +53,28 @@ class DAO_ambiosensing:
         return index
 
     # save on database a space
-    def save_space(self, space):
+    def save_space(self, device,space):
         dict_column_list = ['name','area','occupation_type','id_thingsboard','building_id']
         value_list = [space.name,space.area,space.occupation_type,space.id_thingsboard,space.building.id_building]
-        index=self.__insert_data_in_table(dict_column_list, value_list, 'space')
-        space.id_space=index
+        index=self.__insert_data_in_table(dict_column_list, value_list, 'device')
+        device.id_device=index
+        return index
+
+        # save on database a device
+
+    def save_device(self, device,space):
+        dict_column_list = ['name', 'type', 'id_thingsboard', 'space_id']
+        value_list = [device.name, device.type, device.id_thingsboard, space.id_space]
+        index = self.__insert_data_in_table(dict_column_list, value_list, 'space')
+        space.id_space = index
+        return index
+
+    # save on database environment variable
+    def save_environmental_variable(self, env_variable,space):
+        dict_column_list = ['name', 'value', 'unit_type','space_id']
+        value_list = [env_variable.name, env_variable.value, env_variable.unit_type,space.id_space]
+        index = self.__insert_data_in_table(dict_column_list, value_list, 'space')
+        env_variable.id = index
         return index
 
     def __create_activationST(self, strategy,profile):
@@ -107,7 +124,7 @@ class DAO_ambiosensing:
         value_list = strategy_temporal.list_weekdays + strategy_temporal.list_seasons + [id]
         self.__update_data_in_table(dict_column_list, value_list, 'activation_strategy_id_activation_strategy',
                                             strategy_temporal.id, 'strategy_temporal')
-        return index
+
     # save on database a schedule of a specific profile
     def save_schedule(self, schedule, profile):
         dict_column_list = ['start', 'end','profile_idprofile']
