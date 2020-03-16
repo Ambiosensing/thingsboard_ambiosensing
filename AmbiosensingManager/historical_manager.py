@@ -29,13 +29,13 @@ class Historical_Manager:
         list = self.dao.load_profile_history(self, start_date, end_date)
         return list
 
-        #  return all hist_profile_list from a time period
+    #  return all hist_profile_list from a time period
 
     def profile_to_historical(self, profile):
         profile_hist= ProfileHistory(datetime=datetime.datetime.now(), id_profile=profile.id_profile)
         self.dao.save_profileHistory(profile_hist)
 
-    def device_to_historical(self, device):
+    def device_to_historical(self, device,operation_state):
         device_hist = DeviceHistory(datetime=datetime.datetime.now(), id_thingsboard=device.id_thingsboard,
-                                    operation_state=device., avaiability_state)
-        self.dao.save_profileHistory(profile_hist)
+                                    operation_state=operation_state,avaiability_state=True )
+        self.dao.save_profileHistory(device_hist)
