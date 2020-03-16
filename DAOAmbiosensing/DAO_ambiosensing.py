@@ -1,12 +1,16 @@
 import user_config
 from DAOAmbiosensing.device import Device
 from DAOAmbiosensing.profile import Profile
+from DAOAmbiosensing.profile import Profile
 from DAOAmbiosensing.schedule import Schedule
 from DAOAmbiosensing.space import Space
 from DAOAmbiosensing.building import Building
 from DAOAmbiosensing.device_configuration import Device_configuration
 from DAOAmbiosensing.environmental_variable import Environmental_variable
 from DAOAmbiosensing.env_variable_configuration import Env_variable_configuration
+import datetime
+from DAOAmbiosensing.profile_history import ProfileHistory
+from DAOAmbiosensing.device_history import DeviceHistory
 
 import mysql.connector as mysqlc
 from mysql_database.python_database_modules.mysql_utils import MySQLDatabaseException
@@ -73,7 +77,7 @@ class DAO_ambiosensing:
     def save_space(self, device,space):
         dict_column_list = ['name','area','occupation_type','id_thingsboard','building_id']
         value_list = [space.name,space.area,space.occupation_type,space.id_thingsboard,space.building.id_building]
-        index=self.__insert_data_in_table(dict_column_list, value_list, 'device')
+        index=self.__insert_data_in_table(dict_column_list, value_list, 'space')
         device.id_device=index
         return index
 
@@ -82,7 +86,20 @@ class DAO_ambiosensing:
     def save_device(self, device,space):
         dict_column_list = ['name', 'type', 'id_thingsboard', 'space_id']
         value_list = [device.name, device.type, device.id_thingsboard, space.id_space]
-        index = self.__insert_data_in_table(dict_column_list, value_list, 'space')
+        index = self.__insert_data_in_table(dict_column_list, value_list, 'device')
+
+     # save on database a history from profile
+    def save_profileHistory(self, profileHistory):
+        dict_column_list = ['data', 'idprofile', 'state']
+        value_list = [profileHistory.data, profileHistory.id_profile,profileHistory.state]
+        index = self.__insert_data_in_table(dict_column_list, value_list, 'profile_hist')
+
+        # save on database a history from device
+    def save_deviceHistory(self, deviceHistory, space):
+        dict_column_list = ['data', 'id_thingsboard', 'operations_state', 'avaiability_state']
+        value_list = [deviceHistory.data, deviceHistory.id_thingsboard,
+                     deviceHistory.operation_state, deviceHistory.avaiability_state]
+        index = self.__insert_data_in_table(dict_column_list, value_list, 'device_hist')
         space.id_space = index
         return index
 
@@ -90,7 +107,7 @@ class DAO_ambiosensing:
     def save_environmental_variable(self, env_variable,space):
         dict_column_list = ['name', 'value', 'unit_type','space_id']
         value_list = [env_variable.name, env_variable.value, env_variable.unit_type,space.id_space]
-        index = self.__insert_data_in_table(dict_column_list, value_list, 'space')
+        index = self.__insert_data_in_table(dict_column_list, value_list, 'environmental_variables')
         env_variable.id = index
         return index
 
@@ -311,7 +328,40 @@ class DAO_ambiosensing:
         else:
             return None
 
-    # We should put these methods public in order to be used by other classes
+    def _form_sql_select_between_dates(self, table_name,date_start, date_end):
+        formatted_date_start = date_start.strftime('%Y-%m-%d %H:%M:%S')
+        formatted_date_end = date_start.strftime('%Y-%m-%d %H:%M:%S')
+        sql_select=  """SELECT * FROM """ + str(table_name) + """ WHERE data > """ + formatted_date_start \
+                     +"""data <""" + formatted_date_end + """;"""
+        return sql_select;
+
+    def load_device_history(self, start_date,end_date):
+
+        sql_select = self.__form_sql_select_statement_between_dates("device_hist",start_date,end_date)
+        change_cursor = self.__cnx.cursor(buffered=True)
+        result = self.__run_sql_select_statement(change_cursor, sql_select)
+        change_cursor.close()
+        list = []
+        for row in result:
+                device_hist = DeviceHistory(data=row[0], id_thingsboard=row[1], operations_state=row[2],
+                                              avaibility_state=row[3])
+                list.append(device_hist)
+        return list
+
+    def load_profile_history(self, start_date, end_date):
+        sql_select = self.__form_sql_select_statement_between_dates("profile_hist", start_date, end_date)
+        change_cursor = self.__cnx.cursor(buffered=True)
+        result = self.__run_sql_select_statement(change_cursor, sql_select)
+        change_cursor.close()
+        list = []
+        for row in result:
+            profile_hist = ProfileHistory(data=row[0], idprofile=row[1], state=row[2])
+            list.append(profile_hist)
+        return list
+
+
+
+            # We should put these methods public in order to be used by other classes
     def __select_data_from_table(self,table_name,column="",value=""):
         if column == "":
             sql_select = self.__create_all_sql_statement(table_name)
