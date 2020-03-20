@@ -3,8 +3,8 @@
 #  require an id or specific token of some kind to return any meaningful data). Use it to navigate until getting deviceId values via API calls instead of using
 #  the ThingsBoard web interface
 
-auth_ctrl = False
-ent_rel = True
+auth_ctrl = True
+ent_rel = False
 asset_ctrl = False
 mysql_test = False
 mysql_device = False
@@ -25,8 +25,8 @@ def __main__():
     if auth_ctrl:
         from mysql_database.python_database_modules import mysql_auth_controller as mac
 
-        # mac.populate_auth_table()
-        mac.get_auth_token("tenant_admin")
+        mac.populate_auth_table()
+        # mac.get_auth_token("tenant_admin")
 
     if rpc_one_way:
         from ThingsBoard_REST_API import tb_rpc_controller as trc
