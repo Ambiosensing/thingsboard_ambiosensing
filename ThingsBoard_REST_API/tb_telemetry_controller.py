@@ -122,7 +122,7 @@ def getTimeseries(device_name, end_time, start_time=None, time_interval=None, in
     @:param interval (int) - This is an OPTIONAL API side only parameter whose use still eludes me... so far I've tried to place calls to the remote service with all sorts of values in this field and I'm still to discover any influence of it in
     the returned results. NOTE: My initial assumption was it to be able to be set as a API side version of my time_interval. Yet, that is not the case because the API requires both the end and start timestamps to be provided by default.
     @:param limit (int) - The number of results to return in the request. Device data can be quite a lot to process and that's why this parameter, though optional, is set to 100 by default. Two things with this value: though the API doesn't
-    explicitly says so, it doesn't like limit <= 0. It doesn't return an error per se but instead the service gets stuck until eventually an HHTP 503 - Service Unavailable is thrown instead. As such I'm going to validate this input accordingly.
+    explicitly says so, it doesn't like limit <= 0. It doesn't return an error per se but instead the service gets stuck until eventually an HTTP 503 - Service Unavailable is thrown instead. As such I'm going to validate this input accordingly.
     Also, unlike other limit parameters so far, there's no indication in the response structure if the number of results returned were limited by this value or by the time interval defined. To provide the user with more helpful information in this
     regard, this method is going to count the number of returned results and, if they do match the limit value provided, warn the user about it.
     @:param agg (str) - No idea what this one does too... The API testing interface has it set to NONE by default, though it is an optional parameter whose effect on the returned results is still yet to be understood. ALl I know so far is that the
@@ -242,7 +242,9 @@ def getTimeseries(device_name, end_time, start_time=None, time_interval=None, in
                 if select_cursor.rowcount != 1:
                     error_msg = "The method was unable to retrieve an unique record for device_name = {0} (got {1} results instead). Nowhere to go but out now...".format(str(new_device_name), str(select_cursor.rowcount))
                     timeseries_log.error(error_msg)
-                    exit(-1)
+
+                    # Send back a None that, along with the log message, signals that the name provided doesn't exist currently in the database
+                    return None
 
     # If my select_cursor was able to transverse the last swamp in safety, retrieve the result that I'm looking for (I shall get a 3 element tuple with (entityType, id, timeseriesKey) - all strings then)
     result = select_cursor.fetchone()

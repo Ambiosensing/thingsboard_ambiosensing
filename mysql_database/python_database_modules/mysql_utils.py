@@ -397,3 +397,19 @@ def validate_database_table_name(table_name):
 
         # If I got here it means none of the results matched the table_name provided. Nothing more to do than to inform that the table name is not valid
         raise MySQLDatabaseException(message="The table provided '{0}' is not among the current database tables!".format(str(table_name)))
+
+
+def device_database_table_script_generator(device_name):
+    """
+    Use this method to generate and execute a .sql script to create a table dedicated to store the data produced by the device identified by device_name. This is necessary since each device has its own set of timeseries keys. Creating a table in a
+    relational database with this kind of constraints is almost impossible. But what I can do is some clever programming to automate this script building and even executing, based only on the typical return of the telemetry service for this device.
+    @:param device_name (str) - Name of the device, as it is set in the Thingsboard interface, to be used as based to built the respective database table.
+    @:raise utils.InputValidationException - If the the input fails initial validation
+    @:raise mysql_utils.MySQLDatabaseException - If any problems occur when accessing/configuring the database.
+    """
+    log = ambi_logger.get_logger(__name__)
+
+    # Validate inputs first
+    utils.validate_input_type(device_name, str)
+
+    # All seems alright. Proceed by running the getTimeseries

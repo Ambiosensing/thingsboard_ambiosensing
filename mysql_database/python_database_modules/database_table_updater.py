@@ -8,6 +8,14 @@ from mysql_database.python_database_modules import mysql_utils
 import ambi_logger
 
 
+def add_table_data(data_dict, table_name):
+    """
+    Method that abstracts the insertion of data into the provided database table. The method maps the provided data dictionary to any available column in the table identified in table name.
+    @:param data_dict:
+    @:param table_name:
+    @:return:
+    """
+
 def insert_table_data(data_dict, table_name, data_validated=False):
     """This is a method that is going to operate in parallel, of sorts, with an update one, that is going to be central to the underlining logic of this module.
     This particular method starts by using the 'id' key value, the primary key used in all tables to uniquely identify records and also the common field to all elements used so far in the ThingsBoard interface (id is a string composed of
@@ -80,6 +88,11 @@ def insert_table_data(data_dict, table_name, data_validated=False):
     # Start preparing the INSERT operation then. But first do a quick data consistency check before: grab all the columns from the table that I'm about to write to and check if 1. both lists have the same length and, if so,
     # all the first elements of the tuples in the data_pair_list match up with the column names that can be retrieved with the mysql_utils.get_table_columns() method.
     db_column_list = mysql_utils.get_table_columns(database_name, table_name)
+
+    for pair in data_pairs_list:
+        if pair[0] == 'label':
+            # Keep on hacking... Stupid Thingsboard...
+            data_pairs_list.remove(pair)
 
     if len(db_column_list) != len(data_pairs_list):
         error_msg = "The number of key-values obtained from the data dictionary ({0}) doesn't the database table {1}.{2} columns ({3}). Cannot continue..."\
@@ -240,6 +253,10 @@ def update_table_data(data_dict, table_name, data_validated=False):
         # Grab the list of columns from the database
         db_column_list = mysql_utils.get_table_columns(database_name, table_name)
 
+        for pair in data_pair_list:
+            if pair[0] == 'label':
+                data_pair_list.remove(pair)
+
         # Compare the two lists first
         if len(db_column_list) != len(data_pair_list):
             error_msg = "The number of columns in {0}.{1} ({2}) doesn't match the number of values retrieved from the data dictionary ({3}). Cannot continue..."\
@@ -343,7 +360,12 @@ def validate_data_dictionary(data_dict, table_name):
     # Do a one to many comparison (because either the INSERT and/or UPDATE statements do not require all columns to be explicit given that all them have default values, at this point I just want to make sure that the set data_dict_keys is,
     # at least, a subset of the column_list. If an element from the data_dict_key is not in the column_list set, the resulting INSERT and/or UPDATE statement is going to crash)
     for data_key in data_dict_keys:
-        if data_key not in column_list:
+        # Another Thingsboard sponsored hack... the 'label' key appeared out of nowhere in some stupid Thingsboard update. Since this key exist in the test installations but not in the 'official' Thingsboard installation, I have to add this stupid
+        # clause here to be able to switch between these installations without problems. NOTE: the extra 'label' field added to the device insert form is another useless addition.
+        if data_key == 'label':
+            # Remove that stupid key from the main list altogether
+            data_dict_keys.remove(data_key)
+        elif data_key not in column_list:
             error_msg = "The key '{0}' from the input dictionary doesn't have a corresponding column in table {1}.{2}.".format(str(data_key), str(user_config.mysql_db_access['database']), str(table_name))
             validate_log.error(error_msg)
             raise Exception(error_msg)
