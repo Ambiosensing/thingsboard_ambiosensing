@@ -109,4 +109,4 @@ def update_devices_table(customer_name=False):
         # The 'keys' part of the last string shows how this request must be constructed and that implies all parameters in a single string, separated by commas and without any spaces in between.
         device['timeseriesKeys'] = ",".join(timeseries_keys)  if hasattr(timeseries_keys, "__iter__") else ""
         # Done. Carry on with the database stuff
-        database_table_updater.insert_table_data(device, proj_config.mysql_db_tables[module_table_key])
+        database_table_updater.add_table_data(device, proj_config.mysql_db_tables[module_table_key])

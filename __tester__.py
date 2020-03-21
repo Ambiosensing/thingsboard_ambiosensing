@@ -3,15 +3,58 @@
 #  require an id or specific token of some kind to return any meaningful data). Use it to navigate until getting deviceId values via API calls instead of using
 #  the ThingsBoard web interface
 
-auth_ctrl = True
+auth_ctrl = False
 ent_rel = False
 asset_ctrl = False
 mysql_test = False
 mysql_device = False
 rpc_one_way = False
+tb_telemetry = True
+db_add = False
+sql_gen = False
+date_converter = True
 
 
 def __main__():
+    if date_converter:
+        from mysql_database.python_database_modules import mysql_utils
+        ts1 = 1582147684275
+        dt1 = mysql_utils.convert_timestamp_tb_to_datetime(timestamp=ts1)
+        print(str(dt1))
+
+    if db_add:
+        from mysql_database.python_database_modules import database_table_updater as dtu
+
+        dtu.add_table_data(data_dict={}, table_name="tb_asset_devices")
+
+    if sql_gen:
+        from mysql_database.python_database_modules import mysql_utils
+        import user_config
+
+        table_name = 'tb_authentication'
+        database_name = user_config.access_info['mysql_database']['database']
+        trigger_column_list = ['token_timestamp', 'refreshToken_timestamp']
+        column_list = mysql_utils.get_table_columns(database_name=database_name, table_name=table_name)
+
+        sql_insert = mysql_utils.create_insert_sql_statement(column_list=column_list, table_name=table_name)
+        sql_update = mysql_utils.create_update_sql_statement(column_list=column_list, table_name=table_name, trigger_column_list=trigger_column_list)
+        sql_delete = mysql_utils.create_delete_sql_statement(trigger_column_list=trigger_column_list, table_name=table_name)
+
+        print(sql_insert)
+        print(sql_update)
+        print(sql_delete)
+
+    if tb_telemetry:
+        from ThingsBoard_REST_API import tb_telemetry_controller as ttc
+        import datetime
+        device_name = 'Thermometer A-1'
+        end_time = datetime.datetime(2020, 2, 19, 21, 28, 4)
+        time_interval = int(datetime.timedelta(hours=24).total_seconds())
+
+        result = ttc.getTimeseries(device_name=device_name, end_time=end_time, time_interval=time_interval)
+
+        print(str(result))
+
     if asset_ctrl:
         from mysql_database.python_database_modules import mysql_asset_controller as mac
 

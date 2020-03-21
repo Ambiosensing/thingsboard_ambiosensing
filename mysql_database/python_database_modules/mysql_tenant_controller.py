@@ -33,4 +33,4 @@ def update_tenants_table():
     # Each element in the tenant list is a tenant. Process them one by one then using the insert and update functions. Actually, the way I wrote these functions, you can call either of them since their internal logic decides,
     # based on what's already present in the database, what is the best course of action (INSERT or UPDATE)
     for tenant in tenant_list:
-        database_table_updater.insert_table_data(tenant, proj_config.mysql_db_tables[module_table_key])
+        database_table_updater.add_table_data(tenant, proj_config.mysql_db_tables[module_table_key])

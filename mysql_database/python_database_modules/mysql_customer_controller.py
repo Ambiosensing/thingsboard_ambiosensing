@@ -30,4 +30,4 @@ def update_customer_table():
         customer['tenantId'] = customer['tenantId']['id']
 
         # Send the data to be added to the MySQL database in the customers table
-        database_table_updater.insert_table_data(customer, proj_config.mysql_db_tables[module_table_key])
+        database_table_updater.add_table_data(customer, proj_config.mysql_db_tables[module_table_key])

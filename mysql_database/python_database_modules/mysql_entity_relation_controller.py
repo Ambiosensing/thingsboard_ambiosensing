@@ -126,7 +126,7 @@ def update_asset_devices_table():
                 except mysql_utils.MySQLDatabaseException as me:
                     # If I got a duplicated entry Exception, don't worry. Lets try an UPDATE instead from here
                     if "Duplicate entry" in me.message:
-                        sql_update = mysql_utils.create_update_sql_statement(column_list=column_list, table_name=asset_devices_table_name, trigger_column='fromId')
+                        sql_update = mysql_utils.create_update_sql_statement(column_list=column_list, table_name=asset_devices_table_name, trigger_column_list=['fromId'])
 
                         # Since I've broke most of the rocks with the INSERT statement, this one requires little effort to pull out from here. All I need to run the respective UPDATE statement is to add a WHERE clause to it and the respective
                         # value to use in that case

@@ -131,21 +131,33 @@ def get_table_columns(database_name, table_name):
         raise MySQLDatabaseException(message=error_msg)
 
 
-def create_update_sql_statement(column_list, table_name, trigger_column):
+def create_update_sql_statement(column_list, table_name, trigger_column_list):
     """This method automatized the build if standard SQL UPDATE statements. NOTE: This method produces the simplest of SQL UPDATE statements, that is, "UPDATE table_name SET (column_name = %s) WHERE (trigger_column = %s);",
     in which the %s elements are to be replaced by providing the adequate tuple of update values in the statement execution. This means that only one record can be updated given that the trigger condition is an equality. This method is
     not suitable for more complex SQL UPDATE statements
     @:param column_list (list of str) - a list with the names of the MySQL database columns whose information is to be added to
     @:param table_name (str) - The name of the table where the Update statement is going to take effect
-    @:param trigger_column (str) - The column that is going to be used to identify the record to be updated (i.e., the WHERE column_name condition part of the statement)
+    @:param trigger_column_list (list of str) - The columns that are going to be used to identify the record to be updated (i.e., the WHERE column_name condition part of the statement). Each member of the provided list is going to be "AND"ed together
+    in a single statement
     @:return sql_update (str) - The statement string to be executed with '%s' elements instead of the actual values in the statement (considered a more secure approach to run these statements from external applications such as this one).
     The actual values are to be replaced shortly before the execution of the statement, already in the database side of things
     @:raise utils.InputValidation Exception - if error occur during the validation of inputs
     @:raise Exception - for any other error types
     """
+    utils.validate_input_type(column_list, list)
+    for column_name in column_list:
+        utils.validate_input_type(column_name, str)
 
-    # The following method validates all inputs at once
-    validate_sql_input_lists(column_list, table_name, trigger_column)
+    utils.validate_input_type(table_name, str)
+
+    utils.validate_input_type(trigger_column_list, list)
+    for trigger_column_name in trigger_column_list:
+        utils.validate_input_type(trigger_column_name, str)
+
+        if trigger_column_name not in column_list:
+            error_msg = "The trigger column provided: {0} does not exist among the list of columns for {1}.{2}"\
+                .format(str(trigger_column_name), str(user_config.access_info['mysql_database']['database']), str(table_name))
+            raise utils.InputValidationException(message=error_msg)
 
     # If I'm still here (no Exceptions raised during the last command)
     sql_update = """UPDATE """ + str(table_name) + """ SET """
@@ -153,7 +165,12 @@ def create_update_sql_statement(column_list, table_name, trigger_column):
         sql_update += str(column_list[i]) + """ = %s, """
 
     # The last for loop add an extra ', ' at the end of the list as a consequence of it running all the way up to the last element on the list. So I need to drop these two extra characters before continuing the statement build
-    sql_update = sql_update[0:-2] + """ WHERE """ + str(trigger_column) + " = %s;"
+    sql_update = sql_update[0:-2] + """ WHERE """
+
+    for i in range(0, len(trigger_column_list) - 1):
+        sql_update += str(trigger_column_list[i]) + """ = %s AND """
+
+    sql_update += str(trigger_column_list[-1]) + """ = %s;"""
 
     # Statement completed. Send it back to the user.
     return sql_update
@@ -167,8 +184,11 @@ def create_insert_sql_statement(column_list, table_name):
     @:raise utils.InputValidationException - If any errors occur during the input validation
     @:raise Exception - If any other general type errors occur"""
 
-    # Validate all inputs at once
-    validate_sql_input_lists(column_list, table_name)
+    utils.validate_input_type(column_list, list)
+    for column_name in column_list:
+        utils.validate_input_type(column_name, str)
+
+    utils.validate_input_type(table_name, str)
 
     values_to_replace = []
     for i in range(0, len(column_list)):
@@ -184,72 +204,34 @@ def create_insert_sql_statement(column_list, table_name):
     return sql_insert
 
 
-def create_delete_sql_statement(database_name, trigger_column, table_name):
+def create_delete_sql_statement(table_name, trigger_column_list):
     """Method to automatize the building of SQL DELETE statements. These are generally simpler than UPDATE or INSERT ones
     @:database_name (str) - The name of the database in which this statement is going to be used. Needed for the validation of inputs
-    @:param trigger_column (str) - The name of the column that is going to be used in the DELETE statement (The WHERE trigger_column condition part goes). As with the UPDATE method, the DELETE statements produced through here are quite
-    simple, i.e., the triggering condition is an equality and hence only one record at a time can be deleted via this method
+    @:param trigger_column_list (list of str) - The name of the columns that are going to be used in the DELETE statement (The WHERE trigger_column condition part goes). As with the UPDATE method, the DELETE statements produced through here are quite
+    simple, i.e., the triggering condition is an equality and hence only one record at a time can be deleted via this method. Multiple trigger columns provided are going to be linked through 'AND' statements
     @:param table_name (str) - The name of the table where the DELETE statement is going to take effect
     @:return sql_delete (str) - The statement string to be executed with '%s' instead of values. These need to replaced afterwards in the parent function
     @:raise utils.InputValidationException - If the input arguments are invalid
     @:raise Exception - For any other error types"""
-    sql_delete_log = ambi_logger.get_logger(__name__)
 
-    try:
-        utils.validate_input_type(database_name, str)
-        utils.validate_input_type(table_name, str)
-    except utils.InputValidationException as ive:
-        sql_delete_log.error(ive.message)
-        raise ive
+    utils.validate_input_type(table_name, str)
+    utils.validate_input_type(trigger_column_list, list)
 
-    # Though this method doesn't require a full column list (the DELETE statement doesn't requires it), its going to be useful to get it anyway at this point so that I can use my validate_sql_input_lists() method to validate the whole
-    # set of arguments in one sitting
-    column_list = get_table_columns(database_name, table_name)
-
-    # Got the full column list. I can now run the sql validation method
-    validate_sql_input_lists(column_list, table_name, trigger_column)
+    # Check if the provided trigger column does exist in the database table
+    column_list = get_table_columns(database_name=user_config.access_info['mysql_database']['database'], table_name=table_name)
+    for trigger_column in trigger_column_list:
+        if trigger_column not in column_list:
+            raise utils.InputValidationException("The trigger column '{0}' provided doesn't exist in {1}.{2}'s columns"
+                                                 .format(str(trigger_column), str(user_config.access_info['mysql_database']['database']), str(table_name)))
 
     # So far so good. Carry on with the statement build
-    sql_delete = """DELETE FROM """ + str(table_name) + """ WHERE """ + str(trigger_column) + """ = %s;"""
+    sql_delete = """DELETE FROM """ + str(table_name) + """ WHERE """
+    for i in range(0, len(trigger_column_list) - 1):
+        sql_delete += str(trigger_column_list[i]) + """ = %s AND """
+
+    sql_delete += str(trigger_column_list[-1]) + """ = %s;"""
 
     return sql_delete
-
-
-def validate_sql_input_lists(column_list, table_name, trigger_column=False):
-    """Since I need to repeat a series of validation steps for several SQL statement building methods that I'm wtiting, I might as well abstract the whole thing in a method to save precious hours of typing the same thing over and over
-    again.
-    @:param column_list (list of str) - a list with the names of the MySQL database columns whose information is to be added to
-    @:param table_name (str) - The name of the table where the SQL statement is going to be executed
-    @:param trigger_column (str) - An optional parameter given than only the UPDATE and DELETE statements use it (the WHERE trigger_column condition part of the statement goes in)
-    @:return True (bool) - if the data is able to pass all validations
-    @:raise utils.InputValidationException - If the input arguments are invalid
-    @:raise Exception - For any other error types"""
-    validate_sql_log = ambi_logger.get_logger(__name__)
-
-    try:
-        utils.validate_input_type(column_list, list)
-        utils.validate_input_type(table_name, str)
-        if trigger_column:
-            utils.validate_input_type(trigger_column, str)
-        for column in column_list:
-            utils.validate_input_type(column, str)
-    except utils.InputValidationException as ive:
-        validate_sql_log.error(ive.message)
-        raise ive
-
-    if len(column_list) <= 0:
-        error_msg = "The column list is empty!"
-        validate_sql_log.error(error_msg)
-        raise MySQLDatabaseException(error_msg)
-
-    # If a trigger_column was provided, check if it is among the full list elements
-    if trigger_column and trigger_column not in column_list:
-        error_msg = "The trigger column provided ({0}) was not found in table {1}".format(str(trigger_column), str(table_name))
-        validate_sql_log.error(error_msg)
-        raise MySQLDatabaseException(message=error_msg)
-
-    # All is good with my data. Send back an OK
-    return True
 
 
 def convert_timestamp_tb_to_datetime(timestamp):

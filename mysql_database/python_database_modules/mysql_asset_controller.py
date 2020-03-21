@@ -39,4 +39,4 @@ def update_tenant_assets_table():
         asset['customerId'] = asset['customerId']['id']
 
         # All set. Invoke the database updater then
-        database_table_updater.insert_table_data(asset, proj_config.mysql_db_tables[module_table_key])
+        database_table_updater.add_table_data(asset, proj_config.mysql_db_tables[module_table_key])

@@ -8,25 +8,6 @@ import logging
 # This project base_path, which is always useful
 base_path = os.getcwd()
 
-# Authorization token backup file location - path defined relatively to the working path; should work with any installation as long as the
-# main folder structure is maintained
-auth_token_path = os.path.join(os.getcwd(), "ThingsBoard_REST_API\\auth_token")
-
-# Basic (empty) authentication dictionary expected by the authentication and refresh tokens methods. Recall this whenever a serious error is detected
-# (mal formed or missing auth_token file for example)
-auth_data = {
-    'admin':
-        {
-            'token': None,
-            'refreshToken': None
-        },
-    'regular':
-        {
-            'token': None,
-            'refreshToken': None
-        }
-}
-
 # This dictionary maps the complete table names in the ambiosensing database to a more simple term or name. This abstraction allows us to change the table names at will in the future, but as long as we maintain the same key in the next
 # dictionary and all the table names in further methods are obtained referencing the key instead of the table name, the operation should be trivial
 mysql_db_tables = {
@@ -68,4 +49,6 @@ LOG_FORMATTER = logging.Formatter('%(asctime)s %(levelname)-10s [%(filename)s:%(
 LOG_FILENAME = "ambi_main.log"
 LOG_FILE_LOCATION = os.path.join(base_path, 'ambiosensing_logs', LOG_FILENAME)
 
-
+# --------------------------------------------- MySQL DATABASE ----------------------------------------------------------------------------------
+# String used to detect if a mysql_utils.MySQLDatabaseException was raised by the existence of that record already in the database.
+existing_record_trigger = "Duplicate entry"
