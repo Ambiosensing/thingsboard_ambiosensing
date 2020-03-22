@@ -1,13 +1,12 @@
 """ Place holder for methods related to the ThingsBoard REST API - telemetry-controller methods """
 
 import utils
-import proj_config
 import user_config
 import requests
 import ambi_logger
 import datetime
 from mysql_database.python_database_modules import mysql_utils, mysql_auth_controller as mac
-
+from mysql_database.python_database_modules import mysql_device_controller
 
 def getTimeseriesKeys(entityType, entityId):
     """This method executes the GET request that returns the name (the ThingsBoard PostGres database key associated to the Timeseries table) of the variable whose quantity is being produced by the element identified by the pair (entityType,
@@ -212,57 +211,12 @@ def getTimeseries(device_name, end_time, start_time=None, time_interval=None, in
     cnx = mysql_utils.connect_db(database_name=database_name)
     select_cursor = cnx.cursor(buffered=True)
 
-    # Create the base SQL SELECT statement. I can then change the wildcards to be considered in the LIKE clause directly in the argument to replace the following %s
-    sql_select = """SELECT """ + ", ".join(columns_to_retrieve) + """ FROM """ + str(proj_config.mysql_db_tables[module_table_key]) + """ WHERE """ + str(search_field) + """ LIKE %s;"""
+    # Retrieve the device's credentials using the appropriate method
+    device_cred = mysql_device_controller.get_device_credentials(device_name=device_name)
 
-    # Execute the statement in its basic form
-    select_cursor = mysql_utils.run_sql_statement(select_cursor, sql_select, (device_name,))
-
-    # The number of returned results from the previous statement can be determined by checking the cursor's rowcount variable (cool, I was afraid that I had to do SELECT COUNT(*) to determine this. The python-mysql adapter does have its advantages
-    # indeed!)
-    if select_cursor.rowcount != 1:
-        # Add a wild card value to the end of the device name
-        new_device_name = device_name + "%"
-        timeseries_log.warning("Unable to get a single result searching for device_name = {0} (got {1} results instead). Trying again using device_name = {2}...".format(str(device_name), str(select_cursor.rowcount), str(new_device_name)))
-        select_cursor = mysql_utils.run_sql_statement(select_cursor, sql_select, (new_device_name,))
-
-        if select_cursor.rowcount != 1:
-            timeseries_log.warning("Unable to get a single result searching for device_name = {0} (got {1} results instead). Trying again using device_name = {2}...".format(str(new_device_name), str(select_cursor.rowcount), str("%" + device_name)))
-            # Try again with a new wildcard position
-            new_device_name = "%" + device_name
-            select_cursor = mysql_utils.run_sql_statement(select_cursor, sql_select, (new_device_name,))
-
-            if select_cursor.rowcount != 1:
-                timeseries_log.warning("Unable to get a single result searching for device_name = {0} (got {1} results instead). Trying again using device_name = {2}..."
-                                       .format(str(new_device_name), str(select_cursor.rowcount), str(new_device_name + "%")))
-                # One last try with wildcards on both ends of the device name
-                new_device_name += "%"
-                select_cursor = mysql_utils.run_sql_statement(select_cursor, sql_select, (new_device_name,))
-
-                if select_cursor.rowcount != 1:
-                    error_msg = "The method was unable to retrieve an unique record for device_name = {0} (got {1} results instead). Nowhere to go but out now...".format(str(new_device_name), str(select_cursor.rowcount))
-                    timeseries_log.error(error_msg)
-
-                    # Send back a None that, along with the log message, signals that the name provided doesn't exist currently in the database
-                    return None
-
-    # If my select_cursor was able to transverse the last swamp in safety, retrieve the result that I'm looking for (I shall get a 3 element tuple with (entityType, id, timeseriesKey) - all strings then)
-    result = select_cursor.fetchone()
-
-    # There's a possibility that a device is already in the MySQL database but, by some reason, it doesn't have an associated timeseriesKey yet (the 3rd element of the result tuple should be NULL then). Check for that first before moving further
-    if not result[2]:
-        error_msg = "Found a valid device with id = {0} but without an associated timeseriesKey - device not initialized yet! Cannot continue.".format(str(result[1]))
-        timeseries_log.error(error_msg)
-        raise mysql_utils.MySQLDatabaseException(message=error_msg)
-
-    try:
-        utils.validate_input_type(result, tuple)
-    except utils.InputValidationException as ive:
-        timeseries_log.error(ive.message)
-        raise ive
-
-    if len(result) != 3:
-        error_msg = "Wrong number of values returned from the MySQL database! Expected 3 elements, got {0}!".format(str(len(result)))
+    # Check if a valid set of credentials was found
+    if device_cred is None:
+        error_msg = "Unable to retrieve a set of valid credentials to device '{0}'".format(str(device_name))
         timeseries_log.error(error_msg)
         raise mysql_utils.MySQLDatabaseException(message=error_msg)
 
@@ -284,7 +238,7 @@ def getTimeseries(device_name, end_time, start_time=None, time_interval=None, in
         start_ts = mysql_utils.convert_datetime_to_timestamp_tb(start_time)
 
     # Done with the validations. Start building the service endpoint then.
-    service_endpoint = "/api/plugins/telemetry/" + str(result[0]) + "/" + str(result[1]) + "/values/timeseries?"
+    service_endpoint = "/api/plugins/telemetry/" + str(device_cred[0]) + "/" + str(device_cred[1]) + "/values/timeseries?"
 
     url_elements = []
 
@@ -299,11 +253,11 @@ def getTimeseries(device_name, end_time, start_time=None, time_interval=None, in
     # The element in result[2] can be a string containing multiple timeseries keys (if the device in question is a multisensor one). If a timeseries filter was provided, it is now time to apply it to reduce the number of variable types returned
     if timeseries_keys_filter:
         # Grab the original string list to a single variable
-        keys_string = str(result[2])
+        device_ts_keys_list = str(device_cred[2])
         valid_keys = []
         for timeseries_key in timeseries_keys_filter:
             # And now check if any of the elements passed in the filter list is in the initial list
-            if timeseries_key in keys_string:
+            if timeseries_key in device_ts_keys_list:
                 # Add it to the valid keys list if so
                 valid_keys.append(timeseries_key)
             # Otherwise warn the user of the mismatch
@@ -312,21 +266,17 @@ def getTimeseries(device_name, end_time, start_time=None, time_interval=None, in
 
         # If the last loop didn't yield any valid results, warn the user and default to the original string list
         if not len(valid_keys):
-            timeseries_log.warning("Unable to apply timeseries key filter: none of the provided keys had a match. Defaulting to {0}...".format(str(keys_string)))
-
+            timeseries_log.warning("Unable to apply timeseries key filter: none of the provided keys had a match. Defaulting to {0}...".format(str(device_ts_keys_list)))
+            valid_keys = device_ts_keys_list
         else:
-            # Otherwise, replace the original keys string with the set of valid keys found after applying the filter
-            keys_string = ",".join(valid_keys)
-
             # And inform the user of the alteration
             timeseries_log.info("Valid filter found. Running remote API query with keys: {0}".format(str(valid_keys)))
 
-        # Done with this. Bundle the resulting string with the rest of the endpoint string, regardless of what happened above
-        url_elements.append("keys=" + keys_string)
+        url_elements.append("keys=" + ",".join(valid_keys))
 
     else:
         # No filters required. Append the full timeseries elements then
-        url_elements.append("keys=" + str(result[2]))
+        url_elements.append("keys=" + ",".join(device_cred[2]))
 
     url_elements.append("startTs=" + str(start_ts))
     url_elements.append("endTs=" + str(end_ts))
@@ -385,3 +335,105 @@ def getTimeseries(device_name, end_time, start_time=None, time_interval=None, in
 
         # Return the result dictionary finally
         return result_dict
+
+
+def getLatestTimeseries(device_name, timeseries_keys_filter=None):
+    """
+    This method is analogous to the previous one, i.e., it also retrieves Timeseries data that is associated to the device identified by 'device_name', but in this particular case only one timestamp/value pair is returned for each of the device's
+    measurements, namely the last one recorded by the Thingsboard installation that oversees that device. This method is very useful to:
+    1. Determine if a device is working by retrieving the last recorded data.
+    2. Determine the timeseries keys associated to the device, as well the last timestamp associated to them.
+    3. Determine the most recent end_date possible for that device in a direct way - once this parameter is known, a more complete and insightful getTimeseries call can then be placed.
+    @:param device_name (str) - The name of the device to which the latest associated timeseries should be retrieved by this method.
+    @:param timeseries_keys_filter (list of str) - A list with the names of the timeseries keys to be returned by the remote API. If a valid list is provided, only data for the keys specified in this list are going to be returned. This method
+    validates this list against any associated timeseriesKeys for the device: mismatched elements from this list are to be ignored.
+    @:raise utils.InputValidationException - If any of the inputs fails initial validation
+    @:raise utils.ServiceEndpointException - If errors occur when invoking any remote API services
+    @:raise mysql_utils.MySQLDatabaseException - If errors occur when accessing the database
+    @:return None if the API returns an empty set, otherwise returns a dictionary with the following format:
+    device_data =
+    {
+        "timeseriesKey_1": [
+            {
+              "ts": int,
+              "value": str
+            }
+        ],
+        "timeseriesKey_2": [
+            {
+              "ts": int,
+              "value": str
+            }
+        ],
+        ...
+        "timeseriesKey_N": [
+            {
+                "ts": int,
+                "value": str
+            }
+        ]
+    }
+    """
+    log = ambi_logger.get_logger(__name__)
+
+    utils.validate_input_type(device_name, str)
+    if timeseries_keys_filter:
+        utils.validate_input_type(timeseries_keys_filter, list)
+
+        for ts_key in timeseries_keys_filter:
+            utils.validate_input_type(ts_key, str)
+
+    # Grab the device credentials at this point. If the method returns anything (not None), than assume that its the following tuple: (entityType, entityId, timeseriesKeys_list)
+    device_cred = mysql_device_controller.get_device_credentials(device_name=device_name)
+
+    if device_cred is None:
+        error_msg = "Could not get valid credentials for device '{0}'. Cannot continue...".format(str(device_name))
+        log.error(error_msg)
+        raise mysql_utils.MySQLDatabaseException(message=error_msg)
+
+    # Validate the timeseries keys, if any were provided
+    keys = None
+    if timeseries_keys_filter:
+        valid_keys = []
+        for ts_filter_key in timeseries_keys_filter:
+            # Filter out only the valid keys, i.e., the ones with a correspondence in the list returned from the database
+            if ts_filter_key in device_cred[2]:
+                valid_keys.append(ts_filter_key)
+
+        # Check if at least one of the proposed keys made it to the valid list. If not, default to the list returned from the database (if this one is also not empty)
+        if not len(valid_keys):
+            log.warning("Could not validate any of the filter keys ({0}) provided as argument!".format(str(timeseries_keys_filter)))
+
+            # Check if the timeseriesKeys element returned from the device credentials request was a single element list with an empty string inside it
+            if len(device_cred[2]) == 1 and device_cred[2][0] == "":
+                log.warning("The database didn't return any valid set of timeseriesKeys. Omitting this argument in the API call")
+                # Don't do anything else. The 'keys' parameter is already None. Keep it as that then
+        else:
+            keys = ",".join(valid_keys)
+
+    # I have all I need to execute the remote API call
+    service_endpoint = "/api/plugins/telemetry/{0}/{1}/values/timeseries".format(str(device_cred[0]), str(device_cred[1]))
+
+    # Add the keys filter, if it was provided
+    if keys is not None:
+        service_endpoint += "?keys={0}".format(str(keys))
+
+    # Service endpoint is done. Grab the service calling dictionary
+    service_dict = utils.build_service_calling_info(auth_token=mac.get_auth_token(user_type='tenant_admin'), service_endpoint=service_endpoint)
+
+    # Execute the remote call finally
+    try:
+        response = requests.get(url=service_dict['url'], headers=service_dict['headers'])
+    except (requests.ConnectionError, requests.ConnectTimeout):
+        error_msg = "Unable to establish a connection with {0}...".format(str(service_dict['url']))
+        log.error(error_msg)
+        raise utils.ServiceEndpointException(message=error_msg)
+
+    # Check the HTTP status code in the response
+    if response.status_code != 200:
+        error_msg = "Request unsuccessful: Received HTTP {0} with message {1}!".format(str(response.status_code), str(eval(response.text)['message']))
+        log.error(error_msg)
+        raise utils.ServiceEndpointException(message=error_msg)
+    else:
+        # Send back the response already in dictionary form
+        return eval(response.text)

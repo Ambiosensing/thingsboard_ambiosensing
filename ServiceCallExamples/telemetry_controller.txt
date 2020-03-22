@@ -274,3 +274,41 @@ Response Body
     }
   ]
 }
+
+----------- getLatestTimeseries -----------------
+http://localhost:8080/api/plugins/telemetry/DEVICE/74fe2c20-4866-11ea-9613-8dbf86e66a64/values/timeseries?keys=test_temperature,windDirection
+
+Response Body
+{
+  "test_temperature": [
+    {
+      "ts": 1582246067016,
+      "value": "25"
+    }
+  ],
+  "windDirection": [
+    {
+      "ts": 1581458641369,
+      "value": "58.2"
+    }
+  ]
+}
+
+# Without providing any key list
+http://localhost:8080/api/plugins/telemetry/DEVICE/74fe2c20-4866-11ea-9613-8dbf86e66a64/values/timeseries
+
+Response Body
+{
+  "test_temperature": [
+    {
+      "ts": 1582246067016,
+      "value": "25"
+    }
+  ],
+  "windDirection": [
+    {
+      "ts": 1581458641369,
+      "value": "58.2"
+    }
+  ]
+}

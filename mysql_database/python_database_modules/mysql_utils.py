@@ -7,6 +7,7 @@ import user_config
 import mysql.connector as mysqlc
 from mysql.connector.errors import Error
 import datetime
+from ThingsBoard_REST_API import tb_telemetry_controller
 
 
 # ---------------------------------------------- DATABASE RELATED CUSTOM EXCEPTION ----------------------------------------------------------------------------------------------------------------------------------------------------
@@ -394,4 +395,5 @@ def device_database_table_script_generator(device_name):
     # Validate inputs first
     utils.validate_input_type(device_name, str)
 
-    # All seems alright. Proceed by running the getTimeseries
+    # All seems alright. Proceed by running the getTimeseries method to retrieve all data that the device in question can produce
+    device_data = tb_telemetry_controller

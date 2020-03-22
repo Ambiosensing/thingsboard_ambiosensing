@@ -18,7 +18,7 @@ USE ambiosensing_thingsboard;
 SELECT entityType, id, timeseriesKey FROM thingsboard_devices_table WHERE name LIKE 'Water%';
 
 SELECT * FROM ambiosensing_thingsboard.tb_customers;
-SELECT * FROM ambiosensing_thingsboard.tb_devices WHERE id = '9e391040-04ab-11ea-8d16-d75afdb8a7ce';
+SELECT * FROM ambiosensing_thingsboard.tb_devices;
 SELECT * FROM ambiosensing_thingsboard.tb_tenants;
 SELECT * FROM ambiosensing_thingsboard.tb_authentication;
 

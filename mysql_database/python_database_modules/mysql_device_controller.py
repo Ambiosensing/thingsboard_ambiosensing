@@ -2,8 +2,10 @@
 
 import ambi_logger
 import proj_config
+import user_config
 import utils
 from mysql_database.python_database_modules import database_table_updater
+from mysql_database.python_database_modules import mysql_utils
 from ThingsBoard_REST_API import tb_device_controller
 from ThingsBoard_REST_API import tb_telemetry_controller
 
@@ -29,7 +31,6 @@ def update_devices_table(customer_name=False):
 
     # Translate the stuff that comes from the ThingsBoard API as PostGres-speak to Python-speak before forwarding the data
     tenant_response_dict = eval(utils.translate_postgres_to_python(tenant_response.text))  # Converts the response.text into a dictionary (eval is a python native method :D )
-
 
     # Test if all results came back with the current limit setting
     if tenant_response_dict['hasNext']:
@@ -107,6 +108,67 @@ def update_devices_table(customer_name=False):
         # For example, querying for the timeseries values from a device with 4 sensors attached that can produce 4 types of different readings implies the following endpoint to be sent in a URL to the remote service:
         # http://localhost:8080/api/plugins/telemetry/DEVICE/3f0e8760-3874-11ea-8da5-2fbefd4cb87e/values/timeseries?limit=3&agg=NONE&keys=humidity,temperature,pressure,lux&startTs=1579189110790&endTs=1579193100786
         # The 'keys' part of the last string shows how this request must be constructed and that implies all parameters in a single string, separated by commas and without any spaces in between.
-        device['timeseriesKeys'] = ",".join(timeseries_keys)  if hasattr(timeseries_keys, "__iter__") else ""
+        device['timeseriesKeys'] = ",".join(timeseries_keys) if hasattr(timeseries_keys, "__iter__") else ""
         # Done. Carry on with the database stuff
         database_table_updater.add_table_data(device, proj_config.mysql_db_tables[module_table_key])
+
+
+def get_device_credentials(device_name):
+    """
+    This method simplifies a recurring task: determining the entityType, entityId and timeseriesKeys associated to the device identified by 'device_name'.
+    Since most remote services provided by the Thingsboard remote API are fond of using this entityType/entityId pair to uniquely identify every entity configured in the platform (tenants, customers, devices, etc.) but us humans are more keen to
+    rely on names to identify the same entities, this method integrates both approaches for the devices context: it searches the current database entries for the name provided and, if a unique result is obtained, returns its associated entityType,
+    entityId and timeseriesKeys.
+    @:param device_name (str) - The name of the device, as it should be defined via the 'name' field in the respective Thingsboard installation
+    @:raise utils.InputValidationException - If the input fails initial validation
+    @:raise mysql_utils.MySQLDatabaseException - If the database access incurs in problems
+    @:return None if no single device could be found or if there are no credentials currently configured in the database for this device. Otherwise, the credentials are going to be returned in the following format:
+    device_credentials = (entityType (str), entityId (str), timeseriesKeys(list of str))
+    """
+    log = ambi_logger.get_logger(__name__)
+
+    utils.validate_input_type(device_name, str)
+
+    # Create the typical database access objects
+    database_name = user_config.access_info['mysql_database']['database']
+    table_name = proj_config.mysql_db_tables['devices']
+    cnx = mysql_utils.connect_db(database_name=database_name)
+    select_cursor = cnx.cursor(buffered=True)
+
+    # Now for the tricky part: to run a SQL SELECT using the device name as the only filter and ensuring than one and only one record is returned. For this I'm going to use the SQL 'LIKE' operator and using all four wildcard options in the search
+    # field: 'device_name', '%device_name', 'device_name%' and '%device_name%'.
+    search_vector = [device_name, '%' + device_name, device_name + '%', '%' + device_name + '%']
+    sql_select = """SELECT entityType, id, timeseriesKeys FROM """ + table_name + """ WHERE name LIKE %s;"""
+
+    # Run a SQL SELECT with all elements of the search vector, stopping the loop as soon as a single record gets returned back
+    result = None
+    for i in range(0, len(search_vector)):
+        select_cursor = mysql_utils.run_sql_statement(cursor=select_cursor, sql_statement=sql_select, data_tuple=(search_vector[i],))
+
+        if select_cursor.rowcount != 1:
+            log.warning("Searching for name = {0}. Got {1} results back. Expanding search with new wildcards...".format(str(search_vector[i]), str(select_cursor.rowcount)))
+            # Ignore the rest of this loop in this case then
+            continue
+        else:
+            log.info("Got an unique record while searching for name = {0}. Moving on".format(str(search_vector[i])))
+            # Set the result parameter
+            result = select_cursor.fetchone()
+            # Get out of this loop in this case
+            break
+
+    # Check if a valid result was found. Continue if so, return None otherwise
+    if result is None:
+        log.warning("Could not retrieve an unique record for device_name = {0} in {1}.{2}. Nothing more to do...".format(str(device_name), str(database_name), str(table_name)))
+        return None
+    else:
+        # Extract the timeseriesKey string to a list of strings and prepare the return tuple
+        timeseriesKeys_list = []
+
+        # The list of timeseries keys is kept in the database as single string with all elements separated with a comma: timeseriesKeys = "timeseriesKey1,timeseriesKey2,...,timeseriesKeyN"
+        tokens = result[2].split(',')
+
+        for i in range(0, len(tokens)):
+            timeseriesKeys_list.append(tokens[i])
+
+        # All done. Return the final structure then
+        return result[0], result[1], timeseriesKeys_list
