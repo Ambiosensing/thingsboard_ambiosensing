@@ -1,19 +1,14 @@
-# TODO: Find a way to find out the ids of the devices in the system by following relationships between entities. I discovered that the getAssetTypes service
-#  call might be an interesting entry point given that it lists and returns every registered tenant, along with his id (a rare find given that most services
-#  require an id or specific token of some kind to return any meaningful data). Use it to navigate until getting deviceId values via API calls instead of using
-#  the ThingsBoard web interface
-
 auth_ctrl = False
 ent_rel = False
 asset_ctrl = False
 mysql_test = False
 mysql_device = False
 rpc_one_way = False
-tb_telemetry = True
+tb_telemetry = False
 db_add = False
 sql_gen = False
-date_converter = True
-
+date_converter = False
+table_creator = True
 
 def __main__():
     if date_converter:
@@ -47,11 +42,12 @@ def __main__():
     if tb_telemetry:
         from ThingsBoard_REST_API import tb_telemetry_controller as ttc
         import datetime
-        device_name = 'Thermometer A-1'
+        device_name = 'Ambi-05'
         end_time = datetime.datetime(2020, 2, 19, 21, 28, 4)
         time_interval = int(datetime.timedelta(hours=24).total_seconds())
 
-        result = ttc.getTimeseries(device_name=device_name, end_time=end_time, time_interval=time_interval)
+        # result = ttc.getTimeseries(device_name=device_name, end_time=end_time, time_interval=time_interval)
+        result = ttc.getLatestTimeseries(device_name=device_name)
 
         print(str(result))
 
@@ -105,7 +101,15 @@ def __main__():
     if mysql_device:
         from mysql_database.python_database_modules import mysql_device_controller as mdc
 
-        mdc.update_devices_table()
+        # mdc.update_devices_table()
+        device_name = "Rotating System"
+        result = mdc.get_device_credentials(device_name=device_name)
+
+    if table_creator:
+        from mysql_database.python_database_modules import mysql_utils
+        device_name = "Ambi-05"
+
+        mysql_utils.create_device_database_table(device_name=device_name)
 
 
 if __name__ == "__main__":

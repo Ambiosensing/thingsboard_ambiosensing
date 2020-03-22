@@ -7,6 +7,7 @@ import user_config
 import mysql.connector as mysqlc
 from mysql.connector.errors import Error
 import datetime
+import os
 from ThingsBoard_REST_API import tb_telemetry_controller
 
 
@@ -181,7 +182,7 @@ def create_insert_sql_statement(column_list, table_name):
     """Method to automatize the building of simple SQL INSERT statements: INSERT INTO table_name (expanded, comma separated, column list names) VALUES (as many '%s' as column_list elements);
     @:param column_list (list of str) - A list with the names of the MySQL database columns
     @:param  table_name (str) - The name of the table where the INSERT statement is going to take effect
-    @:return sql_insert (str) - The state,ent string to be executed with '%s' istead of actual values. These need to be replaced when executed in the database side (the python mysql connector deals with it quite nicely)
+    @:return sql_insert (str) - The state,ent string to be executed with '%s' instead of actual values. These need to be replaced when executed in the database side (the python mysql connector deals with it quite nicely)
     @:raise utils.InputValidationException - If any errors occur during the input validation
     @:raise Exception - If any other general type errors occur"""
 
@@ -382,18 +383,139 @@ def validate_database_table_name(table_name):
         raise MySQLDatabaseException(message="The table provided '{0}' is not among the current database tables!".format(str(table_name)))
 
 
-def device_database_table_script_generator(device_name):
+def create_device_database_table(device_name, execute_script=True):
     """
     Use this method to generate and execute a .sql script to create a table dedicated to store the data produced by the device identified by device_name. This is necessary since each device has its own set of timeseries keys. Creating a table in a
     relational database with this kind of constraints is almost impossible. But what I can do is some clever programming to automate this script building and even executing, based only on the typical return of the telemetry service for this device.
     @:param device_name (str) - Name of the device, as it is set in the Thingsboard interface, to be used as based to built the respective database table.
+    @:param execute_script (bool) - Set this flag to True to execute the database table creation script if it gets generated successfully. Set it to false to generate just the sql script
     @:raise utils.InputValidationException - If the the input fails initial validation
     @:raise mysql_utils.MySQLDatabaseException - If any problems occur when accessing/configuring the database.
+    @:return create_table_name (str) - If a table was created using the provided device_name, None otherwise
     """
     log = ambi_logger.get_logger(__name__)
 
     # Validate inputs first
     utils.validate_input_type(device_name, str)
+    utils.validate_input_type(execute_script, bool)
 
-    # All seems alright. Proceed by running the getTimeseries method to retrieve all data that the device in question can produce
-    device_data = tb_telemetry_controller
+    table_to_create = get_official_device_table_name(device_name=device_name)
+    database_name = user_config.access_info['mysql_database']['database']
+
+    # Before moving forward, check the database to see if a table with the expected name (<device_name>_data) exists already
+    if validate_table_name(table_to_create):
+        log.warning("There's a table named '{0}' already in database {1}. Nothing more to do..".format(str(table_to_create), str(database_name)))
+        # Send back the name of the table that was found by the validation method so that it can be used by the parent method
+        return table_to_create
+
+    # All seems alright. Proceed by running the getLatestTimeseries method to retrieve all data that the device in question can produce, as well as the most recent timestamps associated to it
+    device_data = tb_telemetry_controller.getLatestTimeseries(device_name=device_name)
+
+    # Check if a valid result was obtained first
+    if device_data is None:
+        error_msg = "Could not retrieve any telemetry data for device '{0}'".format(str(device_name))
+        log.error(error_msg)
+        raise utils.InputValidationException(message=error_msg)
+
+    # It seems that I can proceed with the .sql file build then.from
+    sql_script_path = os.path.join(os.getcwd(), 'mysql_database', 'thingsboard_device_tables', 'create_' + table_to_create + "_table.sql")
+    # Open the file defined by the previous path with a 'w' (write flag)
+    sql_script = open(sql_script_path, 'w')
+
+    # Lets start doing stuff then
+    script_content = ["CREATE TABLE IF NOT EXISTS {0}.{1}\n".format(str(database_name), str(table_to_create)), "(\n", "\ttimestamp\t\t\tDATETIME DEFAULT NULL NULL,\n"]
+
+    # Create a head timestamp column that is going to be common to all records
+
+    # And now add a column to each of the keys in the current device data dictionary
+    for column_name in list(device_data.keys()):
+        line = "\t" + column_name
+        # Calculate the number of tabs to add after the column name to ensure that the rest of the fields remain aligned. Each tab is 8 characters and I want 5 tabs (40 characters worth) of space between the start of the column name and its type
+        tab_number = int((40 - len(column_name))/8)
+        for i in range(0, tab_number):
+            line += '\t'
+        # Complete the rest of this line
+        line += "DOUBLE DEFAULT NULL NULL,\n"
+        script_content.append(line)
+
+    # Finish the script by establishing the timestamp column as the primary key
+    script_content.append("\tCONSTRAINT " + table_to_create + "_pk UNIQUE (timestamp)\n")
+    script_content.append(")\n")
+    script_content.append("COMMENT 'This script was automatically created using mysql_database.python_database_modules.mysql_utils.device_database_table_script_generator method';\n")
+    script_content.append("COMMIT;")
+
+    # All lines were created. Write them into the file and close it
+    sql_script.writelines(script_content)
+    sql_script.flush()
+    sql_script.close()
+
+    log.info("Create {0} SQL script successfully!".format(str(sql_script_path)))
+
+    # Now that the script is ready, take the opportunity that I still have its path to execute it using the mysql.exe executable if the respective input flag was set. If the environment variables are well set, there should be no difference between
+    # running the next statement in either a Microsoft (Windows) or Linux Operating Systems: The syntax is identical for both OS's
+    if execute_script:
+        os.system('mysql.exe --verbose --user="{0}" --database="{1}" --password={2} < "{3}"'.format(
+            str(user_config.access_info['mysql_database']['username']),
+            str(user_config.access_info['mysql_database']['database']),
+            str(user_config.access_info['mysql_database']['password']),
+            str(sql_script_path)))
+
+        # Done. Inform the user of the success of this operation and return the name of the database table just created
+        log.info("Created the table {0} in {1} database successfully!".format(str(table_to_create), str(database_name)))
+
+    return table_to_create
+
+
+def get_official_device_table_name(device_name):
+    """
+    This simple method receives the name of a device and returns what should be the name of the database table that can hold its data. This conversion needs to be uniform, following the same kind of rules for all device names (replacing spaces,
+    dots and slashes by underscores and appending '_data' to the result) so that other methods can confirm in advance if a table for a given device already exists or not
+    @:param device_name (str) - The name of the device to model the table name after
+    @:return table_name_to_create (str) - The result of the transformation of the provided device_name into the expected database table name.
+    @:raise utils.InputValidationException - If the input fails initial validation
+    """
+    utils.validate_input_type(device_name, str)
+
+    # Return the name of the device appended with '_data' and all its dashes ('-'), spaces and points ('.') replaced by underscores ('_')
+    return device_name.replace(' ', '_').replace('.', '_').replace('-', '_') + "_data"
+
+
+def validate_table_name(table_name):
+    """
+    This method receives the name of a database table and checks the database for its existence. That's it.
+    @:param table_name (str) - The name of the table whose existence is to be verified in the database
+    @:return exists (bool) - True if the table is already created in the database, False otherwise
+    @:raise utils.InputValidationException - If the input fails initial validation
+    @:raise MySQLDatabaseException - If errors occur during the database accesses
+    """
+    log = ambi_logger.get_logger(__name__)
+    utils.validate_input_type(table_name, str)
+
+    # Need to access the database. Create the usual objects
+    database_name = user_config.access_info['mysql_database']['database']
+    cnx = connect_db(database_name=database_name)
+    select_cursor = cnx.cursor(buffered=True)
+
+    sql_select = """SHOW TABLES FROM """ + database_name + """;"""
+
+    select_cursor = run_sql_statement(cursor=select_cursor, sql_statement=sql_select, data_tuple=())
+
+    if select_cursor.rowcount is 0:
+        log.warning("The current database ({0}) has no tables configured yet!".format(str(database_name)))
+        select_cursor.close()
+        cnx.close()
+        return False
+
+    else:
+        results = select_cursor.fetchall()
+
+        for i in range(0, len(results)):
+            if table_name == results[i][0]:
+                select_cursor.close()
+                cnx.close()
+                return True
+
+        # If the code reached this point, then I've verified all existing tables currently in the database and didn't find any matches
+        select_cursor.close()
+        cnx.close()
+        return False
