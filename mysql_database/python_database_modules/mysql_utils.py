@@ -236,6 +236,49 @@ def create_delete_sql_statement(table_name, trigger_column_list):
     return sql_delete
 
 
+def get_trigger_columns(table_name):
+    """
+    This method checks a table for its associated information schema  to determine the columns that were used in that same table to establish the primary key. This is particularly useful to construct UPDATE statements as a response from a
+    triggered 'Duplicate entry' Exception, since its the violation of the primary key rule that triggers this Exception in the first place.
+    :param table_name (str) - The name of the database table whose list of trigger columns needs to be returned.
+    :raise utils.InputValidationException - If the input provided fails initial validation of it the table provided doesn't exist in the project's database.
+    :raise MySQLDatabaseException - For any issue detected regarding the access to the database.
+    :return trigger_column_list (list of str) - A list with the names of the columns configured as primary key in the provided database table
+    """
+    log = ambi_logger.get_logger(__name__)
+
+    utils.validate_input_type(table_name, str)
+
+    database_name = user_config.access_info['mysql_database']['database']
+    cnx = connect_db(database_name=database_name)
+    select_cursor = cnx.cursor(buffered=True)
+
+    sql_select = """SELECT COLUMN_NAME FROM information_schema.KEY_COLUMN_USAGE WHERE TABLE_NAME = %s;"""
+
+    # Run the statement
+    select_cursor = run_sql_statement(cursor=select_cursor, sql_statement=sql_select, data_tuple=(table_name,))
+
+    if select_cursor.rowcount is 0:
+        error_msg = "{0}.{1} doesn't have any configured primary key columns! Cannot continue!".format(str(database_name), str(table_name))
+        log.error(error_msg)
+        select_cursor.close()
+        cnx.close()
+        raise MySQLDatabaseException(message=error_msg)
+    else:
+        # All went well. Extract the results to a nice little list and return it
+        results = select_cursor.fetchall()
+        trigger_column_list = []
+
+        for result in results:
+            # Extract the column names from the one tuple structures in which they are returned
+            trigger_column_list.append(result[0])
+
+        # Done. Close the database access objects and return the list of results
+        select_cursor.close()
+        cnx.close()
+        return trigger_column_list
+
+
 def convert_timestamp_tb_to_datetime(timestamp):
     """This method converts a specific timestamp from a ThingsBoard remote API request (which has one of the weirdest formats that I've seen around) and returns a datetime object that can be interpreted by the DATETIME data format of MySQL
     databases, i.e., YYYY-MM-DD hh:mm:ss, which also corresponds to the native datetime.datetime format from python

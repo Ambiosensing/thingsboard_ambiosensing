@@ -1,5 +1,4 @@
 """ Place holder for methods related to the interface between the MySQL database (MySQL internal Ambiosensing database) and the data obtained from service calls placed to the API group entity-relation-controller"""
-from ThingsBoard_REST_API import tb_entity_relation_controller
 from mysql_database.python_database_modules import mysql_utils, mysql_asset_controller, mysql_device_controller
 from ThingsBoard_REST_API import tb_entity_relation_controller
 import ambi_logger

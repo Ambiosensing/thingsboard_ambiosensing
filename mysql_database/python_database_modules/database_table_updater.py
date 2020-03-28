@@ -88,28 +88,7 @@ def add_table_data(data_dict, table_name):
     # Watch out for the typical "Duplicate entry" exception
     except mysql_utils.MySQLDatabaseException as mse:
         if proj_config.existing_record_trigger in mse.message:
-            # Detected a duplicate result then. Before moving on to the UPDATE statement creation, fetch this table's primary key columns (the ones that kinda triggered this in the first place) to be added to the "WHERE" part of the UPDATE statement
-            sql_select = """SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE WHERE TABLE_NAME = %s"""
-            data_tuple = (table_name,)
-
-            # Execute the previous SELECT to retrieve all columns from the table in question that are being used as primary key indexes.
-            select_cursor = mysql_utils.run_sql_statement(cursor=select_cursor, sql_statement=sql_select, data_tuple=data_tuple)
-
-            # Check if the execution was done properly
-            if select_cursor.rowcount is 0:
-                error_msg = "{0}.{1} doesn't have any configured primary key columns, yet a duplicate record was detected! Debug this ASAP please!".format(str(database_name), str(table_name))
-                log.error(error_msg)
-                select_cursor.close()
-                change_cursor.close()
-                cnx.close()
-                raise mysql_utils.MySQLDatabaseException(message=error_msg)
-            else:
-                # All went good then. Retrieve the records from the cursor and put them in a nice simple list
-                results = select_cursor.fetchall()
-                trigger_column_list = []
-                for result in results:
-                    # This is required due to the nasty habit that mysql-python connector has of returning everything in a tuple form...
-                    trigger_column_list.append(result[0])
+                trigger_column_list = mysql_utils.get_trigger_columns(table_name=table_name)
 
                 # Cool. Use this data to get the respective UPDATE statement
                 sql_update = mysql_utils.create_update_sql_statement(column_list=column_list, table_name=table_name, trigger_column_list=trigger_column_list)

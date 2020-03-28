@@ -201,7 +201,7 @@ def get_auth_token(user_type):
             # First, update the user_type in the database for the correct one (the one retrieved from the remote API)
             remote_user_type = token_status_dict['authority']
             # Request an UPDATE SQL template to replace the current user type by the correct remote_user_type
-            sql_update = mysql_utils.create_update_sql_statement(['user_type'], table_name, ['user_type'])
+            sql_update = mysql_utils.create_update_sql_statement(column_list=['user_type'], table_name=table_name, trigger_column_list=['user_type'])
             data_tuple = (remote_user_type, user_type)
 
             # Execute the statement
