@@ -437,3 +437,127 @@ def getLatestTimeseries(device_name, timeseries_keys_filter=None):
     else:
         # Send back the response already in dictionary form
         return eval(response.text)
+
+
+def getAttributes(entityType=None, entityId=None, deviceName=None, keys=None):
+    """
+    GET method to retrieve all server-type attributes configured for the device identified by the pair entityType/entityId or deviceName provided. This method requires either the entityType/entityId pair or the deviceName to be provided to execute
+    this method. If insufficient data is provided, the relevant Exception shall be raised.
+    :param entityType (str) - The entity type of the object whose attributes are to be retrieved.
+    :param entityId (str) - The id string that identifies the device whose attributes are to be retrieved.
+    :param deviceName (str) - The name of the device that can be used to retrieve the entityType/entityId.
+    :param keys (list of str) - Each attribute returned is a key-value pair. Use this argument to provide a key based filter, i.e., if this list is set, only attributes whose keys match any of the list elements are to be returned.
+    :raise utils.InputValidationException - If any of the inputs has the wrong data type or the method doesn't have the necessary data to execute.
+    :raise utils.ServiceEndpointException - If problem occur when accessing the remote API
+    :return attribute_dictionary (dict) - A dictionary with the retrieved attributes in the following format:
+        attribute_dictionary =
+        {
+            'attribute_1_key': 'attribute_1_value',
+            'attribute_2_key': 'attribute_2_value',
+            ...
+            'attribute_N_key': 'attribute_N_value'
+        }
+        where the keys in the dictionary are the ontology-specific names (official names) and the respective values are the timeseries keys being measured by the device that map straight into those ontology names
+    """
+    log = ambi_logger.get_logger(__name__)
+
+    # Validate inputs
+    if entityId:
+        utils.validate_id(entity_id=entityId)
+
+        # The entityId seems OK but its useless unless the entityType was also provided or, at least, the deviceName, the method cannot continue
+        if not entityType and not deviceName:
+            error_msg = "A valid entityId was provided but no entityType nor deviceName were added. Cannot execute this method until a valid entityType/entityId or a valid deviceName is provided!"
+            log.error(error_msg)
+            raise utils.InputValidationException(message=error_msg)
+
+    if entityType:
+        utils.validate_entity_type(entity_type=entityType)
+
+        # Again, as before, the method can only move forward if a corresponding entityId or deviceName was also provided
+        if not entityId and not deviceName:
+            error_msg = "A valid entityType was provided but no corresponding entityId nor deviceName. Cannot continue until a valid entityType/entityId or a valid deviceName is provided!"
+            log.error(error_msg)
+            raise utils.InputValidationException(message=error_msg)
+
+    if deviceName:
+        utils.validate_input_type(deviceName, str)
+
+    if keys:
+        utils.validate_input_type(keys, list)
+        for key in keys:
+            utils.validate_input_type(key, str)
+
+    # If the code got to this point, I either have a valid entityId/entityType pair or a deviceName. Check if only the deviceName was provided and retrieve the entityId/entityType from it
+    if deviceName and (not entityType or not entityId):
+        # Get the entityId and entityType from the deviceName provided
+        device_data = mysql_device_controller.get_device_credentials(device_name=deviceName)
+
+        # Check if the previous statement returned a non-empty (not None) result. If that is the case, either the device is not (yet) configured in the device table or the table needs to be updated
+        if not device_data:
+            error_msg = "Cannot retrieve a pair of entityId/entityType from the device name provided: {0}. Either:" \
+                        "\n1. The device is not yet configured in the database/ThingsBoard platform" \
+                        "\n2. The MySQL device table needs to be updated." \
+                        "\nCannot continue for now".format(str(deviceName))
+            log.error(error_msg)
+            raise utils.InputValidationException(message=error_msg)
+
+        # The previous method returns a 3-element tuple in the format (entityType, entityId, timeseriesKeys). Grab the relevant data straight from it
+        entityType = device_data[0]
+        entityId = device_data[1]
+
+    # Validation complete. I have all I need to execute the remote call
+    service_endpoint = "/api/plugins/telemetry/{0}/{1}/values/attributes".format(str(entityType), str(entityId))
+
+    # If a list of keys was provided, concatenate them to the current endpoint
+    if keys:
+        service_endpoint += "?keys="
+
+        # Add all the keys to the endpoint concatenated in a single, comma separated (without any spaces in between) string
+        service_endpoint += ",".join(keys)
+
+        # Build the service dictionary from the endpoint already built
+        service_dict = utils.build_service_calling_info(mac.get_auth_token(user_type='tenant_admin'), service_endpoint=service_endpoint)
+
+        # Query the remote API
+        try:
+            response = requests.get(url=service_dict['url'], headers=service_dict['headers'])
+        except (requests.ConnectionError, requests.ConnectTimeout) as ce:
+            error_msg = "Could not get a response from {0}...".format(str(service_dict['url']))
+            log.error(error_msg)
+            raise utils.ServiceEndpointException(message=ce)
+
+        # If a response was returned, check the HTTP return code
+        if response.status_code != 200:
+            error_msg = "Request not successful: Received an HTTP " + str(eval(response.text)['status']) + " with message: " + str(eval(response.text)['message'])
+            log.error(error_msg)
+            raise utils.ServiceEndpointException(message=error_msg)
+        else:
+            # Got a valid result. Format the returned objects for return
+            data_to_return = eval(response.text)
+
+            # If the request was alright, I've received the following Response Body (after eval)
+            # data_to_return =
+            # [
+            #   {
+            #       "lastUpdateTs": int,
+            #       "key": str,
+            #       "value": str
+            #   },
+            # ...
+            #   {
+            #       "lastUpdateTs": int,
+            #       "key": str,
+            #       "value": str
+            #   }
+            # ]
+            #
+            # So I need to transform this into the return structure defined above
+
+            attribute_dictionary = {}
+            for attribute_pair in data_to_return:
+                # Create the entries defined in the man entry of this method from the list elements returned from the remote API
+                attribute_dictionary[attribute_pair['key']] = attribute_pair['value']
+
+            # All done. Return the attributes dictionary
+            return attribute_dictionary

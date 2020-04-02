@@ -1,12 +1,10 @@
 import requests
 import ast
-import proj_config
 import user_config
 import traceback
-from ThingsBoard_REST_API import tb_admin_controller as ac
-from ThingsBoard_REST_API import tb_device_controller as dc
 import ambi_logger
 import logging
+import proj_config
 
 
 # -------------------------------------------------------------------- CUSTOM EXCEPTIONS -----------------------------------------------------------------------
@@ -221,259 +219,6 @@ def validate_connection_dict(connection_dict):
         raise AuthenticationException(error_msg, error_code)
 
 
-def get_auth_token(admin=False):
-    """ This method reads the authorization token backup file for a start. From here it does the following:
-    1. Builds the respective dictionaries from the auth_token file: one 'admin' and another 'regular'. Both dictionaries have two entries: 'token' and
-    'refreshToken' used for authentication under admin and regular profiles
-    respectively.
-    2. Based on the argument flag 'admin', i.e., if admin=True, use the 'admin' credentials otherwise (default being admin=False) use the 'regular' credentials.
-     Start by checking if there's any tokens whatsoever in the file. If:
-        2.1. There are no credentials in the auth_token file: Simplest solution: call for a new set of credentials for the role indicated, write them on the
-        auth_token file and return the authorization credential back to the user
-        2.2. There's a pair of credentials stored in the file. From here:
-            2.2.1 Check if the authorization token is still valid by calling a simple GET service (getDeviceTypes for a regular user, checkUpdates for the admin
-            ones). If the result is:
-                2.2.1.1 - HTTP 200 - The authorization token is still valid. Nothing to do but to return it back to the user (no changes to the auth_token file)
-                2.2.1.2 - HTTP 401 - The authorization token has expired. Not a problem. Use the refresh token to issue a new pair of tokens. From here:
-                    2.2.1.2.1 - HTTP 200 - The refresh token is still valid and a pair of valid authorization and refresh tokens are returned.
-                                Update the auth_token file with the new pair and return the fresh authorization token to the user
-                    2.2.1.2.2 - HTTP 401 - The refresh token as expired also. From here all one can do is to generate a fresh pair of authorization and refresh
-                    token from scratch (basically providing the access
-                    credentials again to the ThingsBoard server. The method for this is quite straight forward and returns a pair of fresh
-                    authorization and refresh tokens. Update the auth_token file and return the valid authorization token beck to the user.
-    @:param admin - Set this optional flag to True if the set of credentials to be used in the token operations are from the administrator user. By default
-    it is going to use the regular (tenant) user instead
-    @:return a valid authorization token and, if needed, updates the auth_token file with fresh tokens
-    """
-
-    # The faithful logger
-    auth_log = ambi_logger.get_logger(__name__)
-
-    # Start by retrieving the storage file into a python file object. The argument 'r' means open the file in <path> for read only.
-    try:
-        # Try to open the file first, looking out for a possible non-existent file (that's why the Python gods invented the Exceptions)
-        auth_file = open(proj_config.auth_token_path, "r")
-
-        # Read the file contents at once into a list of strings, one per file line. This instruction needs to be inside the try statement because it only makes
-        # sense to do this if the file was open successfully. If not, the proper Exception is raised and this instruction is bypassed as intended
-        auth_file_contents = auth_file.read()
-
-        # Finally, the data on this file is ready for an almost direct conversion to a dictionary. This conversion in python may be tricky but the
-        # ast module and its literal eval allow for a direct conversion as long as the string is well formed, i.e., fully respects a dictionary structure.
-        try:
-            # Try to read and cast the contents of the auth_token file into a dictionary. To cover all bases and to stabilize this code as much as possible,
-            # if the file is formatted in a way that it crashes the following statement (returning a SyntaxError that I'm about to catch in a bit) or the
-            # operation yielding a structure other than a dictionary, I'll force it to operate with an empty auth_token dictionary instead obtained from the
-            # config file
-            auth_data = ast.literal_eval(auth_file_contents.replace("\n", "").replace("\t", ""))
-        except SyntaxError:
-            auth_log.warning("Malformed or empty auth_token file detected. Resetting auth_token info...")
-            # From here there's no point in rewriting the auth_token file since its going to happen later on eventually. So, the best course of action is
-            # to set the auth_data structure to the standard empty auth dictionary that's set in the config file.
-            auth_data = proj_config.auth_data
-
-        # Also, there's a small possibility that the contents of the auth_token were parsed successfully, just not to the expected structure (not a dict). In
-        # that case, force the auth_data from config on the local auth_data again
-        try:
-            # Try to validate the auth_data object against the expected dict data type
-            validate_input_type(auth_data, dict)
-            # If the validation fails, catch the raised Exception but instead of raising it further
-        except InputValidationException as ive:
-            # Log the message
-            auth_log.warning(ive.message + " Resetting...")
-            # And revert the auth_data object to its standard format
-            auth_data = proj_config.auth_data
-
-    except FileNotFoundError:
-        auth_log.warning("No file found in config.auth_token_path. Creating a new one from scratch")
-        # If no file was found, use the open command on the config.auth_token_path variable to force the creation of a new one (the 'x' argument ensures that)
-        auth_file = open(proj_config.auth_token_path, "x")
-        # The file is currently empty and there's little use for it right now. But the open command over the config.auth_token_path is usable again. Since this
-        # file is going to be close anyway later on (to be opened again in
-        # write-truncate mode after), there's nothing more to do but to update the auth_data variable with the necessary config.auth_data info.
-        auth_data = proj_config.auth_data
-
-    # The authentication dictionary should have only two entries named 'auth_token' and 'refresh_token', regardless of their associated values.
-    # Check the dictionary consistency before going any further.
-    try:
-        check_auth_dict(auth_data)
-    # If an exception was thrown by the previous call, catch it and deal with it properly
-    except AuthenticationException as ae:
-        # Hard to tell what may have happened to this point, but whatever was parsed into the auth_data variable was not a valid, or at least well-formed,
-        # dictionary. Instead of complaining, since it all goes to the same place its more useful to simply reset the auth_data variable to the standard empty
-        # authorization dictionary in the config file and let this method take care of the rest regarding the absence of tokens in it
-        auth_log.warning(ae.message + " Resetting auth_data structure...")
-        auth_data = proj_config.auth_data
-
-    # Now I should have a well formed authentication dictionary in auth_data. From here, the simplest approach is to do 2 branches: one for the admin case
-    # (admin=True) and the default (admin=False) for the regular user. I can do the following statements in peace because the precious call to the
-    # check_auth_dict already made sure that the two key at the auth_data level 1 are indeed 'admin' and 'regular'.
-    # Check the 'check_auth_dict' implementation for more details.
-    if admin:
-        auth_dict = auth_data['admin']
-    else:
-        auth_dict = auth_data['regular']
-
-    # Initialize the result variable where I'm going to, eventually, save my authorization token. This is not required per se, just a good programming strategy (as well as checking if the result variable was casted out of None before using it)
-    result = None
-
-    # Case 1: There's no authorization token associated yet (auth_data["auth_token"] == None). There's no point in trying to use a refresh token, even if one
-    # is found in the auth_token file, given that the request for
-    # refreshing the token needs the expired token (auth_token) to execute the request to the new endpoint
-    if not auth_dict["token"]:
-        auth_log.warning("No authorization tokens found. Requesting new ones...")
-        result = _refresh_authorization_tokens(admin)
-    else:
-        # So, there's a token in the file. Lets see if it is yet valid. For that, the simplest way is to call a GET service and see what HTTP status code comes
-        # back. Since the admin and tenant(regular) users are disjoint groups,
-        # i.e., admin users can only access admin-enabled services and the same goes for tenant(regular) users, unlike the more usual case in which admin users
-        # can call whatever they want and only regular users are barred from admin-only services. Because of this, I have to call different services for each
-        # can call whatever they want and only regular users are barred from admin-only services. Because of this, I have to call different services for each
-        # profile:
-        if admin:
-            test_response = ac.checkUpdates()
-        else:
-            test_response = dc.getDeviceTypes()
-
-        # This is the simplest case: the authorization token is still valid. Which means that there's little else to do but to return the valid authorization
-        # token. No need to update the auth_token file even.
-        if test_response.status_code == 200:
-            auth_log.info("Valid authorization token found. Nothing more to do.")
-            return auth_dict["token"]
-
-        # Before dealing with the most complicated case (HTTP 401), there's an hopefully rare but possible case that has a simple solution: an admin issued
-        # token was put in the 'regular' user dictionary and vice-versa, which is a clear contradiction of the careful structure defined in the auth_token
-        # file. This case yields a HTTP 403 response with an internal errorCode = 20. Anyhow, the possibility exists and any good engineer
-        # worth of his/her salt plans for it. There's not much to it really, given that we only know that the retrieved token is for a different profile. But
-        # at least we can inform the user of that before asking for a
-        # new set of tokens from scratch based on the state of the admin flag
-        elif test_response.status_code == 403 and ast.literal_eval(test_response.text)["errorCode"] == 20:
-            auth_log.warning("The token provided is associated to the wrong profile (admin token in a regular user or vice versa). Requesting new authorization tokens...")
-            result = _refresh_authorization_tokens(admin)
-
-        # The next case (HTTP 401) is returned whenever there's something in the authorization token but that information cannot be used to authenticate the
-        # user. This can happen either because the token is expired (complex case) or that the token is corrupted (error at copying the file, etc.),
-        # which is simpler to deal with. To differentiate between both cases I have to look deep into the response text and look for the response internal
-        # error code
-        elif test_response.status_code == 401:
-            # Start by getting the response in a more usable structure (dictionary)
-            test_response_dict = ast.literal_eval(test_response.text)
-
-            # The simpler case first: there an authorization token in the file but either it was copied from somewhere else or it is simply mal-formed. In
-            # either case the backend is going to return this internal errorCode.
-            # There's no simple way to determine what is really wrong with it, so I might as well request a new pair of tokens and be done with it.
-            if test_response_dict["errorCode"] == 10:
-                auth_log.warning("Bad formed/corrupted authorization token detected. Requesting new ones....")
-                result = _refresh_authorization_tokens(admin)
-
-            # An expired (valid but just too old) authorization token returns an internal errorCode = 11. Try to get a new set of tokens using the refresh
-            # token first. Again, just for the sake of covering all bases, there an even more remote possibility of having an expired authorization token and
-            # no refresh token at all (either it is None or an empty string). I can only fathom someone messing around in the auth_token file on purpose.
-            # In any case, the only solution is requesting a new set of tokens
-            elif ast.literal_eval(test_response.text)["errorCode"] == 11:
-                auth_log.warning("Expired authorization token detected.")
-                if not auth_dict['refreshToken'] or auth_dict['refreshToken'] == "":
-                    auth_log.warning("Missing refresh token too. Requesting new ones...")
-                    result = _refresh_authorization_tokens(admin)
-                else:
-                    # Prepare the refresh token request using an automated method written for the effect
-                    service_dict = build_service_calling_info(auth_dict['token'], authentication_API_paths['refreshToken'])
-
-                    # The build_service_calling_info only fills out the standard info in all services (headers and url). The data argument, since its more
-                    # service-specific, needs to be prepared 'manually'
-                    service_data = {"refreshToken": auth_dict["refreshToken"]}
-
-                    # With all the necessary info in place, call for a new set of valid tokens using the refresh one
-                    token_refresh_response = requests.post(url=service_dict['url'], headers=service_dict['headers'], data=service_data)
-
-                    # If the refresh token is still valid, I should receive a HTTP 200 and a new pair of valid tokens is returned in
-                    # the token_refresh_response.text
-                    if token_refresh_response.status_code == 200:
-                        # Convert the text response into a dictionary to maintain the consistency of the result variable used so far
-                        # (the get_new_session_token method return a 'token' and 'refreshToken' key dictionary)
-                        auth_log.warning("Valid refresh token detected. Obtaining new set of authorization and refresh tokens...")
-                        result = ast.literal_eval(token_refresh_response.text)
-                    # There's a possibility that both authorization and refresh tokens are expired. That response also has the HTTP code '401' but the body of
-                    # the response furthers it to a more specific errorCode = 10.
-                    # If that's the case, then all its left to do is to request for a new pair of tokens straight away
-                    elif token_refresh_response.status_code == 401 and ast.literal_eval(token_refresh_response.text)["errorCode"] == 10:
-                        auth_log.warning("Both authorization and refresh tokens are expired. Requesting new ones...")
-                        result = _refresh_authorization_tokens(admin)
-
-                    # If my logic is correct so far, the following elif statement should never be reached, given how rare an HTTP 403 response should be and
-                    # because I've deal with it above too. In any case, since this is but a copy-paste of the code above with the new variable names replaced,
-                    # what the hell, why not? Just leave it there. If this ever run I shall be quite surprised!
-                    elif token_refresh_response.status_code == 403 and ast.literal_eval(token_refresh_response.text)["errorCode"] == 20:
-                        auth_log.warning("The token provided is still associated to the wrong profile (admin token in a regular user or vice versa). Requesting new authorization tokens...")
-                        result = _refresh_authorization_tokens(admin)
-
-                    # Before the default result (in which something really weird and unexpected happened, I want to check for further requests that were
-                    # successful, from the request itself standpoint, but came back with none
-                    # of the HTTP responses predicted above
-                    elif token_refresh_response.status_code != 200:
-                        error_msg = "There was a problem during the retrieval of the authorization token:"\
-                                    "\nHTTP status code: {0}"\
-                                    "\nResponse Message: {1}"\
-                                    "\nResponse internal error code: {2}".format(str(token_refresh_response.status_code), str(token_refresh_response.text), str(eval(token_refresh_response.text)['errorCode']))
-                        auth_log.error(error_msg)
-                        raise AuthenticationException(message=error_msg, error_code=eval(token_refresh_response.text)['errorCode'])
-
-                    # Otherwise, something really awful and horrible happened! In that case, just raise the good old AuthenticationException and begin to annoy
-                    # the engineer that wrote this mess. NOTE: don't forget to print the stack associated to this Exception when catching it further up in order
-                    # to give the poor engineer a bit of context of what the error may be.
-                    else:
-                        error_msg = "Unexpected error detected!"
-                        auth_log.error(error_msg)
-                        raise AuthenticationException(error_msg, 1)
-
-    # If I got to this point in the code, it means that the code flow survived all the validations and Exceptions raising. Which means that I have a valid
-    # result dictionary with a set of valid authorization and refresh tokens. All its left to do is update the auth_token file with the new data and return
-    # the valid authorization token back to the user/calling method.
-    # Start by closing the auth_file that is currently open just for reading
-    auth_file.close()
-
-    # At this point I expect my 'result' not to be 'None' anymore and a dictionary instead (type(result) = dict). I'm going to check against both cases
-    # regardless (call me paranoid...)
-    if not result:
-        error_msg = "No valid dictionary obtained!"
-        auth_log.error(error_msg)
-        raise AuthenticationException(error_msg)
-
-    try:
-        validate_input_type(result, dict)
-    except InputValidationException as ive:
-        auth_log.error(ive.message)
-        raise ive
-
-    # Now re-open it but with writing privileges (For security reasons, I think, python requires this if you want to replace the whole file with new content,
-    # i.e., not appending existing content
-    auth_file = open(proj_config.auth_token_path, 'w')
-    # The rest is somewhat obvious
-    # Also, I'm going to replace only the tokens that were updates. Luckily, the use of the admin flag in the context of this method simplifies this greatly:
-    if admin:
-        auth_data['admin'] = result
-    else:
-        auth_data['regular'] = result
-
-    # At this point, I have a dictionary with the updated authorization and refresh tokens ready to be stored back into the auth_token file
-    # NOTE: Ignore all the replaces in the strings bellow. They are irrelevant from the code standpoint and serve only to make the auth_token file more
-    # 'human readable' since the authentication and refresh tokens are but a very
-    # long sequence of apparently random symbols
-    admin_dict = str(auth_data['admin']).replace('{', '{\n\t\t').replace(', ', ', \n\t\t').replace('}', '\n\t}')
-    regular_dict = str(auth_data['regular']).replace('{', '{\n\t\t').replace(', ', ', \n\t\t').replace('}', '\n\t}')
-    new_dict_to_write = '{\n\t' + "'admin'" + ':\n\t' + str(admin_dict) + ',' + '\n\t' + "'regular'" + ': \n\t' + str(regular_dict) + '\n\r}'
-
-    # Write the carefully formatted string back to the auth_token file
-    auth_file.write(new_dict_to_write)
-    # Flush the writing buffer, just in case
-    auth_file.flush()
-    # And properly close the file
-    auth_file.close()
-
-    # And finally, return the valid authorization token
-    return result['token']
-
-
 def check_auth_dict(auth_dict):
     """ Simple method to double check if the dictionary that its possible to obtain by parsing the auth_token file is consistent with what is expected,
      i.e., that it is a dictionary, it has two and only two entries and that those entries are 'auth_token' and 'refresh_token' respectively
@@ -685,52 +430,6 @@ def validate_input_type(value, valid_type, another_valid_type=None):
         return True
 
 
-def check_auth_token_type(auth_token):
-    """This method receives an authorization token and returns if this is a regular token or an admin one (just the auth tokens itself. The refresh tokens are not considered for this case)
-    @:param auth_token (str) - An authorization token string that need its permissions checked
-    @:return 'admin'/'regular'/None (str/None) - This method returns a string with the type of user detected or None in case there wasn't a match to none of them
-    @:raise utils.InputValidationException - If errors happen with the validation inputs
-    @:raise Exception - For other general purposed error"""
-
-    check_auth_log = ambi_logger.get_logger(__name__)
-
-    try:
-        validate_input_type(auth_token, str)
-    except InputValidationException as ive:
-        check_auth_log.error(ive.message)
-        raise ive
-
-    # Open the auth_token file
-    try:
-        auth_file = open(proj_config.auth_token_path, 'r')
-    except FileNotFoundError as fne:
-        check_auth_log.error(fne.strerror)
-        raise fne
-
-    # Put the whole contents of the file (through the read instruction) and do an eval to extract the dictionary
-    auth_data = eval(auth_file.read())
-
-    try:
-        validate_input_type(auth_data, dict)
-    except InputValidationException as ive:
-        check_auth_log.error(ive.message)
-        raise ive
-
-    # From the just obtained dictionary, extract the auth_token for the admin and regular users
-    admin_token = auth_data['admin']['token']
-    regular_token = auth_data['regular']['token']
-
-    # Check if the argument matches any of the saved authorization tokens
-    if auth_token == admin_token:
-        return 'admin'
-    elif auth_token == regular_token:
-        return 'regular'
-    else:
-        # If no match is found, log a WARNING about it and return nothing
-        check_auth_log.warning("The token provided was not a match to either the stored admin or regular tokens!")
-        return None
-
-
 def extract_all_keys_from_dictionary(input_dictionary, current_key_list, extract_key_logger=None):
     """This method receives a dictionary that can be complex, i.e., some (or even all) of its values maybe other dictionaries. Linear dictionaries i.e., with only one key-value level, are trivial to operate using just the basic functions
     provided by the dict class. But multi-level dictionaries are a new beast in that regard. For example, running a dict.keys() method on a multi-level dictionary yields just the keys in the first level: there's no way to be sure that one
@@ -795,24 +494,26 @@ def extract_all_keys_from_dictionary(input_dictionary, current_key_list, extract
     return current_key_list
 
 
-def extract_all_key_value_pairs_from_dictionary(input_dictionary, current_value_list):
+def extract_all_key_value_pairs_from_dictionary(input_dictionary, current_value_dict=None):
     """This method is but the counterpart of the extract_all_keys_from_dictionary one. Same principle, same reason and almost same logic: I need an expanded list of all the values in a given dictionary which, in the considered case,
     can have multiple levels, i.e., values that are dictionaries. The most efficient way to get all values of a dictionary into a linear data type, such as a list, is by employing recursivity to explore all dictionary levels. But in this case,
     the return element is going to be a list of tuples, in the format (key, value), because this method is going to be used to populate database tables where the keys of the input dictionary were used to name the database columns verbatim
     @:param input_dictionary (dict) - The dictionary whose keys values pair I want to extract
-    @:param current_value_list (list) - The list of values gathered so far. Since I'm calling this method recursively, I need to provide the state of the process to the next iteration of the method. The current_value_list list is going to be use
-    for just that
-    @:return current_value_list (list of tuple) - A list with all the values obtained in this analysis (can be returned for good or sent to another iteration of this method to gather more elements from a deeper level dictionary) with all the pairs
-    key-value pair extracted
+    @:param current_value_list (list) - The list of values gathered so far. Since I'm calling this method recursively, I need to provide the state of the process to the next iteration of the method. The current_value_list list is going to be use for
+    just that
+    @:return current_value_dict (dict) - The dictionary that is going to contain the partial results for when this method is executed recursively
     @:raise utils.InputValidationException - If an input argument fails its data type validation
     """
+
+    if current_value_dict is None:
+        current_value_dict = {}
 
     extract_val_logger = ambi_logger.get_logger(__name__)
 
     # Validate the input dict and the current_value list then
     try:
         validate_input_type(input_dictionary, dict)
-        validate_input_type(current_value_list, list)
+        validate_input_type(current_value_dict, dict)
     except InputValidationException as ive:
         extract_val_logger.error(ive.message)
         raise ive
@@ -824,13 +525,13 @@ def extract_all_key_value_pairs_from_dictionary(input_dictionary, current_value_
         # If a sub dictionary is detected
         if type(input_dictionary[key]) == dict:
             # Call this function again with the sub dictionary instead
-            extract_all_key_value_pairs_from_dictionary(input_dictionary[key], current_value_list)
+            extract_all_key_value_pairs_from_dictionary(input_dictionary=input_dictionary[key], current_value_dict=current_value_dict)
         # Otherwise, just keep appending values to the current_value_list
         else:
-            current_value_list.append((key, input_dictionary[key]))
+            current_value_dict[key] = input_dictionary[key]
 
     # Once the for is done, I'm also too. Send the list back
-    return current_value_list
+    return current_value_dict
 
 
 def translate_postgres_to_python(response_text):
@@ -974,3 +675,22 @@ def validate_id(entity_id):
 
     # Done. If the code reaches this point than it means that the id string was able to jump through all the loops before
     return True
+
+
+def validate_entity_type(entity_type):
+    """
+    Use this method to make sure that a provided entity_type is valid, i.e., is among the ones supported by the ThingsBoard, which are specified in proj_config.valid_entity_types
+    :param entity_type (str) - The entity type str that needs to be verified.
+    :raise utils.InputValidationException - If the input provided doesn't have the expected data type
+    :return result (bool) - If the verification is successful, this method returns True. Otherwise an Exception is raised detailing why the verification failed.
+    """
+    validate_input_type(entity_type, str)
+
+    # All supported entityTypes are all uppercase characters. Convert the argument provided to it before comparing things
+    entity_type = entity_type.upper()
+
+    # And check if the entity_type provided is among the supported ones
+    if entity_type not in proj_config.valid_entity_types:
+        raise InputValidationException(message="The entity type provided: {0} is not among the ones supported by the ThingsBoard platform".format(str(entity_type)))
+    else:
+        return True

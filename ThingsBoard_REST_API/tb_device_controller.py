@@ -323,7 +323,7 @@ def getCustomerDevices(customer_name, type=None, textSearch=None, idOffset=None,
     except (requests.ConnectionError, requests.ConnectTimeout) as ce:
         error_msg = "Could not get a response from {0}...".format(str(service_dict['url']))
         customer_device_log.error(error_msg)
-        raise ce
+        raise utils.ServiceEndpointException(message=ce)
 
     # If I got a response, check first if it was the expected HTTP 200 OK
     if response.status_code != 200:

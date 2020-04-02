@@ -312,3 +312,58 @@ Response Body
     }
   ]
 }
+
+----------- getAttributes -----------------
+http://localhost:8080/api/plugins/telemetry/DEVICE/deacd5b0-739d-11ea-b1ac-0f72165680c1/values/attributes
+
+Response Body
+
+[
+  {
+    "lastUpdateTs": 1585694748473,
+    "key": "carbon_dioxide",
+    "value": "mss001_co2"
+  },
+  {
+    "lastUpdateTs": 1585694771887,
+    "key": "volatile_organic_compounds",
+    "value": "mss001_COV"
+  },
+  {
+    "lastUpdateTs": 1585694791102,
+    "key": "humidity",
+    "value": "mss001_humd"
+  },
+  {
+    "lastUpdateTs": 1585694809793,
+    "key": "temperature",
+    "value": "mss001_temp"
+  },
+  {
+    "lastUpdateTs": 1585693249446,
+    "key": "active",
+    "value": false
+  },
+  {
+    "lastUpdateTs": 1585693249445,
+    "key": "inactivityAlarmTime",
+    "value": 1585693249442
+  }
+]
+
+http://localhost:8080/api/plugins/telemetry/DEVICE/deacd5b0-739d-11ea-b1ac-0f72165680c1/values/attributes?keys=carbon_dioxide,humidity
+
+Response Body
+
+[
+  {
+    "lastUpdateTs": 1585694748473,
+    "key": "carbon_dioxide",
+    "value": "mss001_co2"
+  },
+  {
+    "lastUpdateTs": 1585694791102,
+    "key": "humidity",
+    "value": "mss001_humd"
+  }
+]

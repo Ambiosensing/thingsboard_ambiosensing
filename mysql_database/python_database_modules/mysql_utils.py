@@ -562,3 +562,5 @@ def validate_table_name(table_name):
         select_cursor.close()
         cnx.close()
         return False
+
+

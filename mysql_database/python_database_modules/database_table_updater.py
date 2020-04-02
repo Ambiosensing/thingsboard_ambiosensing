@@ -55,10 +55,12 @@ def add_table_data(data_dict, table_name):
 
     # Build the respective data tuple by going through all column names and checking if there is a corresponding key in the data dictionary
     data_list = []
+
     for i in range(0, len(column_list)):
         try:
             # First, try to retrieve a value into the data list by doing a direct retrieval from the data dictionary using the column name as key
             data_list.append(data_dict[column_list[i]])
+
         # If the current column name doesn't have a matching key in the data dictionary, catch the expected Exception
         except KeyError:
             # And replace the missing value with a None since, by default, all table columns were created in a way where they hold such value
@@ -70,7 +72,7 @@ def add_table_data(data_dict, table_name):
 
     # Done. Proceed with the INSERT
     try:
-        change_cursor = mysql_utils.run_sql_statement(cursor=sql_insert, sql_statement=sql_insert, data_tuple=tuple(data_list))
+        change_cursor = mysql_utils.run_sql_statement(cursor=change_cursor, sql_statement=sql_insert, data_tuple=tuple(data_list))
 
         # Check the outcome of the previous execution. If no columns were changed in the previous statement, raise a 'Duplicate entry' Exception to trigger an UPDATE instead
         if change_cursor.rowcount is 0:
@@ -110,6 +112,14 @@ def add_table_data(data_dict, table_name):
                     change_cursor = mysql_utils.run_sql_statement(cursor=change_cursor, sql_statement=sql_update, data_tuple=tuple(data_list))
 
                     # Check the UPDATE execution status
+                    if change_cursor.rowcount is 0:
+                        # If nothing happened, the record already exists in the database. Give a bit of heads up and move on
+                        log.warning("A record with data:\n{0}\n already exists in {1}.{2}. Nothing more to do...".format(str(data_list), str(database_name), str(table_name)))
+                        select_cursor.close()
+                        change_cursor.close()
+                        cnx.close()
+                        return False
+                    # Else, if more than one records were modified
                     if change_cursor.rowcount != 1:
                         error_msg = "Could not execute\n{0}\nin {1}.{2}. Cannot continue..".format(str(change_cursor.statement), str(database_name), str(table_name))
                         log.error(error_msg)

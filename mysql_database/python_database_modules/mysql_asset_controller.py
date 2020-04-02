@@ -4,6 +4,7 @@ import proj_config
 import utils
 from ThingsBoard_REST_API import tb_asset_controller
 from mysql_database.python_database_modules import database_table_updater
+from mysql_database.python_database_modules import mysql_utils
 
 
 def update_tenant_assets_table():
@@ -37,6 +38,15 @@ def update_tenant_assets_table():
 
         # The same goes for the CustomerId
         asset['customerId'] = asset['customerId']['id']
+
+        # As always, expand the asset dictionary into a one level dictionary
+        asset = utils.extract_all_key_value_pairs_from_dictionary(input_dictionary=asset)
+
+        # And replace any retarded POSIX timestamps for nice DATETIME compliant objects
+        try:
+            asset['createdTime'] = mysql_utils.convert_timestamp_tb_to_datetime(timestamp=asset['createdTime'])
+        except KeyError:
+            pass
 
         # All set. Invoke the database updater then
         database_table_updater.add_table_data(asset, proj_config.mysql_db_tables[module_table_key])

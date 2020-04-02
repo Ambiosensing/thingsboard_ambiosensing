@@ -52,3 +52,7 @@ LOG_FILE_LOCATION = os.path.join(base_path, 'ambiosensing_logs', LOG_FILENAME)
 # --------------------------------------------- MySQL DATABASE ----------------------------------------------------------------------------------
 # String used to detect if a mysql_utils.MySQLDatabaseException was raised by the existence of that record already in the database.
 existing_record_trigger = "Duplicate entry"
+
+# --------------------------------------------- DATA MODEL ----------------------------------------------------------------------------------
+# This list contains the 'official' names for every measurement category being watched as a way to establish an ontology around this. This list is needed to filter out device attributes that are returned but are not relevant for this case
+official_measurement_names = ['temperature', 'humidity', 'carbon_dioxide', 'volatile_organic_compounds']

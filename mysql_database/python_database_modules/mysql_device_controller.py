@@ -110,6 +110,16 @@ def update_devices_table(customer_name=False):
         # The 'keys' part of the last string shows how this request must be constructed and that implies all parameters in a single string, separated by commas and without any spaces in between.
         device['timeseriesKeys'] = ",".join(timeseries_keys) if hasattr(timeseries_keys, "__iter__") else ""
         # Done. Carry on with the database stuff
+
+        # Same old, same old. Expand the device dictionary to a single level one first
+        device = utils.extract_all_key_value_pairs_from_dictionary(input_dictionary=device)
+
+        # And replace any annoying POSIX timestamps for datetime.datetime objects
+        try:
+            device['createdTime'] = mysql_utils.convert_timestamp_tb_to_datetime(timestamp=device['createdTime'])
+        except KeyError:
+            pass
+
         database_table_updater.add_table_data(device, proj_config.mysql_db_tables[module_table_key])
 
 
