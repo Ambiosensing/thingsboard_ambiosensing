@@ -1,12 +1,13 @@
 """ Place holder for methods related to the ThingsBoard REST API - telemetry-controller methods """
 
 import utils
-import user_config
+import proj_config
 import requests
 import ambi_logger
 import datetime
 from mysql_database.python_database_modules import mysql_utils, mysql_auth_controller as mac
 from mysql_database.python_database_modules import mysql_device_controller
+
 
 def getTimeseriesKeys(entityType, entityId):
     """This method executes the GET request that returns the name (the ThingsBoard PostGres database key associated to the Timeseries table) of the variable whose quantity is being produced by the element identified by the pair (entityType,
@@ -104,7 +105,7 @@ def getTimeseriesKeys(entityType, entityId):
             return result
 
 
-def getTimeseries(device_name, end_time, start_time=None, time_interval=None, interval=None, limit=100, agg=None, timeseries_keys_filter=None):
+def getTimeseries(device_name, end_date, start_date=None, time_interval=None, interval=None, limit=100, agg=None, timeseries_keys_filter=None):
     """This method is the real deal, at least to establish a base methodology to retrieve hard data from the remote API server. Unlike other API based methods so far, this one requires some data to be present in the MySQL server already because
     that is where the actual method call input data is going to come from. The remote API service that retrieves the requested data requires 5 mandatory elements (the optional arguments are explicit in the calling signature of this method where
     they are set to their default values already, in case that down the line there is a need to use them): entityType, entityId, keys, startTs and endTs. The first 3 parameters are going to be retrieved with a call to the MySQL
@@ -113,10 +114,10 @@ def getTimeseries(device_name, end_time, start_time=None, time_interval=None, in
     @:type user_types allowed for this service: TENANT_ADMIN, CUSTOMER_USER
     @:param device_name (str) - The name of the device to retrieve data from (e.g., 'Thermometer A-1', 'Water Meter A-1', etc... whatever the string used when registering the device in the ThingsBoard system). This value is certainly easier to
     retained and/or memorized from the user than the id string, for instance.
-    @:param end_time (datetime.datetime) - A datetime.datetime object, i.e., in the format YYYY-MM-DD hh:mm:ss but that belongs to the datetime.datetime class. This is the latest value of the interval and, to avoid invalid dates into the input (
+    @:param end_date (datetime.datetime) - A datetime.datetime object, i.e., in the format YYYY-MM-DD hh:mm:ss but that belongs to the datetime.datetime class. This is the latest value of the interval and, to avoid invalid dates into the input (
     like future dates and such) this one is mandatory. The interval to be considered is going to be defined by either start_time (earliest) -> end_time (latest) or end_time - time_interval (in seconds) -> end_time, but one of the next two input
     arguments has to be provided.
-    @:param start_time (datetime.datetime) - A datetime.datetime object delimiting the earliest point of the time interval for data retrieval
+    @:param start_date (datetime.datetime) - A datetime.datetime object delimiting the earliest point of the time interval for data retrieval
     @:param time_interval (int) - An interval, in seconds, to be subtracted to the end_time datetime object in order to define the time window to return data from
     @:param interval (int) - This is an OPTIONAL API side only parameter whose use still eludes me... so far I've tried to place calls to the remote service with all sorts of values in this field and I'm still to discover any influence of it in
     the returned results. NOTE: My initial assumption was it to be able to be set as a API side version of my time_interval. Yet, that is not the case because the API requires both the end and start timestamps to be provided by default.
@@ -136,27 +137,23 @@ def getTimeseries(device_name, end_time, start_time=None, time_interval=None, in
     @:raise Exception - For any other detected errors during the method's execution
     """
     timeseries_log = ambi_logger.get_logger(__name__)
-    # The key that I need to use to retrieve the name of the table in the MySQL database where the necessary data to call this method is currently stored (specifically, the entityType, entityId and timeseriesKey
-    module_table_key = "devices"
-    # Put those in an handy list to so that I don't need to type them down all the time
-    columns_to_retrieve = ['entityType', 'id', 'timeseriesKeys']
 
     # Before moving forward, check if at least one of the start_time, time_interval inputs was provided. NOTE: If both inputs are present, i.e., not None, the method validates both and if both are valid it prioritizes start_time over
     # time_interval. If one of them happens to be invalid, the method execution is not stopped but the user gets warned (through the logger) about this and how the method is going to be operated. But at this stage, I'm only moving forward if I
     # have the conditions to setup a valid time window for the API request
-    if not start_time and not time_interval:
+    if not start_date and not time_interval:
         error_msg = "Please provide at least one valid start_time (datetime.datetime) or a time_interval (int). Cannot compute a time window for data retrieval otherwise.."
         timeseries_log.error(error_msg)
         raise utils.InputValidationException(message=error_msg)
 
     # Time for validate inputs
     utils.validate_input_type(device_name, str)
-    utils.validate_input_type(end_time, datetime.datetime)
+    utils.validate_input_type(end_date, datetime.datetime)
     # Limit is OPTIONAL but, because of what is explained in this method's man entry, I need this value to be sort of mandatory. This verification, given that the input is already set with a decent default value, is just to protect the
     # method's execution against a user setting it to None by whatever reason that may be
     utils.validate_input_type(limit, int)
-    if start_time:
-        utils.validate_input_type(start_time, datetime.datetime)
+    if start_date:
+        utils.validate_input_type(start_date, datetime.datetime)
     if time_interval:
         utils.validate_input_type(time_interval, int)
     if interval:
@@ -180,15 +177,15 @@ def getTimeseries(device_name, end_time, start_time=None, time_interval=None, in
     error_msg = None
     if limit <= 0:
         error_msg = "Invalid limit value: {0}. Please provide a greater than zero integer for this argument.".format(str(limit))
-    elif end_time > datetime.datetime.now():
-        error_msg = "Invalid end_time date provided: {0}! The date hasn't happen yet (future date). Please provide a valid datetime value!".format(str(end_time))
-    elif start_time and not time_interval and start_time >= end_time:
-        error_msg = "Invalid start_time date! The start_date provided ({0}) is newer/equal than/to the end_time date ({1}): invalid time window defined!".format(str(start_time), str(end_time))
-    elif time_interval and not end_time and time_interval <= 0:
-        error_msg = "Invalid time interval ({0})! Please provide a greater than zero value for this argument (the number of seconds to subtract from end_time).".format(str(time_interval))
-    elif start_time and time_interval and start_time >= end_time and time_interval <= 0:
-        error_msg = "Both start_time and time_interval arguments provided are invalid!\nThe start_time provided ({0}) is newer than the end_time indicated ({1}) and the time_interval as an invalid value ({2}).\n" \
-                    "Please provide a valid (older) start_time or a valid (greater than 0) time_interval".format(str(start_time), str(end_time), str(time_interval))
+    elif end_date > datetime.datetime.now():
+        error_msg = "Invalid end_date date provided: {0}! The date hasn't happen yet (future date). Please provide a valid datetime value!".format(str(end_date))
+    elif start_date and not time_interval and start_date >= end_date:
+        error_msg = "Invalid start_date date! The start_date provided ({0}) is newer/equal than/to the end_date date ({1}): invalid time window defined!".format(str(start_date), str(end_date))
+    elif time_interval and not end_date and time_interval <= 0:
+        error_msg = "Invalid time interval ({0})! Please provide a greater than zero value for this argument (the number of seconds to subtract from end_date).".format(str(time_interval))
+    elif start_date and time_interval and start_date >= end_date and time_interval <= 0:
+        error_msg = "Both start_date and time_interval arguments provided are invalid!\nThe start_date provided ({0}) is newer than the end_date indicated ({1}) and the time_interval as an invalid value ({2}).\n" \
+                    "Please provide a valid (older) start_date or a valid (greater than 0) time_interval".format(str(start_date), str(end_date), str(time_interval))
 
     if error_msg:
         timeseries_log.error(error_msg)
@@ -196,20 +193,10 @@ def getTimeseries(device_name, end_time, start_time=None, time_interval=None, in
 
     # And now for the cases where both valid start_time and time_interval were provided. The previous validation bundle made sure that, if only one of these two parameters was provided, it was valid. If I got to this point I can have both of these
     # parameter set to valid inputs but I need to warn the user that I'm only going to use one to define the time window
-    if start_time and time_interval:
+    if start_date and time_interval:
         timeseries_log.warning("Both start_time and time_interval provided arguments are valid but only start_time is going to be considered moving on. Set this argument to None/Invalid to use the time_interval instead")
         # So, if I'm dropping the time_interval, I need to signal this somehow moving forward:
         time_interval = None
-
-    # The inputs seem to be all valid. Lets get the necessary data to call the remote service then. To make this service more robust, I'm doing an initial SELECT to the devices database using the device_name as it is provided. If the SELECT
-    # statement doesn't return any results, I will then repeat the statement but using a LIKE name = %device_name statement instead of the WHERE clause, followed by a LIKE name = device_name% and ending with a final call using LIKE name =
-    # %device_name%, i.e., using wildcard search parameters in the beginning, end and both beginning and end of the device name string. The objective here is to get a single entry from the database table: multiple results or no results discard the
-    # current SQL SELECT statement and move the code to the next option. If non definite results are obtained, a MySQLDatabaseException is going to be raised signaling this fact.
-    database_name = user_config.mysql_db_access['database']
-    search_field = "name"
-
-    cnx = mysql_utils.connect_db(database_name=database_name)
-    select_cursor = cnx.cursor(buffered=True)
 
     # Retrieve the device's credentials using the appropriate method
     device_cred = mysql_device_controller.get_device_credentials(device_name=device_name)
@@ -223,18 +210,18 @@ def getTimeseries(device_name, end_time, start_time=None, time_interval=None, in
     # The first 3 elements that I need to build the service endpoint are valid and retrieved. Lets deal with the time window then. The service endpoint requires that the limits of this window (startTs, endTs) to be passed in that weird POSIX
     # timestamp-like format that the ThingsBoard PostGres database adopted, i.e, a 13 digit number with no decimal point (10 digits for the integer part + 3 for the microseconds value... but with the decimal point omitted...). Fortunately I've
     # written the 'translate' functions already for this situation
-    end_ts = mysql_utils.convert_datetime_to_timestamp_tb(end_time)
+    end_ts = mysql_utils.convert_datetime_to_timestamp_tb(end_date)
 
     # If the other end is defined by the start_time datetime.datetime object
-    if start_time:
+    if start_date:
         # Easy
-        start_ts = mysql_utils.convert_datetime_to_timestamp_tb(start_time)
+        start_ts = mysql_utils.convert_datetime_to_timestamp_tb(start_date)
 
     # If I got to this point in the code, given the brutality of validations undertaken so far, I can only get here with start_time = None and something valid in time_interval. Proceed accordingly
     else:
         # I need to convert this interval to a timedelta object to be able to subtract it to the end_time one
         time_interval = datetime.timedelta(seconds=int(time_interval))
-        start_time = end_time - time_interval
+        start_time = end_date - time_interval
         start_ts = mysql_utils.convert_datetime_to_timestamp_tb(start_time)
 
     # Done with the validations. Start building the service endpoint then.
@@ -457,7 +444,8 @@ def getAttributes(entityType=None, entityId=None, deviceName=None, keys=None):
             ...
             'attribute_N_key': 'attribute_N_value'
         }
-        where the keys in the dictionary are the ontology-specific names (official names) and the respective values are the timeseries keys being measured by the device that map straight into those ontology names
+        where the keys in the dictionary are the ontology-specific names (official names) and the respective values are the timeseries keys being measured by the device that map straight into those ontology names.
+        If the device identified by the argument data does exist but doesn't have any attributes configured, this method returns None instead.
     """
     log = ambi_logger.get_logger(__name__)
 
@@ -516,48 +504,56 @@ def getAttributes(entityType=None, entityId=None, deviceName=None, keys=None):
         # Add all the keys to the endpoint concatenated in a single, comma separated (without any spaces in between) string
         service_endpoint += ",".join(keys)
 
-        # Build the service dictionary from the endpoint already built
-        service_dict = utils.build_service_calling_info(mac.get_auth_token(user_type='tenant_admin'), service_endpoint=service_endpoint)
+    # Build the service dictionary from the endpoint already built
+    service_dict = utils.build_service_calling_info(mac.get_auth_token(user_type='tenant_admin'), service_endpoint=service_endpoint)
 
-        # Query the remote API
-        try:
-            response = requests.get(url=service_dict['url'], headers=service_dict['headers'])
-        except (requests.ConnectionError, requests.ConnectTimeout) as ce:
-            error_msg = "Could not get a response from {0}...".format(str(service_dict['url']))
-            log.error(error_msg)
-            raise utils.ServiceEndpointException(message=ce)
+    # Query the remote API
+    try:
+        response = requests.get(url=service_dict['url'], headers=service_dict['headers'])
+    except (requests.ConnectionError, requests.ConnectTimeout) as ce:
+        error_msg = "Could not get a response from {0}...".format(str(service_dict['url']))
+        log.error(error_msg)
+        raise utils.ServiceEndpointException(message=ce)
 
-        # If a response was returned, check the HTTP return code
-        if response.status_code != 200:
-            error_msg = "Request not successful: Received an HTTP " + str(eval(response.text)['status']) + " with message: " + str(eval(response.text)['message'])
-            log.error(error_msg)
-            raise utils.ServiceEndpointException(message=error_msg)
-        else:
-            # Got a valid result. Format the returned objects for return
-            data_to_return = eval(response.text)
+    # If a response was returned, check the HTTP return code
+    if response.status_code != 200:
+        error_msg = "Request not successful: Received an HTTP " + str(eval(response.text)['status']) + " with message: " + str(eval(response.text)['message'])
+        log.error(error_msg)
+        raise utils.ServiceEndpointException(message=error_msg)
+    else:
+        # Got a valid result. Format the returned objects for return
+        data_to_return = eval(utils.translate_postgres_to_python(response.text))
 
-            # If the request was alright, I've received the following Response Body (after eval)
-            # data_to_return =
-            # [
-            #   {
-            #       "lastUpdateTs": int,
-            #       "key": str,
-            #       "value": str
-            #   },
-            # ...
-            #   {
-            #       "lastUpdateTs": int,
-            #       "key": str,
-            #       "value": str
-            #   }
-            # ]
-            #
-            # So I need to transform this into the return structure defined above
+        if len(data_to_return) is 0:
+            # Nothing to return then. Send back a None instead
+            return None
 
-            attribute_dictionary = {}
-            for attribute_pair in data_to_return:
-                # Create the entries defined in the man entry of this method from the list elements returned from the remote API
-                attribute_dictionary[attribute_pair['key']] = attribute_pair['value']
+        # If the request was alright, I've received the following Response Body (after eval)
+        # data_to_return =
+        # [
+        #   {
+        #       "lastUpdateTs": int,
+        #       "key": str,
+        #       "value": str
+        #   },
+        # ...
+        #   {
+        #       "lastUpdateTs": int,
+        #       "key": str,
+        #       "value": str
+        #   }
+        # ]
+        #
+        # So I need to transform this into the return structure defined above
 
-            # All done. Return the attributes dictionary
-            return attribute_dictionary
+        attribute_dictionary = {}
+        for attribute_pair in data_to_return:
+            # Use this opportunity to filter out any attribute returned that is not part of the measurement list desired
+            if attribute_pair['value'] not in proj_config.ontology_names:
+                # If the attribute value is not one in the 'official list of names', skip it
+                continue
+            # Create the entries defined in the man entry of this method from the list elements returned from the remote API
+            attribute_dictionary[attribute_pair['key']] = attribute_pair['value']
+
+        # All done. Return the attributes dictionary
+        return attribute_dictionary

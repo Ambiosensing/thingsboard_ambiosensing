@@ -1,9 +1,9 @@
-auth_ctrl = False
+auth_ctrl = True
 ent_rel = False
 asset_ctrl = False
 mysql_test = False
 mysql_device = False
-attr_device = True
+attr_device = False
 rpc_one_way = False
 tb_telemetry = False
 db_add = False
@@ -23,9 +23,8 @@ def __main__():
         from ThingsBoard_REST_API import tb_telemetry_controller as ttc
         import proj_config
         device_name = "Multi-sensor device"
-        attr_keys = proj_config.official_measurement_names
 
-        resp = ttc.getAttributes(deviceName=device_name, keys=attr_keys)
+        resp = ttc.getAttributes(deviceName=device_name)
 
         print(str(resp))
 

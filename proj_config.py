@@ -3,6 +3,7 @@ lists of expected arguments, etc.. For user-specific configuration, please use t
 
 import os
 import logging
+import datetime
 
 # Set the basic connectivity parameters for the thingsboard installation
 # This project base_path, which is always useful
@@ -17,6 +18,7 @@ mysql_db_tables = {
     'customers': 'tb_customers',
     'authentication': 'tb_authentication',
     'asset_devices': 'tb_asset_devices',
+    'device_data': 'tb_device_data',
 }
 # --------------------------------------------- TYPE VALIDATION ----------------------------------------------------------------------------------
 # Allowed entityTypes in the ThingsBoard platform
@@ -55,4 +57,7 @@ existing_record_trigger = "Duplicate entry"
 
 # --------------------------------------------- DATA MODEL ----------------------------------------------------------------------------------
 # This list contains the 'official' names for every measurement category being watched as a way to establish an ontology around this. This list is needed to filter out device attributes that are returned but are not relevant for this case
-official_measurement_names = ['temperature', 'humidity', 'carbon_dioxide', 'volatile_organic_compounds']
+ontology_names = ['temperature', 'humidity', 'carbon_dioxide', 'volatile_organic_compounds']
+
+# Use this parameter as default time window to retrieve environmental data from the remote server
+default_collection_time_limit = datetime.timedelta(hours=24)

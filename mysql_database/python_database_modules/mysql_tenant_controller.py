@@ -34,7 +34,7 @@ def update_tenants_table():
     # Each element in the tenant list is a tenant. Process them one by one then using the insert and update functions. Actually, the way I wrote these functions, you can call either of them since their internal logic decides,
     # based on what's already present in the database, what is the best course of action (INSERT or UPDATE)
     for tenant in tenant_list:
-        # Two things that need to be done before sending the data to the database: expand any sublevel in the current tenant dictionary
+        # Two things that need to be done before sending the data to the database: expand any sub-level in the current tenant dictionary
         tenant = utils.extract_all_key_value_pairs_from_dictionary(input_dictionary=tenant)
 
         # And replace any POSIX-type timestamps for the MySQL friendly DATETIME type
