@@ -9,13 +9,15 @@ from mysql_database.python_database_modules import database_table_updater
 from ThingsBoard_REST_API import tb_telemetry_controller
 
 
-def populate_device_data_table(collection_time_limit=None):
+def populate_device_data_table(collection_time_limit=None, device_name_list=None):
     """
     This method aggregates a whole bunch of methods developed so far in order to fill out the main data repository for devices in the MySQL database. This method scans the device table for all devices configured there and, from the information
     retrieved from it, populates this table. Given how complex and populated this table may become, only the data from the current time up to either the provided collection_time_limit or a default 24 hour period, which is also going to be the
     value to use if an invalid parameter is provided in this parameter.
     :param collection_time_limit (datetime.datetime or datetime.timedelta) - A datetime object to be defined as the start date to start retrieving server data (if a datetime.datetime is provided) or subtracted to the current datetime.datetime.now(
     ) (if a datetime.timedelta is provided instead).
+    :param device_name_list (list of str) - Use this argument to provide a list with the names of the devices whose data is to be updated. If no list is provided through this argument, the method updated all devices currently configured in the
+    tb_devices table.
     :raise utils.InputValidationException - If the input fails initial validation.
     :raise mysql_utils.MySQLDatabaseException - If problems occur when accessing the database.
     :raise utils.ServiceEndpointException - If the remote server cannot be accessed/returns access errors
@@ -34,6 +36,14 @@ def populate_device_data_table(collection_time_limit=None):
         log.warning("No collection time limit provided. Defaulting to {0}".format(str(proj_config.default_collection_time_limit)))
         collection_time_limit = proj_config.default_collection_time_limit
 
+    utils.validate_input_type(device_name_list, list)
+    for device_name in device_name_list:
+        utils.validate_input_type(device_name, str)
+
+    # Finally, check if an empty list was provided and replace the variable by a None if so. Otherwise it may break this method later on
+    if len(device_name_list) == 0:
+        device_name_list = None
+
     # Validation done. Start by creating the usual database access objects
     database_name = user_config.access_info['mysql_database']['database']
     device_table_name = proj_config.mysql_db_tables['devices']
@@ -44,11 +54,30 @@ def populate_device_data_table(collection_time_limit=None):
     # Grab the full list of column names for the device list
     device_columns = mysql_utils.get_table_columns(database_name=database_name, table_name=device_table_name)
 
-    # Start by getting all device data from the relevant tenant (all requests within this module are attached to the set of credentials used to interact with the remote server and API)
-    sql_select = """SELECT * FROM """ + str(device_table_name) + """;"""
+    if device_name_list:
+        # If a device list was provided, build the next SQL select accordingly
+        # Start with the base statement
+        sql_select = """SELECT * FROM """ + str(device_table_name) + """ WHERE """
+
+        # And now concatenate all the names of devices provided separated by 'OR' in this case. The loop only goes to one short of the end of the list because the last element cannot have an 'OR' after it or the SQL statement is invalid
+        for i in range(0, len(device_name_list) - 1):
+            sql_select += """name = %s OR """
+
+        # And add one last element without the 'OR' at the end and closing semi colon
+        sql_select += """name = %s;"""
+
+        # Create the data_tuple too
+        data_tuple = tuple(device_name_list)
+    else:
+        # Use a broader SELECT then
+        # Start by getting all device data from the relevant tenant (all requests within this module are attached to the set of credentials used to interact with the remote server and API)
+        sql_select = """SELECT * FROM """ + str(device_table_name) + """;"""
+
+        # The data tuple in this case is empty, but necessary nonetheless
+        data_tuple = ()
 
     # Execute the statement and check if any results came back
-    select_cursor = mysql_utils.run_sql_statement(cursor=select_cursor, sql_statement=sql_select, data_tuple=())
+    select_cursor = mysql_utils.run_sql_statement(cursor=select_cursor, sql_statement=sql_select, data_tuple=data_tuple)
 
     # Cannot do anything if no device data comes back, there's nothing more to do in this case...
     if select_cursor.rowcount is 0:

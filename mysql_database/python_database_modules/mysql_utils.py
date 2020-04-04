@@ -564,3 +564,125 @@ def validate_table_name(table_name):
         return False
 
 
+def reset_table(table_name):
+    """
+    Maintenance method useful for testing purposes mainly. This method clears out all records in the table provided as argument by checking all its fields for a datetime one or, if one isn't found, for a VARCHAR field. From there it uses broad
+    statements to clear out all records using as base those same columns. If a datetime columns is available, the assumption is that all records there have an older date than the current one. This is the safer bet. As such, to clear out the table,
+    this method establishes as the deletion criteria being older than the current date (datetime.datetime.now()), which effectively deletes all records that have 'real' dates, i.e., non-future dates. If that is not available, that a VARCHAR type
+    column is selected and the criteria is based in a LIKE clause using just a wildcard as trigger, which has pretty much the same effect.
+    :param table_name (str) - The name of the database table whose records are to be deleted.
+    :raise utils.InputValidationException - If the argument fails initial validation or if the table provided doesn't exist.
+    :raise MySQLDatabaseException - The the operations in the database have raised any issues.
+    :return result (True) - If any records were cleared, otherwise the appropriate exception is raised.
+    """
+    log = ambi_logger.get_logger(__name__)
+
+    # Validate inputs
+    utils.validate_input_type(table_name, str)
+
+    # All good. Create the database access structures
+    database_name = user_config.access_info['mysql_database']['database']
+    cnx = connect_db(database_name=database_name)
+    select_cursor = cnx.cursor(buffered=True)
+    change_cursor = cnx.cursor(buffered=True)
+
+    # First, check if the table in the database has any records whatsoever
+    sql_select = """SELECT * FROM """ + str(table_name) + """;"""
+
+    select_cursor = run_sql_statement(cursor=select_cursor, sql_statement=sql_select, data_tuple=())
+
+    # Check if any results came back and exit the method if not
+    if select_cursor.rowcount is 0:
+        log.info("{0}.{1} has not records already. Nothing more to do...".format(str(database_name), str(table_name)))
+        select_cursor.close()
+        change_cursor.close()
+        cnx.close()
+    else:
+        # Got something that need to be cleared. Grab the names and data types of the table columns
+        sql_select = """SELECT COLUMN_NAME, DATA_TYPE FROM information_schema.COLUMNS WHERE TABLE_NAME = %s;"""
+
+        select_cursor = run_sql_statement(cursor=select_cursor, sql_statement=sql_select, data_tuple=(table_name,))
+
+        # If no records came back with the previous statement, raise an Exception
+        if select_cursor.rowcount is 0:
+            error_msg = "Could not get any column information from {0}.{1}. Cannot continue...".format(str(database_name), str(table_name))
+            log.error(error_msg)
+            select_cursor.close()
+            change_cursor.close()
+            cnx.close()
+            raise MySQLDatabaseException(message=error_msg)
+
+        # And now try to delete all records using the datetime columns first and the VARCHAR ones next
+        # Grab all results first
+        data_type_results = select_cursor.fetchall()
+
+        # Do a first run for datetime columns first
+        for data_type in data_type_results:
+            # If a valid column was found
+            if data_type[1] == 'datetime':
+                # Do a SQL DELETE statement based on the first element of the date type record, which is the column name
+                sql_delete = """DELETE FROM """ + str(table_name) + """ WHERE """ + str(data_type[0]) + """ < %s;"""
+
+                # And run the SQL DELETE to remove all records older than now
+                change_cursor = run_sql_statement(cursor=change_cursor, sql_statement=sql_delete, data_tuple=(datetime.datetime.now().replace(microsecond=0),))
+
+                # Check the results
+                if change_cursor.rowcount != 0:
+                    # Check if there are any records still left in that table
+                    sql_select = """SELECT * FROM """ + str(table_name) + """;"""
+
+                    select_cursor = run_sql_statement(cursor=select_cursor, sql_statement=sql_select, data_tuple=())
+
+                    if select_cursor.rowcount is 0:
+                        # No records left in the database. This task is done. Inform the user, commit the changes to the database, close the database access objects and exit
+                        log.info("Deleted {0} records from {1}.{2}. The table is now empty!".format(str(change_cursor.rowcount), str(database_name), str(table_name)))
+                        cnx.commit()
+                        change_cursor.close()
+                        select_cursor.close()
+                        cnx.close()
+                        return True
+                    else:
+                        # Seems that there are still some records left, though it appear that some have been deleted. Commit the changes so far and continue
+                        cnx.commit()
+                else:
+                    # The last statement didn't had any effect. Try any other datetime columns if possible. Carry on to the next one
+                    continue
+
+        # If I got to this point in the code, it appears that either the table has no datetime columns or these were not enough to clear all records. Go for the VARCHAR ones then
+        for data_type in data_type_results:
+            if data_type[1] == 'varchar':
+                # Repeat the same logic as before, adapted to the new column data type
+                sql_delete = """DELETE FROM """ + str(table_name) + """ WHERE """ + str(data_type[0]) + """ LIKE '%';"""
+
+                change_cursor = run_sql_statement(cursor=change_cursor, sql_statement=sql_delete, data_tuple=())
+
+                # Check the execution results
+                if change_cursor.rowcount != 0:
+                    # Do a quick SELECT to see if there are any records left still
+                    sql_select = """SELECT * FROM """ + str(table_name) + """;"""
+
+                    select_cursor = run_sql_statement(cursor=select_cursor, sql_statement=sql_select, data_tuple=())
+
+                    if select_cursor.rowcount is 0:
+                        # Great success. Commit the changes, close the database access objects, inform the user and exit
+                        log.info("Deleted {0} records from {1}.{2}. The table is now cleared!".format(str(change_cursor.rowcount), str(database_name), str(table_name)))
+                        cnx.commit()
+                        select_cursor.close()
+                        change_cursor.close()
+                        cnx.close()
+                        return True
+                    else:
+                        # Still some crap left. Commit all the deletions so far and continue
+                        cnx.commit()
+                        continue
+
+        # If, somehow, there are still records in the database table, the previous logic was not enough to clear them. Nothing more to do at this point. Inform the user, close all database access objects
+        # Do a quick select first just to see how many records are still to be deleted
+        sql_select = """SELECT * FROM """ + str(table_name) + """;"""
+
+        select_cursor = run_sql_statement(cursor=select_cursor, sql_statement=sql_select, data_tuple=())
+
+        log.warning("Could not delete all records from {0}.{1}. Still {2} left. Cannot do anything more at this point...".format(str(database_name), str(table_name), str(select_cursor.rowcount)))
+        select_cursor.close()
+        change_cursor.close()
+        cnx.close()

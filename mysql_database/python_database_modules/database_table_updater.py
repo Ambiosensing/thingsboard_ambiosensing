@@ -90,83 +90,79 @@ def add_table_data(data_dict, table_name):
     # Watch out for the typical "Duplicate entry" exception
     except mysql_utils.MySQLDatabaseException as mse:
         if proj_config.existing_record_trigger in mse.message:
-                trigger_column_list = mysql_utils.get_trigger_columns(table_name=table_name)
+            trigger_column_list = mysql_utils.get_trigger_columns(table_name=table_name)
 
-                # Cool. Use this data to get the respective UPDATE statement
-                sql_update = mysql_utils.create_update_sql_statement(column_list=column_list, table_name=table_name, trigger_column_list=trigger_column_list)
+            # Cool. Use this data to get the respective UPDATE statement
+            sql_update = mysql_utils.create_update_sql_statement(column_list=column_list, table_name=table_name, trigger_column_list=trigger_column_list)
 
-                # And complete the existing data list by appending to it the values corresponding to the elements in the trigger list
-                for trigger_column_name in trigger_column_list:
-                    try:
-                        data_list.append(data_dict[trigger_column_name])
-                    except KeyError:
-                        error_msg = "The value for the trigger column '{0}' cannot be found among the data dictionary elements! Cannot continue!".format(str(trigger_column_name))
-                        log.error(error_msg)
-                        select_cursor.close()
-                        change_cursor.close()
-                        cnx.close()
-                        raise mysql_utils.MySQLDatabaseException(message=error_msg)
-
-                # Done. Run the UPDATE statement, still looking for duplicate records
+            # And complete the existing data list by appending to it the values corresponding to the elements in the trigger list
+            for trigger_column_name in trigger_column_list:
                 try:
-                    change_cursor = mysql_utils.run_sql_statement(cursor=change_cursor, sql_statement=sql_update, data_tuple=tuple(data_list))
+                    data_list.append(data_dict[trigger_column_name])
+                except KeyError:
+                    error_msg = "The value for the trigger column '{0}' cannot be found among the data dictionary elements! Cannot continue!".format(str(trigger_column_name))
+                    log.error(error_msg)
+                    select_cursor.close()
+                    change_cursor.close()
+                    cnx.close()
+                    raise mysql_utils.MySQLDatabaseException(message=error_msg)
 
-                    # Check the UPDATE execution status
-                    if change_cursor.rowcount is 0:
-                        # If nothing happened, the record already exists in the database. Give a bit of heads up and move on
-                        log.warning("A record with data:\n{0}\n already exists in {1}.{2}. Nothing more to do...".format(str(data_list), str(database_name), str(table_name)))
-                        select_cursor.close()
-                        change_cursor.close()
-                        cnx.close()
-                        return False
-                    # Else, if more than one records were modified
-                    if change_cursor.rowcount != 1:
-                        error_msg = "Could not execute\n{0}\nin {1}.{2}. Cannot continue..".format(str(change_cursor.statement), str(database_name), str(table_name))
-                        log.error(error_msg)
-                        select_cursor.close()
-                        change_cursor.close()
-                        cnx.close()
-                        raise mysql_utils.MySQLDatabaseException(message=error_msg)
-                    else:
-                        info_msg = "Updated record with "
-                        for i in range(0, len(trigger_column_list) - 1):
-                            info_msg += str(trigger_column_list[i]) + " = " + str(data_list[trigger_column_list[i]]) + ", "
-                        info_msg += str(trigger_column_list[-1]) + " = " + str(data_list[trigger_column_list[-1]]) + " successfully in {0}.{1}"\
-                            .format(str(database_name), str(table_name))
-                        log.info(info_msg)
-                        cnx.commit()
-                        select_cursor.close()
-                        change_cursor.close()
-                        cnx.close()
-                        return True
-                except mysql_utils.MySQLDatabaseException as mse:
-                    # If a duplicate result was still found with the last UPDATE execution
-                    if proj_config.existing_record_trigger in mse.message:
-                        # Inform the user with a warning message
-                        warn_msg = "The record with "
-                        for i in range(0, len(trigger_column_list) - 1):
-                            warn_msg += str(trigger_column_list[i]) + " = " + str(data_dict[trigger_column_list[i]]) + ", "
+            # Done. Run the UPDATE statement, still looking for duplicate records
+            try:
+                change_cursor = mysql_utils.run_sql_statement(cursor=change_cursor, sql_statement=sql_update, data_tuple=tuple(data_list))
 
-                        warn_msg += str(trigger_column_list[-1]) + " = " + str(data_dict[trigger_column_list[-1]]) + " already exists in {0}.{1}. Nothing to do then..."\
-                            .format(str(database_name), str(table_name))
+                # Check the UPDATE execution status
+                if change_cursor.rowcount is 0:
+                    # If nothing happened, the record already exists in the database. Give a bit of heads up and move on
+                    log.warning("A record with data:\n{0}\n already exists in {1}.{2}. Nothing more to do...".format(str(data_list), str(database_name), str(table_name)))
+                    select_cursor.close()
+                    change_cursor.close()
+                    cnx.close()
+                    return False
+                # Else, if more than one records were modified
+                if change_cursor.rowcount != 1:
+                    error_msg = "Could not execute\n{0}\nin {1}.{2}. Cannot continue..".format(str(change_cursor.statement), str(database_name), str(table_name))
+                    log.error(error_msg)
+                    select_cursor.close()
+                    change_cursor.close()
+                    cnx.close()
+                    raise mysql_utils.MySQLDatabaseException(message=error_msg)
+                else:
+                    info_msg = "Updated record with  successfully in {0}.{1}".format(str(database_name), str(table_name))
+                    log.info(info_msg)
+                    cnx.commit()
+                    select_cursor.close()
+                    change_cursor.close()
+                    cnx.close()
+                    return True
+            except mysql_utils.MySQLDatabaseException as mse:
+                # If a duplicate result was still found with the last UPDATE execution
+                if proj_config.existing_record_trigger in mse.message:
+                    # Inform the user with a warning message
+                    warn_msg = "The record with "
+                    for i in range(0, len(trigger_column_list) - 1):
+                        warn_msg += str(trigger_column_list[i]) + " = " + str(data_dict[trigger_column_list[i]]) + ", "
 
-                        log.warning(warn_msg)
+                    warn_msg += str(trigger_column_list[-1]) + " = " + str(data_dict[trigger_column_list[-1]]) + " already exists in {0}.{1}. Nothing to do then..." \
+                        .format(str(database_name), str(table_name))
 
-                        # Close out all database access objects
-                        select_cursor.close()
-                        change_cursor.close()
-                        cnx.close()
+                    log.warning(warn_msg)
 
-                        # Nothing else that can be done here. Move out
-                        return True
-                    else:
-                        # Some other Exception was raised then
-                        select_cursor.close()
-                        change_cursor.close()
-                        cnx.close()
+                    # Close out all database access objects
+                    select_cursor.close()
+                    change_cursor.close()
+                    cnx.close()
 
-                        # Forward the Exception then
-                        raise mse
+                    # Nothing else that can be done here. Move out
+                    return True
+                else:
+                    # Some other Exception was raised then
+                    select_cursor.close()
+                    change_cursor.close()
+                    cnx.close()
+
+                    # Forward the Exception then
+                    raise mse
         else:
             select_cursor.close()
             change_cursor.close()
