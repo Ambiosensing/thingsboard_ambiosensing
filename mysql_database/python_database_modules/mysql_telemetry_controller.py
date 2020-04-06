@@ -152,8 +152,17 @@ def populate_device_data_table(collection_time_limit=None, device_name_list=None
             for data_point in ts_data_dict[timeseriesKey]:
                 # Fill out the remaining of the database updater dictionary and write it in the database before going for another record
                 device_data_dict['timestamp'] = mysql_utils.convert_timestamp_tb_to_datetime(timestamp=data_point['ts'])
-                # Cast the value to float since it is always returned as a string
-                device_data_dict['value'] = float(data_point['value'])
+
+                # Before dealing with the associated value, take heed that sometimes there are sensors that, either due to malfunction or other reasons, do not produce a valid value, i.e., one that can be directly cast into a float value. When
+                # that happens, the sensor sends back a 'NaN' (Not a Number), which is actually a valid numeric type, so much so that Python is able to cast a 'NaN' string into the rare but valid nan float! Unfortunately the database is not that
+                # flexible too and when a 'nan' goes into a DOUBLE field, nothing good comes out... The best approach in this case is to see if the value that comes back is indeed a 'NaN' and immediately set it as a None, since the mysql-python
+                # connector has no problems in converting these to NULL types when writing to the MySQL database.
+                if data_point['value'] == 'NaN':
+                    # If a NaN' came back, replace it immediately by a None
+                    device_data_dict['value'] = None
+                else:
+                    # Cast the value to float since it is always returned as a string
+                    device_data_dict['value'] = float(data_point['value'])
 
                 # The updater is complete. Write the data into the database
                 database_table_updater.add_table_data(data_dict=device_data_dict, table_name=data_table_name)

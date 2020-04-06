@@ -1,11 +1,11 @@
-auth_ctrl = True
+auth_ctrl = False
 ent_rel = False
 asset_ctrl = False
 mysql_test = False
 mysql_device = False
 attr_device = False
 rpc_one_way = False
-tb_telemetry = False
+tb_telemetry = True
 db_add = False
 sql_gen = False
 date_converter = False
@@ -53,7 +53,7 @@ def __main__():
     if tb_telemetry:
         from ThingsBoard_REST_API import tb_telemetry_controller as ttc
         import datetime
-        device_name = 'Ambi-05'
+        device_name = 'Rasp_00040'
         end_time = datetime.datetime(2020, 2, 19, 21, 28, 4)
         time_interval = int(datetime.timedelta(hours=24).total_seconds())
 
