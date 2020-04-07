@@ -62,9 +62,7 @@ def get_session_tokens(sys_admin=True, tenant_admin=True, customer_user=True):
             data = '{"username": "' + str(user_config.access_info[user_type]['username']) + '", "password": "' + str(user_config.access_info[user_type]['password']) + '"}'
 
             try:
-                print("Sending session tokens request to remote host...")
                 response = requests.post(url=url, headers=headers, data=data)
-                print("Got a valid response from the remote host!")
             except (requests.ConnectionError, requests.ConnectTimeout):
                 error_msg = "Unable to establish connection with {0}. Exiting...".format(str(user_config.access_info['host'] + ": " + str(user_config.access_info['port'])))
                 session_tokens_log.error(error_msg)

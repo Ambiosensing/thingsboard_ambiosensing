@@ -40,9 +40,7 @@ def populate_auth_table():
     cnx.commit()
 
     # Grab a new authorization dictionary
-    print("Trying to get some session tokens...")
     auth_dict = tb_auth_controller.get_session_tokens(sys_admin=True, tenant_admin=True, customer_user=True)
-    print("Got session tokens!")
 
     # And populate the database accordingly
     for user_type in auth_dict:
@@ -53,9 +51,7 @@ def populate_auth_table():
         data_tuple = (user_type, auth_dict[user_type]['token'], datetime.datetime.now().replace(microsecond=0), auth_dict[user_type]['refreshToken'], datetime.datetime.now().replace(microsecond=0))
 
         # And execute the INSERT
-        print("Writing new data to database")
         change_cursor = mysql_utils.run_sql_statement(change_cursor, sql_insert, data_tuple)
-        print("Done!")
 
         # Check if the execution was successful
         if not change_cursor.rowcount:
