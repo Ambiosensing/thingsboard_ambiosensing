@@ -24,8 +24,6 @@ def __main__():
     # And finish with the device table since this operation requires data from the previous tables
     mysql_device_controller.update_devices_table()
 
-    mysql_telemetry_controller.populate_device_data_table(collection_time_limit=datetime.timedelta(hours=24))
-
 
 def reset_context():
     """
@@ -57,7 +55,7 @@ def gather_latest_data(collection_interval, device_name_list=None):
 
 
 if __name__ == "__main__":
-    # __main__()
+    __main__()
     # reset_context()
     device_name_list = ['Rasp_00038', 'Rasp_00039', 'Rasp_00040', 'Rasp_00042', 'Rasp_00043']
     collection_interval = datetime.timedelta(hours=24)

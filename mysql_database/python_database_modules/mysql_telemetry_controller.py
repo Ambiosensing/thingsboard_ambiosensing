@@ -36,9 +36,10 @@ def populate_device_data_table(collection_time_limit=None, device_name_list=None
         log.warning("No collection time limit provided. Defaulting to {0}".format(str(proj_config.default_collection_time_limit)))
         collection_time_limit = proj_config.default_collection_time_limit
 
-    utils.validate_input_type(device_name_list, list)
-    for device_name in device_name_list:
-        utils.validate_input_type(device_name, str)
+    if device_name_list:
+        utils.validate_input_type(device_name_list, list)
+        for device_name in device_name_list:
+            utils.validate_input_type(device_name, str)
 
     # Finally, check if an empty list was provided and replace the variable by a None if so. Otherwise it may break this method later on
     if len(device_name_list) == 0:
