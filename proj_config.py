@@ -49,7 +49,10 @@ LOG_FORMATTER = logging.Formatter('%(asctime)s %(levelname)-10s [%(filename)s:%(
 
 # Where the log files are going to be located
 LOG_FILENAME = "ambi_main.log"
-LOG_FILE_LOCATION = os.path.join(base_path, 'ambiosensing_logs', LOG_FILENAME)
+if 'ambiosensing_logs' in base_path:
+    LOG_FILE_LOCATION = os.path.join(base_path, LOG_FILENAME)
+else:
+    LOG_FILE_LOCATION = os.path.join(base_path, 'ambiosensing_logs', LOG_FILENAME)
 
 # --------------------------------------------- MySQL DATABASE ----------------------------------------------------------------------------------
 # String used to detect if a mysql_utils.MySQLDatabaseException was raised by the existence of that record already in the database.
