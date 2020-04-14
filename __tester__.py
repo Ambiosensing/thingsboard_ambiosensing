@@ -3,12 +3,14 @@ ent_rel = False
 asset_ctrl = False
 mysql_test = False
 mysql_device = False
+attr_device = False
 rpc_one_way = False
-tb_telemetry = False
+tb_telemetry = True
 db_add = False
 sql_gen = False
 date_converter = False
-table_creator = True
+table_creator = False
+
 
 def __main__():
     if date_converter:
@@ -16,6 +18,15 @@ def __main__():
         ts1 = 1582147684275
         dt1 = mysql_utils.convert_timestamp_tb_to_datetime(timestamp=ts1)
         print(str(dt1))
+
+    if attr_device:
+        from ThingsBoard_REST_API import tb_telemetry_controller as ttc
+        import proj_config
+        device_name = "Multi-sensor device"
+
+        resp = ttc.getAttributes(deviceName=device_name)
+
+        print(str(resp))
 
     if db_add:
         from mysql_database.python_database_modules import database_table_updater as dtu
@@ -42,7 +53,7 @@ def __main__():
     if tb_telemetry:
         from ThingsBoard_REST_API import tb_telemetry_controller as ttc
         import datetime
-        device_name = 'Ambi-05'
+        device_name = 'Rasp_00040'
         end_time = datetime.datetime(2020, 2, 19, 21, 28, 4)
         time_interval = int(datetime.timedelta(hours=24).total_seconds())
 

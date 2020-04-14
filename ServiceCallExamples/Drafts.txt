@@ -30,7 +30,8 @@ curl -X POST --header 'Content-Type: application/json' --header 'Accept: applica
   ],
   "parameters": {
     "entityId": {
-      "entityType": "TENANT",
+      "entityType": "TENANT"
+	  
       "id": "string"
     },
     "rootId": "string",
@@ -74,3 +75,5 @@ var metadata = { data: 40 };
 var msgType = "POST_TELEMETRY_REQUEST";
 
 return { msg: msg, metadata: metadata, msgType: msgType };
+
+curl -X POST --header 'Content-Type:application/json' --header 'Accept:application/json' -d '{"username":"rdlalmeida@gmail.com", "password":"ambiosensing2019"}' 'http://10.0.1.2:5044/api/auth/login'

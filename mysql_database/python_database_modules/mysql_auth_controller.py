@@ -69,7 +69,7 @@ def populate_auth_table():
 
 
 def get_auth_token(user_type):
-    """This is going to be the go-to method in this module. This method receives one of the supported user types ('SYS_ADMIN', 'TENANANT_ADMIN' or 'CUSTOMER_USER') and fetches the respective authorization token. What this method does to get it is
+    """This is going to be the go-to method in this module. This method receives one of the supported user types ('SYS_ADMIN', 'TENANT_ADMIN' or 'CUSTOMER_USER') and fetches the respective authorization token. What this method does to get it is
     abstracted from the user. This method automatically checks the usual suspects first: database table. If there's any token in there for the provided user type, it then tests it to see if it is still valid. If not, it then tries to use the
     refresh token to issue a valid one and, if that is also not possible, request a new pair of authentication and refresh tokens.
     This method should be integrated into basic service calls to save the user to deal with the whole authorization token logistics
@@ -99,10 +99,6 @@ def get_auth_token(user_type):
     cnx = mysql_utils.connect_db(database_name=database_name)
     select_cursor = cnx.cursor(buffered=True)
     change_cursor = cnx.cursor(buffered=True)
-
-    # Use the next dictionary to store the reply for when a new authorization token needs to be requested (which can happen for a number of different reasons) and check for it after the sets of if-else following the database check. This avoids
-    # repeating code by enabling the INSERT operation to be run in a single instance (if the new_auth_dict is not None(«)
-    new_auth_dict = None
 
     # Grab the full column list from the database for indexing purposes
     column_list = mysql_utils.get_table_columns(database_name=database_name, table_name=table_name)
@@ -201,7 +197,7 @@ def get_auth_token(user_type):
             # First, update the user_type in the database for the correct one (the one retrieved from the remote API)
             remote_user_type = token_status_dict['authority']
             # Request an UPDATE SQL template to replace the current user type by the correct remote_user_type
-            sql_update = mysql_utils.create_update_sql_statement(['user_type'], table_name, ['user_type'])
+            sql_update = mysql_utils.create_update_sql_statement(column_list=['user_type'], table_name=table_name, trigger_column_list=['user_type'])
             data_tuple = (remote_user_type, user_type)
 
             # Execute the statement

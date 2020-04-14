@@ -4,6 +4,7 @@ import proj_config
 import utils
 from mysql_database.python_database_modules import database_table_updater
 from ThingsBoard_REST_API import tb_customer_controller
+from mysql_database.python_database_modules import mysql_utils
 
 
 def update_customer_table():
@@ -29,5 +30,16 @@ def update_customer_table():
         # I should replace this sub dictionary for a 'tenantId': <id_string> at this point or otherwise this process is going to crash later on when it tries to send that data to be added to the customers table
         customer['tenantId'] = customer['tenantId']['id']
 
+        # Remove any multilevel dictionary from the input structure
+        customer = utils.extract_all_key_value_pairs_from_dictionary(input_dictionary=customer)
+
+        # And hunt for any datetime fields that are still in the POSIX format
+        try:
+            # In this particular case, the datetime object comes from the API side as 'createdTime'
+            customer['createdTime'] = mysql_utils.convert_timestamp_tb_to_datetime(timestamp=customer['createdTime'])
+        except KeyError:
+            # If the customer structure doesn't have that key, ignore it.
+            pass
+
         # Send the data to be added to the MySQL database in the customers table
-        database_table_updater.add_table_data(customer, proj_config.mysql_db_tables[module_table_key])
+        database_table_updater.add_table_data(data_dict=customer, table_name=proj_config.mysql_db_tables[module_table_key])

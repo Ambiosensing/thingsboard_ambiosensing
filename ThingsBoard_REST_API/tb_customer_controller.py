@@ -105,7 +105,7 @@ def getCustomers(textSearch=None, idOffset=None, textOffset=None, limit=10):
     service_endpoint += '&'.join(url_strings)
 
     # Place the HTTP GET request using a REGULAR type authorization token
-    service_dict = utils.build_service_calling_info(mac.get_auth_token(user_type='customer_user'), service_endpoint)
+    service_dict = utils.build_service_calling_info(mac.get_auth_token(user_type='tenant_admin'), service_endpoint)
 
     # Query the remote API
     try:

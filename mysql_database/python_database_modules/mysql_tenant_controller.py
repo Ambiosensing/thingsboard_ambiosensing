@@ -2,6 +2,7 @@
 
 import utils
 from mysql_database.python_database_modules import database_table_updater
+from mysql_database.python_database_modules import mysql_utils
 from ThingsBoard_REST_API import tb_tenant_controller
 import proj_config
 import ambi_logger
@@ -33,4 +34,14 @@ def update_tenants_table():
     # Each element in the tenant list is a tenant. Process them one by one then using the insert and update functions. Actually, the way I wrote these functions, you can call either of them since their internal logic decides,
     # based on what's already present in the database, what is the best course of action (INSERT or UPDATE)
     for tenant in tenant_list:
+        # Two things that need to be done before sending the data to the database: expand any sub-level in the current tenant dictionary
+        tenant = utils.extract_all_key_value_pairs_from_dictionary(input_dictionary=tenant)
+
+        # And replace any POSIX-type timestamps for the MySQL friendly DATETIME type
+        try:
+            tenant['createdTime'] = mysql_utils.convert_timestamp_tb_to_datetime(timestamp=tenant['createdTime'])
+        except KeyError:
+            # Ignore if this key doesn't exist in the tenant dictionary
+            pass
+
         database_table_updater.add_table_data(tenant, proj_config.mysql_db_tables[module_table_key])

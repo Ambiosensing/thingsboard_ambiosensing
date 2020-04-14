@@ -37,7 +37,7 @@ def get_file_handler(file_location=None):
     # Set a file handler by creating a file identified (path + filename) in the variable file_location, set in 'append' mode (subsequent messages are appended to the end of the file instead of replacing the existing one), with a 1MB size limit (
     # 1x10^6 Bytes) and a pool of 10 names to rotate within, i.e, once a file exceeds the maxBytes limit, a new one is created by appending a '1', '2', etc... to the end of the filename identified in file_location. The pool holds 10 files maximum
     # (its what the backupCount argument does). Once file #10 exceeds the maxBytes size, the initial file is re-set.
-    file_handler = logging.handlers.RotatingFileHandler(filename=file_location, mode='a', maxBytes=1000000, backupCount=10)
+    file_handler = logging.handlers.RotatingFileHandler(filename=file_location, mode='a', maxBytes=10000000, backupCount=10)
 
     # Set the base log format
     file_handler.setFormatter(proj_config.LOG_FORMATTER)

@@ -13,7 +13,7 @@ thingsboard_host = "http://62.48.174.118"
 thingsboard_port = 5044
 
 # Use the following parameters to switch between a local (remote_server = False) and a remote ThingsBoard installations (remote_server = True). Flip the flag accordingly
-remote_server = False
+remote_server = True
 
 # The main access info dictionary for all things accesses
 access_info = {
@@ -41,7 +41,7 @@ access_info = {
         'password': 'ambiosensing2019'
     },
     'mysql_database': {
-        'host': 'http://localhost',
+        'host': 'localhost',
         'port': 3306,
         'username': 'ambiosensing',
         'password': 'ambiosensing2019',
@@ -51,7 +51,7 @@ access_info = {
 
 # Regular user database credentials
 thingsboard_database = {
-    "host": "http://localhost",
+    "host": "localhost",
     "port": 5432,
     "username": "postgres",
     "password": "ambiosensing2019"
@@ -85,7 +85,7 @@ thingsboard_database = {
 # The logic here is: the database name is the key and the corresponding value are the access credentials
 mysql_db_access = {
     'username': 'ricardoalmeida',
-    'password': 'GataMalvada32!',
+    'password': 'ambiosensing2019',
     'host': 'localhost',
     'database': 'ambiosensing_thingsboard'
 }

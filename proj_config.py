@@ -3,6 +3,7 @@ lists of expected arguments, etc.. For user-specific configuration, please use t
 
 import os
 import logging
+import datetime
 
 # Set the basic connectivity parameters for the thingsboard installation
 # This project base_path, which is always useful
@@ -17,6 +18,7 @@ mysql_db_tables = {
     'customers': 'tb_customers',
     'authentication': 'tb_authentication',
     'asset_devices': 'tb_asset_devices',
+    'device_data': 'tb_device_data',
 }
 # --------------------------------------------- TYPE VALIDATION ----------------------------------------------------------------------------------
 # Allowed entityTypes in the ThingsBoard platform
@@ -47,8 +49,18 @@ LOG_FORMATTER = logging.Formatter('%(asctime)s %(levelname)-10s [%(filename)s:%(
 
 # Where the log files are going to be located
 LOG_FILENAME = "ambi_main.log"
-LOG_FILE_LOCATION = os.path.join(base_path, 'ambiosensing_logs', LOG_FILENAME)
+if 'ambiosensing_logs' in base_path:
+    LOG_FILE_LOCATION = os.path.join(base_path, LOG_FILENAME)
+else:
+    LOG_FILE_LOCATION = os.path.join(base_path, 'ambiosensing_logs', LOG_FILENAME)
 
 # --------------------------------------------- MySQL DATABASE ----------------------------------------------------------------------------------
 # String used to detect if a mysql_utils.MySQLDatabaseException was raised by the existence of that record already in the database.
 existing_record_trigger = "Duplicate entry"
+
+# --------------------------------------------- DATA MODEL ----------------------------------------------------------------------------------
+# This list contains the 'official' names for every measurement category being watched as a way to establish an ontology around this. This list is needed to filter out device attributes that are returned but are not relevant for this case
+ontology_names = ['temperature', 'humidity', 'carbon_dioxide', 'volatile_organic_compounds']
+
+# Use this parameter as default time window to retrieve environmental data from the remote server
+default_collection_time_limit = datetime.timedelta(hours=24)
