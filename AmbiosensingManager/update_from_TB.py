@@ -5,7 +5,7 @@ from DAOAmbiosensing.DAO_ambiosensing import DAO_ambiosensing, Space, Building, 
 
 
 def get_update_from_TB():
-    #erc.update_asset_devices_table()
+    erc.update_asset_devices_table()
 
     database_name = user_config.mysql_db_access['database']
     cnx = sql.connect_db(database_name=database_name)
