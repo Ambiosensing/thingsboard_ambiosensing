@@ -21,10 +21,10 @@ SELECT * FROM ambiosensing_thingsboard.tb_customers;
 SELECT * FROM ambiosensing_thingsboard.tb_devices;
 SELECT * FROM ambiosensing_thingsboard.tb_tenants;
 SELECT * FROM ambiosensing_thingsboard.tb_authentication;
-SELECT * FROM ambiosensing_thingsboard.tb_device_data;
-
-DELETE FROM ambiosensing_thingsboard.tb_devices WHERE entityType = 'DEVICE';
 
 SELECT * FROM ambiosensing_thingsboard.tb_tenant_assets WHERE id = "efa6d2d0-0ad9-11ea-8001-3975f352e04e";
 
 SELECT * FROM ambiosensing_thingsboard.tb_asset_devices;
+
+SHOW TABLES FROM ambiosensing_thingsboard;
+SELECT * FROM ambiosensing_thingsboard.ambi_05_data;

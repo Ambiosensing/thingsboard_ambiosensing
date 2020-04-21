@@ -22,7 +22,7 @@ def getDeviceTypes():
     # Execute the service call
     try:
         response = requests.get(url=service_dict["url"], headers=service_dict["headers"])
-    except (requests.ConnectionError, requests.ConnectTimeout) as ce:
+    except (requests.exceptions.ConnectionError, requests.exceptions.ConnectTimeout) as ce:
         error_msg = "Could not get a response from {0}...".format(str(service_dict['url']))
         device_types_log.error(error_msg)
         raise ce
@@ -143,7 +143,7 @@ def getTenantDevices(type=None, textSearch=None, idOffset=None, textOffset=None,
     # Try to get a response from the remote API
     try:
         response = requests.get(url=service_dict['url'], headers=service_dict['headers'])
-    except (requests.ConnectionError, requests.ConnectTimeout) as ce:
+    except (requests.exceptions.ConnectionError, requests.exceptions.ConnectTimeout) as ce:
         error_msg = "Could not get a response from {0}...".format(str(service_dict['url']))
         tenant_device_log.error(error_msg)
         raise ce
@@ -320,7 +320,7 @@ def getCustomerDevices(customer_name, type=None, textSearch=None, idOffset=None,
     # Query the remote API
     try:
         response = requests.get(url=service_dict['url'], headers=service_dict['headers'])
-    except (requests.ConnectionError, requests.ConnectTimeout) as ce:
+    except (requests.exceptions.ConnectionError, requests.exceptions.ConnectTimeout) as ce:
         error_msg = "Could not get a response from {0}...".format(str(service_dict['url']))
         customer_device_log.error(error_msg)
         raise utils.ServiceEndpointException(message=ce)

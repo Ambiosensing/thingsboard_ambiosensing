@@ -110,7 +110,7 @@ def getCustomers(textSearch=None, idOffset=None, textOffset=None, limit=10):
     # Query the remote API
     try:
         response = requests.get(url=service_dict['url'], headers=service_dict['headers'])
-    except (requests.ConnectionError, requests.ConnectTimeout) as ce:
+    except (requests.exceptions.ConnectionError, requests.exceptions.ConnectTimeout) as ce:
         error_msg = "Could not get a request from {0}...".format(str(service_dict['url']))
         customer_log.error(error_msg)
         raise ce

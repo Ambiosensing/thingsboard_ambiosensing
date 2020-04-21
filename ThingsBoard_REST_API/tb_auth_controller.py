@@ -63,7 +63,7 @@ def get_session_tokens(sys_admin=True, tenant_admin=True, customer_user=True):
 
             try:
                 response = requests.post(url=url, headers=headers, data=data)
-            except (requests.ConnectionError, requests.ConnectTimeout):
+            except (requests.exceptions.ConnectionError, requests.exceptions.ConnectTimeout):
                 error_msg = "Unable to establish connection with {0}. Exiting...".format(str(user_config.access_info['host'] + ": " + str(user_config.access_info['port'])))
                 session_tokens_log.error(error_msg)
                 raise utils.ServiceEndpointException(message=error_msg)
@@ -200,7 +200,7 @@ def refresh_session_token(sys_admin=False, tenant_admin=False, customer_user=Fal
             # And call the remote API with the refresh request
             try:
                 api_response = requests.post(url=con_dict['url'], headers=con_dict['headers'], data=data)
-            except (requests.ConnectionError, requests.ConnectTimeout):
+            except (requests.exceptions.ConnectionError, requests.exceptions.ConnectTimeout):
                 error_msg = "Unable to establish a connection with {0}:{1}. Exiting...".format(str(user_config.thingsboard_host), str(user_config.thingsboard_port))
                 refresh_token_log.error(error_msg)
                 select_cursor.close()

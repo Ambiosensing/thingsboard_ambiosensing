@@ -4,9 +4,7 @@ import requests
 import ambi_logger
 import utils
 import json
-import proj_config
-import user_config
-from mysql_database.python_database_modules import mysql_utils, mysql_auth_controller as mac
+from mysql_database.python_database_modules import mysql_auth_controller as mac
 
 
 def handleOneWayDeviceRPCRequests(deviceId, remote_method, param_dict=None):
@@ -63,7 +61,7 @@ def handleOneWayDeviceRPCRequests(deviceId, remote_method, param_dict=None):
     # Done. Set things in motion then
     try:
         response = requests.post(url=service_dict["url"], headers=service_dict["headers"], data=json.dumps(data))
-    except (requests.ConnectionError, requests.ConnectTimeout) as ce:
+    except (requests.exceptions.ConnectionError, requests.exceptions.ConnectTimeout) as ce:
         error_msg = "Could not get a response from {0}...".format(str(service_dict['url']))
         one_way_log.error(error_msg)
         raise ce
@@ -112,7 +110,7 @@ def handleTwoWayDeviceRPCRequest(deviceId, remote_method, param_dict=None):
     # Send the request to the server. The response, if obtained, contains the response data
     try:
         response = requests.post(url=service_dict['url'], headers=service_dict['headers'], data=json.dumps(data))
-    except (requests.ConnectionError, requests.ConnectTimeout) as ce:
+    except (requests.exceptions.ConnectionError, requests.exceptions.ConnectTimeout) as ce:
         error_msg = "Could not get a response from {0}...".format(str(service_dict['url']))
         two_way_log.error(error_msg)
         raise ce

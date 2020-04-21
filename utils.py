@@ -140,7 +140,7 @@ def _get_new_session_token(connection_dict):
     new_session_log.info("Requesting {0}...".format(str(con_url)))
     try:
         response = requests.post(url=con_url, data=con_data, headers=con_headers)
-    except (requests.ConnectionError, requests.ConnectTimeout):
+    except (requests.exceptions.ConnectionError, requests.exceptions.ConnectTimeout):
         error_msg = "Unable to establish a connection with {0}. Exiting...".format(str(str(user_config.thingsboard_host) + ":" + str(user_config.thingsboard_port)))
         new_session_log.error(error_msg)
         raise AuthenticationException(error_msg)

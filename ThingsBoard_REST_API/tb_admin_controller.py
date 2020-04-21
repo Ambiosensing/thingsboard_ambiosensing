@@ -24,7 +24,7 @@ class SecuritySettings:
         "userLockoutNotificationEmail": "string"
     }
 
-    def __init__(self,userLockoutNotificationEmail,
+    def __init__(self, userLockoutNotificationEmail,
                  maxFailedLoginAttempts=0,
                  minimumDigits=0,
                  minimumLenght=0,
@@ -91,7 +91,7 @@ def getSecuritySettings():
 
     try:
         response = requests.get(url=service_dict["url"], headers=service_dict["headers"])
-    except (requests.ConnectionError, requests.ConnectTimeout) as ce:
+    except (requests.exceptions.ConnectionError, requests.exceptions.ConnectTimeout) as ce:
         error_msg = "Could not get a response from {0}...".format(str(service_dict['url']))
         security_set_log.error(error_msg)
         raise ce
@@ -122,7 +122,7 @@ def checkUpdates():
 
     try:
         response = requests.get(url=service_dict["url"], headers=service_dict["headers"])
-    except (requests.ConnectionError, requests.ConnectTimeout) as ce:
+    except (requests.exceptions.ConnectionError, requests.exceptions.ConnectTimeout) as ce:
         error_msg = "Could not get a response from {0}...".format(str(service_dict['url']))
         check_updates_log.error(error_msg)
         raise ce

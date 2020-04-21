@@ -118,7 +118,7 @@ def getTenants(textSearch=None, idOffset=None, textOffset=None, limit=10):
     service_dict = utils.build_service_calling_info(mac.get_auth_token(user_type='sys_admin'), service_endpoint)
     try:
         response = requests.get(url=service_dict['url'], headers=service_dict['headers'])
-    except (requests.ConnectionError, requests.ConnectTimeout) as ce:
+    except (requests.exceptions.ConnectionError, requests.exceptions.ConnectTimeout) as ce:
         error_msg = "Could not get a response from {0}..".format(str(service_dict['url']))
         tenant_log.error(error_msg)
         raise ce

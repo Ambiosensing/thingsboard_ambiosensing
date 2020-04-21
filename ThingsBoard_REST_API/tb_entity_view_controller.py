@@ -26,7 +26,7 @@ def getEntityViewTypes():
 
     try:
         response = requests.get(url=service_dict["url"], headers=service_dict["headers"])
-    except (requests.ConnectionError, requests.ConnectTimeout) as ce:
+    except (requests.exceptions.ConnectionError, requests.exceptions.ConnectTimeout) as ce:
         error_msg = "Could not get a response from {0}...".format(str(service_dict['url']))
         get_entity_view_log.error(error_msg)
         raise ce

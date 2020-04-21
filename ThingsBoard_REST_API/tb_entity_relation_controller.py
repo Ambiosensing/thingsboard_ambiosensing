@@ -115,7 +115,7 @@ def findByQuery(entityType, entityId, direction, relationTypeGroup):
     # Done. I'm ready to call the service then
     try:
         response = requests.post(url=service_dict['url'], headers=service_dict['headers'], data=data_payload)
-    except (requests.ConnectionError, requests.ConnectTimeout) as ce:
+    except (requests.exceptions.ConnectionError, requests.exceptions.ConnectTimeout) as ce:
         error_msg = "Could not get a response from {0}...".format(str(service_dict['url']))
         entity_relation_log.error(error_msg)
         raise ce

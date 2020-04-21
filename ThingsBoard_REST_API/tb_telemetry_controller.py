@@ -69,7 +69,7 @@ def getTimeseriesKeys(entityType, entityId):
 
     try:
         response = requests.get(url=service_dict['url'], headers=service_dict['headers'])
-    except (requests.ConnectionError, requests.ConnectTimeout) as ce:
+    except (requests.exceptions.ConnectionError, requests.exceptions.ConnectTimeout) as ce:
         error_msg = "Could not get a response from {0}...".format(str(service_dict['url']))
         timeseries_key_log.error(error_msg)
         raise ce
@@ -276,7 +276,7 @@ def getTimeseries(device_name, end_date, start_date=None, time_interval=None, in
 
     try:
         response = requests.get(url=service_dict['url'], headers=service_dict['headers'])
-    except (requests.ConnectionError, requests.ConnectTimeout):
+    except (requests.exceptions.ConnectionError, requests.exceptions.ConnectTimeout):
         error_msg = "Unable to establish a connection with {0}...".format(str(service_dict['url']))
         timeseries_log.error(error_msg)
         raise utils.ServiceEndpointException(message=error_msg)
@@ -411,7 +411,7 @@ def getLatestTimeseries(device_name, timeseries_keys_filter=None):
     # Execute the remote call finally
     try:
         response = requests.get(url=service_dict['url'], headers=service_dict['headers'])
-    except (requests.ConnectionError, requests.ConnectTimeout):
+    except (requests.exceptions.ConnectionError, requests.exceptions.ConnectTimeout):
         error_msg = "Unable to establish a connection with {0}...".format(str(service_dict['url']))
         log.error(error_msg)
         raise utils.ServiceEndpointException(message=error_msg)
@@ -510,7 +510,7 @@ def getAttributes(entityType=None, entityId=None, deviceName=None, keys=None):
     # Query the remote API
     try:
         response = requests.get(url=service_dict['url'], headers=service_dict['headers'])
-    except (requests.ConnectionError, requests.ConnectTimeout) as ce:
+    except (requests.exceptions.ConnectionError, requests.exceptions.ConnectTimeout) as ce:
         error_msg = "Could not get a response from {0}...".format(str(service_dict['url']))
         log.error(error_msg)
         raise utils.ServiceEndpointException(message=ce)

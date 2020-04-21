@@ -4,7 +4,6 @@ import requests
 import ambi_logger
 import utils
 import urllib.parse
-import user_config
 from mysql_database.python_database_modules import mysql_auth_controller as mac
 
 
@@ -37,7 +36,7 @@ def getAssetTypes():
 
     try:
         response = requests.get(url=service_dict['url'], headers=service_dict['headers'])
-    except (requests.ConnectionError, requests.ConnectTimeout) as ce:
+    except (requests.exceptions.ConnectionError, requests.exceptions.ConnectTimeout) as ce:
         error_msg = "Could not get a request from {0}...".format(str(service_dict['url']))
         asset_types_log.error(error_msg)
         raise ce
@@ -189,7 +188,7 @@ def getTenantAssets(type=None, textSearch=None, idOffset=None, textOffset=None, 
     # And try to get a response from the remote API
     try:
         response = requests.get(url=service_dict['url'], headers=service_dict['headers'])
-    except (requests.ConnectionError, requests.ConnectTimeout) as ce:
+    except (requests.exceptions.ConnectionError, requests.exceptions.ConnectTimeout) as ce:
         error_msg = "Could not get a response from {0}...".format(str(service_dict['url']))
         asset_control_log.error(error_msg)
         raise ce
