@@ -12,13 +12,16 @@ please use the proj_config.py file"""
 thingsboard_host = "http://62.48.174.118"
 thingsboard_port = 5044
 
+local_host = "http://localhost"
+local_port = 8080
+
 # Use the following parameters to switch between a local (remote_server = False) and a remote ThingsBoard installations (remote_server = True). Flip the flag accordingly
 remote_server = True
 
 # The main access info dictionary for all things accesses
 access_info = {
-    'host': 'http://62.48.174.118' if remote_server else 'http://localhost',
-    'port': 5044 if remote_server else 8080,
+    'host': thingsboard_host if remote_server else local_host,
+    'port': thingsboard_port if remote_server else local_port,
 
     'sys_admin': {
         'username': 'sysadmin@thingsboard.org',
