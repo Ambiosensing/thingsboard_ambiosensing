@@ -1,6 +1,7 @@
 """ This is going to be the main repository for configurable elements, such as paths, constants, database access credentials and so on. This file is for only user specific configurations (such as usernames, passwords,
 etc.. For project-widec onfiguration,
 please use the proj_config.py file"""
+import os
 
 # ---------------- LOCAL INSTALLATION ------------------------------
 
@@ -8,8 +9,13 @@ please use the proj_config.py file"""
 # thingsboard_port = 8080
 
 # ---------------- REMOTE INSTALLATION (Sines's Server) ------------------------------
+# The host to use to contact the ThingsBoard API depends heavily on where the process is physically. Due to technical problems that are out of the scope of this project, if this process is running from the same server as the ThingsBoard
+# installation, albeit from a different virtual machine, the address to use needs to be an internal one (internal to the physical server that is). Otherwise, the 'official' address needs to be used. In order to automate this decision as much as
+# possible, the actual thingsboard_host address depends on the output of the os.getcwd() command. This command retrieves the current working directory (hence the acronym), i.e., the path to the file that was executed that triggered the command's
+# execution. I can use this to detect if a 'telltale' element is present in the return string, namely the home folder path in the development server ('/home/uninova')
+
 # NOTE: The access credentials for the local installation are the same as for the remote one, so it should be just a matter of changing the host's endpoints and the whole thing should still work
-thingsboard_host = "http://62.48.174.118"
+thingsboard_host = "http://10.0.1.2" if '/home/uninova' in os.getcwd() else "http://62.48.174.118"
 thingsboard_port = 5044
 
 local_host = "http://localhost"
