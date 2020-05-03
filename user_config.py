@@ -1,6 +1,7 @@
-""" This is going to be the main repository for configurable elements, such as paths, constants, database access credentials and so on. This file is for only user specific configurations (such as usernames, passwords,
-etc.. For project-widec onfiguration,
-please use the proj_config.py file"""
+"""
+This is going to be the main repository for configurable elements, such as paths, constants, database access credentials and so on. This file is for only user specific configurations (such as usernames, passwords,
+etc.. For project-wide configuration, please use the proj_config.py file
+"""
 import os
 
 # ---------------- LOCAL INSTALLATION ------------------------------

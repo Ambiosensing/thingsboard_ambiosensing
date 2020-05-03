@@ -77,7 +77,7 @@ def add_table_data(data_dict, table_name):
         # Check the outcome of the previous execution. If no columns were changed in the previous statement, raise a 'Duplicate entry' Exception to trigger an UPDATE instead
         if change_cursor.rowcount is 0:
             # No changes to the database table detected. Trigger an UPDATE then
-            raise mysql_utils.MySQLDatabaseException(message=proj_config.existing_record_trigger)
+            raise mysql_utils.MySQLDatabaseException(message=proj_config.double_record_msg)
         elif change_cursor.rowcount == 1:
             # In this case, all went well. Close the database access objects, commit the changes to the database, inform the user of this and move on
             log.info("Successfully added a new record to {0}.{1}".format(str(database_name), str(table_name)))
@@ -89,7 +89,7 @@ def add_table_data(data_dict, table_name):
 
     # Watch out for the typical "Duplicate entry" exception
     except mysql_utils.MySQLDatabaseException as mse:
-        if proj_config.existing_record_trigger in mse.message:
+        if proj_config.double_record_msg in mse.message:
             trigger_column_list = mysql_utils.get_trigger_columns(table_name=table_name)
 
             # Cool. Use this data to get the respective UPDATE statement
@@ -137,7 +137,7 @@ def add_table_data(data_dict, table_name):
                     return True
             except mysql_utils.MySQLDatabaseException as mse:
                 # If a duplicate result was still found with the last UPDATE execution
-                if proj_config.existing_record_trigger in mse.message:
+                if proj_config.double_record_msg in mse.message:
                     # Inform the user with a warning message
                     warn_msg = "The record with "
                     for i in range(0, len(trigger_column_list) - 1):

@@ -8,13 +8,14 @@ from mysql_database.python_database_modules import mysql_utils
 
 
 def update_tenant_assets_table():
-    """Method to populate the database table with all the ASSETS belonging to a given tenant. I'm still trying to figure out the actual logic behind this call since the API service that I call to retrieve the desired information uses a
+    """
+    Method to populate the database table with all the ASSETS belonging to a given tenant. I'm still trying to figure out the actual logic behind this call since the API service that I call to retrieve the desired information uses a
     'customer_user' type credential pair but the results returned are related to the Tenant that is associated to Customer identified by those credentials (why not use the 'tenant_admin' credentials instead? Makes more sense in my honest opinion.
     In fact, using those credentials yields a HTTP 403 - access denied - response from the remote server... go figure...) so the relation with a Tenant is tenuous, at best. Anyhow, what matters is that all configured assets in the ThingsBoard
     platform seem to be returned at once by the tb side method, so now its just a matter of putting them into a proper database table
-    @:raise mysql_utils.MySQLDatabaseException - For errors with the database operation
-    @:raise utils.ServiceEndpointException - For errors with the remote API service execution
-    @:raise utils.AuthenticationException - For errors related with the authentication credentials used.
+    :raise mysql_utils.MySQLDatabaseException: For errors with the database operation
+    :raise utils.ServiceEndpointException: For errors with the remote API service execution
+    :raise utils.AuthenticationException: For errors related with the authentication credentials used.
     """
 
     # Key to return the actual database name from proj_config.mysql_db_tables dictionary

@@ -1,5 +1,5 @@
 auth_ctrl = False
-ent_rel = False
+ent_rel = True
 asset_ctrl = False
 mysql_device = False
 attr_device = False
@@ -9,7 +9,7 @@ db_add = False
 sql_gen = False
 date_converter = False
 table_creator = False
-device_types = True
+device_types = False
 
 
 def __main__():

@@ -56,7 +56,7 @@ else:
 
 # --------------------------------------------- MySQL DATABASE ----------------------------------------------------------------------------------
 # String used to detect if a mysql_utils.MySQLDatabaseException was raised by the existence of that record already in the database.
-existing_record_trigger = "Duplicate entry"
+double_record_msg = "Duplicate entry"
 
 # --------------------------------------------- DATA MODEL ----------------------------------------------------------------------------------
 # This list contains the 'official' names for every measurement category being watched as a way to establish an ontology around this. This list is needed to filter out device attributes that are returned but are not relevant for this case

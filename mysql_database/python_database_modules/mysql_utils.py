@@ -3,7 +3,7 @@
 import utils
 import ambi_logger
 import traceback
-import user_config
+import user_config, proj_config
 import mysql.connector as mysqlc
 from mysql.connector.errors import Error
 import datetime
@@ -47,13 +47,14 @@ class MySQLDatabaseException(Exception):
 
 # ---------------------------------------------- GENERAL PURPOSE METHODS ----------------------------------------------------------------------------------------------------------------------------------------------------
 def connect_db(database_name):
-    """Basic method that return a connection object upon a successful connection attempt to a database whose connection data is present in the configuration file, as a dictionary with the database name as its key
+    """
+    Basic method that return a connection object upon a successful connection attempt to a database whose connection data is present in the configuration file, as a dictionary with the database name as its key
     NOTE: This method assumes a single server instance for the installation of all database data (a single triplet hostname, username and password). For databases that spawn over multiple servers or to support more than one user in this
     regard, please change this method accordingly
-    @:param database_name (str) - The name of the database to connect to.
-    @:raise util.InputValidationException - If the input arguments provided are invalid
-    @:raise Exception - For any other occurring errors
-    @:return cnx (mysql.connector.connection.MySQLConnection) - An active connection to the database"""
+    :param database_name: (str) The name of the database to connect to.
+    :raise util.InputValidationException: If the input arguments provided are invalid
+    :raise Exception: For any other occurring errors
+    :return cnx: (mysql.connector.connection.MySQLConnection) An active connection to the database"""
     connect_log = ambi_logger.get_logger(__name__)
 
     try:
@@ -88,14 +89,13 @@ def connect_db(database_name):
 
 
 def get_table_columns(database_name, table_name):
-    """This method does a simple SELECT query to the database for just the columns names in a given table. This is particular useful for building INSERT and UPDATE statements that require a specification of these elements on the
-    statements
-    @:param database (str) - The name of the database to connect to
-    @:param table_name (str) - The name of the table from the database to connect to
-    @:raise utils.InputValidationException - If any of the inputs is not valid
-    @:raise MySQLDatabaseException - for database related exceptions
-    @:raise Exception - For any other type of errors
-    @:return column_list (list of str) - A list with all the names of the columns, in order, extracted from the database.table_name
+    """This method does a simple SELECT query to the database for just the columns names in a given table. This is particular useful for building INSERT and UPDATE statements that require a specification of these elements on the statements
+    :param database_name: (str) The name of the database to connect to
+    :param table_name: (str) The name of the table from the database to connect to
+    :raise utils.InputValidationException: If any of the inputs is not valid
+    :raise MySQLDatabaseException: For database related exceptions
+    :raise Exception: For any other type of errors
+    :return column_list: (list of str) A list with all the names of the columns, in order, extracted from the database.table_name
     """
     get_table_log = ambi_logger.get_logger(__name__)
 
@@ -134,17 +134,18 @@ def get_table_columns(database_name, table_name):
 
 
 def create_update_sql_statement(column_list, table_name, trigger_column_list):
-    """This method automatized the build if standard SQL UPDATE statements. NOTE: This method produces the simplest of SQL UPDATE statements, that is, "UPDATE table_name SET (column_name = %s) WHERE (trigger_column = %s);",
+    """
+    This method automatized the build if standard SQL UPDATE statements. NOTE: This method produces the simplest of SQL UPDATE statements, that is, "UPDATE table_name SET (column_name = %s) WHERE (trigger_column = %s);",
     in which the %s elements are to be replaced by providing the adequate tuple of update values in the statement execution. This means that only one record can be updated given that the trigger condition is an equality. This method is
     not suitable for more complex SQL UPDATE statements
-    @:param column_list (list of str) - a list with the names of the MySQL database columns whose information is to be added to
-    @:param table_name (str) - The name of the table where the Update statement is going to take effect
-    @:param trigger_column_list (list of str) - The columns that are going to be used to identify the record to be updated (i.e., the WHERE column_name condition part of the statement). Each member of the provided list is going to be "AND"ed together
+    :param column_list: (list of str) A list with the names of the MySQL database columns whose information is to be added to
+    :param table_name: (str) The name of the table where the Update statement is going to take effect
+    :param trigger_column_list: (list of str) The columns that are going to be used to identify the record to be updated (i.e., the WHERE column_name condition part of the statement). Each member of the provided list is going to be "AND"ed together
     in a single statement
-    @:return sql_update (str) - The statement string to be executed with '%s' elements instead of the actual values in the statement (considered a more secure approach to run these statements from external applications such as this one).
+    :return sql_update: (str) The statement string to be executed with '%s' elements instead of the actual values in the statement (considered a more secure approach to run these statements from external applications such as this one).
     The actual values are to be replaced shortly before the execution of the statement, already in the database side of things
-    @:raise utils.InputValidation Exception - if error occur during the validation of inputs
-    @:raise Exception - for any other error types
+    :raise utils.InputValidation Exception: If error occur during the validation of inputs
+    :raise Exception: For any other error types
     """
     utils.validate_input_type(column_list, list)
     for column_name in column_list:
@@ -179,12 +180,13 @@ def create_update_sql_statement(column_list, table_name, trigger_column_list):
 
 
 def create_insert_sql_statement(column_list, table_name):
-    """Method to automatize the building of simple SQL INSERT statements: INSERT INTO table_name (expanded, comma separated, column list names) VALUES (as many '%s' as column_list elements);
-    @:param column_list (list of str) - A list with the names of the MySQL database columns
-    @:param  table_name (str) - The name of the table where the INSERT statement is going to take effect
-    @:return sql_insert (str) - The state,ent string to be executed with '%s' instead of actual values. These need to be replaced when executed in the database side (the python mysql connector deals with it quite nicely)
-    @:raise utils.InputValidationException - If any errors occur during the input validation
-    @:raise Exception - If any other general type errors occur"""
+    """
+    Method to automatize the building of simple SQL INSERT statements: INSERT INTO table_name (expanded, comma separated, column list names) VALUES (as many '%s' as column_list elements);
+    :param column_list: (list of str) A list with the names of the MySQL database columns
+    :param  table_name: (str) The name of the table where the INSERT statement is going to take effect
+    :return sql_insert: (str) The state,ent string to be executed with '%s' instead of actual values. These need to be replaced when executed in the database side (the python mysql connector deals with it quite nicely)
+    :raise utils.InputValidationException - If any errors occur during the input validation
+    :raise Exception: If any other general type errors occur"""
 
     utils.validate_input_type(column_list, list)
     for column_name in column_list:
@@ -207,14 +209,15 @@ def create_insert_sql_statement(column_list, table_name):
 
 
 def create_delete_sql_statement(table_name, trigger_column_list):
-    """Method to automatize the building of SQL DELETE statements. These are generally simpler than UPDATE or INSERT ones
-    @:database_name (str) - The name of the database in which this statement is going to be used. Needed for the validation of inputs
-    @:param trigger_column_list (list of str) - The name of the columns that are going to be used in the DELETE statement (The WHERE trigger_column condition part goes). As with the UPDATE method, the DELETE statements produced through here are quite
-    simple, i.e., the triggering condition is an equality and hence only one record at a time can be deleted via this method. Multiple trigger columns provided are going to be linked through 'AND' statements
-    @:param table_name (str) - The name of the table where the DELETE statement is going to take effect
-    @:return sql_delete (str) - The statement string to be executed with '%s' instead of values. These need to replaced afterwards in the parent function
-    @:raise utils.InputValidationException - If the input arguments are invalid
-    @:raise Exception - For any other error types"""
+    """
+    Method to automatize the building of SQL DELETE statements. These are generally simpler than UPDATE or INSERT ones
+    :param table_name: (str) The name of the table where the DELETE statement is going to take effect
+    :param trigger_column_list: (list of str) The name of the columns that are going to be used in the DELETE statement (The WHERE trigger_column condition part goes). As with the UPDATE method, the DELETE statements produced through here are
+    quite simple, i.e., the triggering condition is an equality and hence only one record at a time can be deleted via this method. Multiple trigger columns provided are going to be linked through 'AND' statements
+    :return sql_delete: (str) The statement string to be executed with '%s' instead of values. These need to replaced afterwards in the parent function
+    :raise utils.InputValidationException: If the input arguments are invalid
+    :raise Exception: For any other error types
+    """
 
     utils.validate_input_type(table_name, str)
     utils.validate_input_type(trigger_column_list, list)
@@ -280,9 +283,10 @@ def get_trigger_columns(table_name):
 
 
 def convert_timestamp_tb_to_datetime(timestamp):
-    """This method converts a specific timestamp from a ThingsBoard remote API request (which has one of the weirdest formats that I've seen around) and returns a datetime object that can be interpreted by the DATETIME data format of MySQL
+    """
+    This method converts a specific timestamp from a ThingsBoard remote API request (which has one of the weirdest formats that I've seen around) and returns a datetime object that can be interpreted by the DATETIME data format of MySQL
     databases, i.e., YYYY-MM-DD hh:mm:ss, which also corresponds to the native datetime.datetime format from python
-    @:param timestamp (int) - This is one of the trickiest elements that I've found so far. The ThingsBoard internal data is stored in a PostGres database. I'm assuming that is the one behind the data format returned by the remote API. Whatever
+    :param timestamp: (int) This is one of the trickiest elements that I've found so far. The ThingsBoard internal data is stored in a PostGres database. I'm assuming that is the one behind the data format returned by the remote API. Whatever
     it may be, it returns a 13 digit integer as the timestamp. A quick analysis suggests that this is a regular POSIX timestamp, i.e., the number of seconds from 1970-01-01 00:00:00 until whenever that data was inserted in the database.
     There are literally loads of different and straightforward ways to convert this value into a human-readable datetime. Yet none of them seemed to work with this particular value. In fact, none of the timestamps returned from the remote
     API was able to be converted into a datetime. And the reason is stupid as hell! It seems that, if you bother to count all seconds from 1970 until today, you get a number with 10 digits... and you have been getting that for quite some
@@ -290,9 +294,9 @@ def convert_timestamp_tb_to_datetime(timestamp):
     expressed as a 17 digit float in which the last 5 are the decimal part, i.e., the microseconds, but there's an obvious decimal point w«in those cases where the POSIX timestamp also has the number of microseconds. The only reasonable
     explanation (though somewhat weird in its own way) is that the value returned by the remote API contains 3 decimal digits and, for whatever reason behind it, the decimal point is omitted. It turns out that this is exactly what is going
     on! So I need to do extra flexing with this one... The method expects the 13 digit integer that comes straight from the remote API call and then itself does whatever needs to return a meaningful datetime
-    @:return data_datetime (datetime.datetime) - A regular datetime object that can be sent directly to a MySQL database expecting a DATETIME field (YYYY-MM-DD hh:mm:ss)
-    @:raise utils.InputValidationException - If there is something wrong with the validation of inputs
-    @:raise Exception - For any other errors that may happen
+    :return data_datetime: (datetime.datetime) A regular datetime object that can be sent directly to a MySQL database expecting a DATETIME field (YYYY-MM-DD hh:mm:ss)
+    :raise utils.InputValidationException: If there is something wrong with the validation of inputs
+    :raise Exception: For any other errors that may happen
     """
     times2date_log = ambi_logger.get_logger(__name__)
 
@@ -317,12 +321,13 @@ def convert_timestamp_tb_to_datetime(timestamp):
 
 
 def convert_datetime_to_timestamp_tb(data_datetime):
-    """This method is the literal inverse of the previous one: it receives a regular datetime object in the format YYYY-MM-DD hh:mm:ss.xxxx (I'm allowing microseconds in this one, if needed be) and returns the 13 digit timestamp that
+    """
+    This method is the literal inverse of the previous one: it receives a regular datetime object in the format YYYY-MM-DD hh:mm:ss.xxxx (I'm allowing microseconds in this one, if needed be) and returns the 13 digit timestamp that
     ThingsBoard's PostGres database expects
-    @:param data_datetime (datetime.datetime) - A YYYY-MM-DD hh:mm:ss.xxxx representation of a date and a time, consistent with the datetime.datetime class
-    @:return timestamp (int) - a 13 digit integer that its actually a 10 digit integer + 3 decimal digits with the decimal period omitted.
-    @:raise utils.InputValidationException - For errors with the method's input arguments
-    @:raise Exception - For all other errors
+    :param data_datetime: (datetime.datetime) A YYYY-MM-DD hh:mm:ss.xxxx representation of a date and a time, consistent with the datetime.datetime class
+    :return timestamp: (int) A 13 digit integer that its actually a 10 digit integer + 3 decimal digits with the decimal period omitted.
+    :raise utils.InputValidationException: For errors with the method's input arguments
+    :raise Exception: For all other errors
     """
     date2times_log = ambi_logger.get_logger(__name__)
 
@@ -341,14 +346,14 @@ def convert_datetime_to_timestamp_tb(data_datetime):
 def run_sql_statement(cursor, sql_statement, data_tuple=()):
     """The way python runs SQL statements is a bit convoluted, with plenty of moving parts and things that can go wrong. Since I'm going to run plenty of these along this project, it is a good idea to abstract this operation as much as
     possible
-    @:param cursor (mysql.connector.cursor.MySQLCursor) - A cursor object, obtained from an active database connection, that its used by python to run SQL statements as well as to process the results.
-    @:param sql_statement (str) - THe SQL statement string to be executed, with its values not explicit but replaced by '%s' characters instead. This method takes care of this replacements.
-    @:param data_tuple (tuple) - A tuple with as many elements as the ones to be replaced in the SQL string. The command that effectively runs the SQL statement takes two arguments: the original SQL string statement with '%s' elements
+    :param cursor: (mysql.connector.cursor.MySQLCursor) A cursor object, obtained from an active database connection, that its used by python to run SQL statements as well as to process the results.
+    :param sql_statement: (str) THe SQL statement string to be executed, with its values not explicit but replaced by '%s' characters instead. This method takes care of this replacements.
+    :param data_tuple: (tuple) A tuple with as many elements as the ones to be replaced in the SQL string. The command that effectively runs the SQL statement takes two arguments: the original SQL string statement with '%s' elements
     instead of its values and a data tuple where those values are indicated in the expected order. The command then sends both elements across to be executed database side in a way that protects their content and integrity (supposedly, it
     wards against SQL injection attacks.
-    @:raise utils.InputValidationException - If the input arguments fail their validations
-    @:raise MySQLDatabaseException - For errors related to database operations
-    @:raise Exception - For any other error that may occur.
+    :raise utils.InputValidationException: If the input arguments fail their validations
+    :raise MySQLDatabaseException: For errors related to database operations
+    :raise Exception: For any other error that may occur.
     """
     run_sql_log = ambi_logger.get_logger(__name__)
 
@@ -377,10 +382,10 @@ def run_sql_statement(cursor, sql_statement, data_tuple=()):
 
 def validate_database_table_name(table_name):
     """This simple method receives a name of a table and validates it by executing a SQL statement in the default database to retrieve all of its tables and then checks if the table name in the input does match any of the returned values.
-    @:param table_name (str) - The name of the database table whose existence is to be verified
-    @:raise utils.InputValidationException - If the inputs fail initial validation
-    @:raise MySQLDatabaseException - If any error occur while executing database bounded operations or if the table name was not found among the list of database tables retrieved
-    @:return True (bool) - If table_name is among the database tables list"""
+    :param table_name: (str) The name of the database table whose existence is to be verified
+    :raise utils.InputValidationException: If the inputs fail initial validation
+    :raise MySQLDatabaseException: If any error occur while executing database bounded operations or if the table name was not found among the list of database tables retrieved
+    :return True: (bool) If table_name is among the database tables list"""
 
     validate_db_table_log = ambi_logger.get_logger(__name__)
 
@@ -414,7 +419,7 @@ def validate_database_table_name(table_name):
         # And run the next loop until all results were checked (result would be set to None once all the data retrieved from the database is exhausted)
         while result:
             # If a match is found
-            if result == table_name:
+            if result[0] == table_name:
                 # Return the response immediately
                 return True
             # Otherwise
@@ -430,11 +435,11 @@ def create_device_database_table(device_name, execute_script=True):
     """
     Use this method to generate and execute a .sql script to create a table dedicated to store the data produced by the device identified by device_name. This is necessary since each device has its own set of timeseries keys. Creating a table in a
     relational database with this kind of constraints is almost impossible. But what I can do is some clever programming to automate this script building and even executing, based only on the typical return of the telemetry service for this device.
-    @:param device_name (str) - Name of the device, as it is set in the Thingsboard interface, to be used as based to built the respective database table.
-    @:param execute_script (bool) - Set this flag to True to execute the database table creation script if it gets generated successfully. Set it to false to generate just the sql script
-    @:raise utils.InputValidationException - If the the input fails initial validation
-    @:raise mysql_utils.MySQLDatabaseException - If any problems occur when accessing/configuring the database.
-    @:return create_table_name (str) - If a table was created using the provided device_name, None otherwise
+    :param device_name: (str) Name of the device, as it is set in the Thingsboard interface, to be used as based to built the respective database table.
+    :param execute_script: (bool) Set this flag to True to execute the database table creation script if it gets generated successfully. Set it to false to generate just the sql script
+    :raise utils.InputValidationException: If the the input fails initial validation
+    :raise mysql_utils.MySQLDatabaseException: If any problems occur when accessing/configuring the database.
+    :return create_table_name: (str) If a table was created using the provided device_name, None otherwise
     """
     log = ambi_logger.get_logger(__name__)
 
@@ -513,9 +518,9 @@ def get_official_device_table_name(device_name):
     """
     This simple method receives the name of a device and returns what should be the name of the database table that can hold its data. This conversion needs to be uniform, following the same kind of rules for all device names (replacing spaces,
     dots and slashes by underscores and appending '_data' to the result) so that other methods can confirm in advance if a table for a given device already exists or not
-    @:param device_name (str) - The name of the device to model the table name after
-    @:return table_name_to_create (str) - The result of the transformation of the provided device_name into the expected database table name.
-    @:raise utils.InputValidationException - If the input fails initial validation
+    :param device_name: (str) The name of the device to model the table name after
+    :return table_name_to_create: (str) The result of the transformation of the provided device_name into the expected database table name.
+    :raise utils.InputValidationException: If the input fails initial validation
     """
     utils.validate_input_type(device_name, str)
 
@@ -526,10 +531,10 @@ def get_official_device_table_name(device_name):
 def validate_table_name(table_name):
     """
     This method receives the name of a database table and checks the database for its existence. That's it.
-    @:param table_name (str) - The name of the table whose existence is to be verified in the database
-    @:return exists (bool) - True if the table is already created in the database, False otherwise
-    @:raise utils.InputValidationException - If the input fails initial validation
-    @:raise MySQLDatabaseException - If errors occur during the database accesses
+    :param table_name: (str) The name of the table whose existence is to be verified in the database
+    :return exists: (bool) True if the table is already created in the database, False otherwise
+    :raise utils.InputValidationException: If the input fails initial validation
+    :raise MySQLDatabaseException: If errors occur during the database accesses
     """
     log = ambi_logger.get_logger(__name__)
     utils.validate_input_type(table_name, str)
@@ -686,3 +691,165 @@ def reset_table(table_name):
         select_cursor.close()
         change_cursor.close()
         cnx.close()
+
+
+def add_data_to_table(table_name, data_dict):
+    """
+    This method effectively abstracts the usual INSERT/UPDATE SQL operation sequence, very usual in any database supported operations. The logic behind it is quite simple: the method receives the name of a database table and a dictionary with data to
+    insert/update in the aforementioned table. As such, it is expected that the keys in this dictionary match exactly the column names under which the data (values) is to be inserted under. A simple match operation is performed at the head of it
+    and the process only continues if the set of keys provided in the dictionary have a complete match among the database table column names. The process is aborted if one of the dictionary keys provided does not have a corresponding database
+    table column. Once this is cleared, the method tries to perform an INSERT with the data while looking after 'Duplicate entry' MySQLDatabaseException. If one of these gets captured, the method defaults to an UPDATE execution instead,
+    using the same data provided. If the UPDATE operation also returns a 'Duplicate entry' exception, than the whole operation becomes moot since the data already exists u«in the supplied form in the database. A warning is issued and the method
+    simply finishes without making any database modifications whatsoever.
+    :param table_name: (str) The name of the database table for where the data in the provided dictionary needs to be written to
+    :param data_dict: (dict) A dictionary with the data to be written into the database.
+    :raise utils.InputValidationException: If any of the inputs fails initial validation
+    :raise db_methods.MySQLDatabaseException: If any errors occur when accessing the database.
+    """
+    log = ambi_logger.get_logger(__name__)
+
+    # Validate inputs and check the database dictionary's integrity
+    validate_database_table_name(table_name=table_name)
+    utils.validate_input_type(data_dict, dict)
+
+    database_name = user_config.access_info['mysql_database']['database']
+    column_list = get_table_columns(database_name=database_name, table_name=table_name)
+
+    for key in list(data_dict.keys()):
+        if key not in column_list:
+            error_msg = "Data inconsistency detected: the key '{0}' provided in the data dictionary doesn't match any of the columns in {1}.{2}. Cannot continue until this gets fixed!".format(
+                str(key),
+                str(database_name),
+                str(table_name)
+            )
+            log.error(error_msg)
+            raise utils.InputValidationException(message=error_msg)
+
+    # All seems OK with the inputs. Proceed
+    cnx = connect_db(database_name=database_name)
+    change_cursor = cnx.cursor(buffered=True)
+
+    # Format the data to sent to the database by rearranging it in the same order in which the column names were provided while placing any missing column names data to None
+    data_list = []
+    # For each of the columns returned for the database table in question
+    for column_name in column_list:
+        try:
+            # Try to add the respective data value if it exists (if a dictionary entry in which key == column_name does exist)
+            data_list.append(data_dict[column_name])
+        except KeyError:
+            # If a missing column name is detected among the dictionary elements provided, put a NULL element into it instead
+            data_list.append(None)
+
+    # All good. Lets try an INSERT then
+
+    sql_insert = create_insert_sql_statement(column_list=column_list, table_name=table_name)
+
+    # Run it and check for duplicate entries then
+    try:
+        change_cursor = run_sql_statement(cursor=change_cursor, sql_statement=sql_insert, data_tuple=tuple(data_list))
+
+        # If no MySQLDatabaseExceptions were raised, check the execution status then and infer over it
+        if change_cursor.rowcount is 0:
+            # If no changes occurred in the database, chances are that the data may already be there. In this case start by warning the user of this and move to try an UPDATE instead. To do this, take advantage of the try-except clause that we are
+            # working with and raise the proper Exception that does trigger the UPDATE attempt
+            log.warning("Unable to execute SQL statement:\n{0}\nin {1}.{2}. Trying an UPDATE instead...".format(str(change_cursor.statement), str(database_name), str(table_name)))
+            raise MySQLDatabaseException(message=proj_config.double_record_msg)
+        elif change_cursor.rowcount > 1:
+            # This outcome is also not desirable in any form. I expect one and only one record to be changed with any of the SQL executions within this method
+            error_msg = "The SQL statement:\n{0}\nmodified {1} records in {2}.{3}. Only one record should have been added... Please check {2}.{3} data integrity before attempting this operation again.".format(
+                str(change_cursor.statement),
+                str(change_cursor.rowcount),
+                str(database_name),
+                str(table_name)
+            )
+            log.error(error_msg)
+            change_cursor.close()
+            cnx.close()
+            raise MySQLDatabaseException(message=error_msg)
+        else:
+            # In this case, change_cursor.rowcount == 1 by default, the expected result.
+            log.info("Added a new record to {0}.{1} successfully!".format(str(database_name), str(table_name)))
+            # Commit the changes to the database before exiting
+            cnx.commit()
+
+            # And close the database access object before leaving
+            change_cursor.close()
+            cnx.close()
+    except MySQLDatabaseException as mse:
+        # Got an Exception of the expected type. Check if the message in it has the trigger string for this case
+        if proj_config.double_record_msg in mse.message:
+            log.warning("Detected a duplicated record in {0}.{1} while attempting an SQL INSERT. Trying an UPDATE instead...".format(str(database_name), str(table_name)))
+
+            # To run the respective UPDATE SQL execution I need to specify the columns that are associated to the database table's primary key (since it was these that detected the duplication of the data in the first place and raised the Exception)
+            trigger_column_list = get_trigger_columns(table_name=table_name)
+
+            # Create and execute the UPDATE statement now that everything's ready
+            sql_update = create_update_sql_statement(column_list=column_list, table_name=table_name, trigger_column_list=trigger_column_list)
+
+            # Before executing this statement, append the necessary trigger values to the existing list of values, using the same logic as before
+            for trigger_column in trigger_column_list:
+                try:
+                    data_list.append(data_dict[trigger_column])
+                except KeyError:
+                    data_list.append(None)
+
+            # Done. Execute the statement then
+            try:
+                change_cursor = run_sql_statement(cursor=change_cursor, sql_statement=sql_update, data_tuple=tuple(data_list))
+
+                # Analyse the execution's outcome, as before
+                if change_cursor.rowcount is 0:
+                    # If no changes were made with the last UPDATE, the data already exists in the database then
+                    warning_msg = "A record with "
+                    for i in range(0, len(trigger_column_list)):
+                        warning_msg += str(trigger_column_list[i]) + " = " + str(data_dict[trigger_column_list[i]])
+
+                    warning_msg += " already exists in {0}.{1}. Nothing more to do".format(str(database_name), str(table_name))
+                    log.warning(warning_msg)
+                    change_cursor.close()
+                    cnx.close()
+                    return False
+                elif change_cursor.rowcount > 1:
+                    # Same as before: this method expects to change one and only one record at any point. If that is not the case, raise the proper Exception
+                    error_msg = "Unable to execute SQL statement:\n{0}\nin {1}.{2}. The statement changed {3} records when only one was expected. Cannot continue until this issue is solved...".format(
+                        str(change_cursor.statement),
+                        str(database_name),
+                        str(table_name),
+                        str(change_cursor.rowcount)
+                    )
+                    log.error(error_msg)
+                    change_cursor.close()
+                    cnx.close()
+                    raise MySQLDatabaseException(message=error_msg)
+                else:
+                    # The expected default success case of change_cursor.rowcount == 1
+                    log.info("Successfully updated a record in {0}.{1}".format(str(database_name), str(table_name)))
+                    cnx.commit()
+                    change_cursor.close()
+                    cnx.close()
+
+                    return True
+            except MySQLDatabaseException as mse:
+                # Tried again and received the same Exception. Check if it is indeed a duplicate entry one first
+                if proj_config.double_record_msg in mse.message:
+                    # The data is already in the database table. Nothing to do then
+                    log.warning("{0}.{1} already has a record with data:\n{2}\nNothing more to do then...".format(str(database_name), str(table_name), str(data_dict)))
+                    change_cursor.close()
+                    cnx.close()
+                    return False
+                else:
+                    # The Exception seems to be about something else then. Inform the user, close the database access objects and propagate it further
+                    log.error("Unable to execute SQL statement:\n{0}\nin {1}.{2}. Got this Exception instead:".format(str(change_cursor.statement), str(database_name), str(table_name)))
+                    change_cursor.close()
+                    cnx.close()
+                    raise mse
+        else:
+            # The Exception captured is about something else then. Inform the user, close the database access objects and propagate it upwards then
+            log.error("Unable to execute SQL statement:\n{0}\nin {1}.{2}. Got this Exception instead:".format(
+                str(change_cursor.statement),
+                str(database_name),
+                str(table_name)
+            ))
+            change_cursor.close()
+            cnx.close()
+            raise mse
