@@ -9,7 +9,7 @@ from mysql_database.python_database_modules import database_table_updater
 from mysql_database.python_database_modules import mysql_utils
 
 
-def get_asset_env_data(base_date, time_interval, variable_list, asset_name=None, asset_id=None):
+def get_asset_env_data(base_date, time_interval, variable_list, asset_name=None, asset_id=None, filter_nones=True):
     """
     Use this method to retrieve the environmental data between two dates specified by the pair base_date and time_interval, for each of the variables indicated in the variables list and for an asset identified by at least one of the elements in
     the pair asset_name/asset_id.
@@ -19,8 +19,9 @@ def get_asset_env_data(base_date, time_interval, variable_list, asset_name=None,
     list
     in proj_config.ontology_names.
     :param asset_name: (str) The name of the asset entity from where the data is to be retrieved from. This method expects either this parameter or the respective id to be provided and does not execute unless at least one of them is present.
-    :param asset_id:(str) The id string associated to an asset element in the database, i.e., the 32 byte hexadecimal string in the usual 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx' format. This method expects either this element or the asset name to
+    :param asset_id: (str) The id string associated to an asset element in the database, i.e., the 32 byte hexadecimal string in the usual 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx' format. This method expects either this element or the asset name to
     be provided before continuing. If none are present, the respective Exception is raised.
+    :param filter_nones: (bool) Set this flag to True to exclude any None values from the final result dictionary. Otherwise the method returns all values, including NULL/None ones.
     :raise utils.InputValidationException: If any of the inputs fails the initial data type validation or if none of the asset identifiers (name or id) are provided.
     :raise mysql_utils.MySQLDatabaseException: If any errors occur during the database accesses.
     :return response (dict): This method returns a response dictionary in a format that is expected to be serialized and returned as a REST API response further on. For this method, the response dictionary has the following format:
@@ -124,20 +125,132 @@ def get_asset_env_data(base_date, time_interval, variable_list, asset_name=None,
         log.error(error_msg)
         raise utils.InputValidationException(message=error_msg)
 
+    # The asset_id is one of the most important parameters in this case. Use the provided arguments to either obtain it or make sure the one provided is a valid one. If both parameters were provided (asset_id and asset_name)
+    if asset_id:
+        # If an asset id was provided, use it to obtain the associated name
+        asset_name_db = retrieve_asset_name(asset_id=asset_id)
+
+        # Check if any names were obtained above and, if so, check if it matches any asset name also provided
+        if asset_name:
+            if asset_name != asset_name_db:
+                log.warning("The asset name obtained from {0}.{1}: {2} does not matches the one provided: {3}. Defaulting to {2}...".format(
+                    str(user_config.access_info['mysql_database']['database']),
+                    str(proj_config.mysql_db_tables['tenant_assets']),
+                    str(asset_name_db),
+                    str(asset_name)
+                ))
+                asset_name = asset_name_db
+
+    if not asset_id and asset_name:
+        # Another case: only the asset name was provided but no associated id. Use the respective method to retrieve the asset id from the name
+        asset_id = retrieve_asset_id(asset_name=asset_name)
+
+        # Check if a valid id was indeed returned (not None)
+        if not asset_id:
+            error_msg = "Invalid asset id returned from {0}.{1} using asset_name = {2}. Cannot continue...".format(
+                str(user_config.access_info['mysql_database']['database']),
+                str(proj_config.mysql_db_tables['tenant_assets']),
+                str(asset_name)
+            )
+            log.error(msg=error_msg)
+            raise utils.InputValidationException(message=error_msg)
+
+    utils.validate_input_type(filter_nones, bool)
+
     # Initial input validation cleared. Before moving any further, implement the database access objects and use them to retrieve a unique, single name/id pair for the asset in question
     database_name = user_config.access_info['mysql_database']['database']
-    asset_table_name = proj_config.mysql_db_tables['tenant_assets']
+    asset_device_table_name = proj_config.mysql_db_tables['asset_devices']
+    device_data_table_name = proj_config.mysql_db_tables['device_data']
 
     cnx = mysql_utils.connect_db(database_name=database_name)
     select_cursor = cnx.cursor(buffered=True)
 
-    # TODO: Continue from here
+    # All ready for data retrieval. First, retrieve the device_id for every device associated to the given asset
+    sql_select = """SELECT toId, toName FROM """ + str(asset_device_table_name) + """ WHERE fromEntityType = %s AND fromId = %s AND toEntityType = %s;"""
+
+    select_cursor = mysql_utils.run_sql_statement(cursor=select_cursor, sql_statement=sql_select, data_tuple=('ASSET', asset_id, 'DEVICE'))
+
+    # Analyse the execution results
+    if select_cursor.rowcount is 0:
+        error_msg = "Asset (asset_name = {0}, asset_id = {1}) has no devices associated to it! Cannot continue...".format(str(asset_name), str(asset_id))
+        log.error(msg=error_msg)
+        select_cursor.close()
+        cnx.close()
+        raise mysql_utils.MySQLDatabaseException(message=error_msg)
+    else:
+        log.info("Asset (asset_name = {0}, asset_id = {1}) has {2} devices associated.".format(str(asset_name), str(asset_id), str(select_cursor.rowcount)))
+
+    # Extract the devices id's to a list for easier iteration later on
+    record = select_cursor.fetchone()
+    device_id_list = []
+
+    while record:
+        device_id_list.append(record[0])
+
+        # Grab another one
+        record = select_cursor.fetchone()
+
+    # Prepare a mash up of all device_id retrieved so far separated by OR statements to replace the last element in the SQL SELECT statement to execute later on
+    device_id_string = []
+
+    for _ in device_id_list:
+        device_id_string.append("deviceId = %s")
+
+    # And now connect them all into a single string stitched together with 'OR's
+    device_where_str = """ OR """.join(device_id_string)
+
+    # Store the full results in this dictionary
+    result_dict = {}
+
+    # Prepare the SQL SELECT to retrieve data from
+    for i in range(0, len(variable_list)):
+        # And the partial results in this one
+        sql_select = """SELECT timestamp, value FROM """ + str(device_data_table_name) + """ WHERE ontologyId = %s AND (""" + str(device_where_str) + """) AND (timestamp >= %s AND timestamp <= %s);"""
+
+        # Prepare the data tuple by joining together the current ontologyId with all the deviceIds retrieved from before
+        data_tuple = tuple([variable_list[i]] + device_id_list + [base_date - time_interval] + [base_date])
+
+        select_cursor = mysql_utils.run_sql_statement(cursor=select_cursor, sql_statement=sql_select, data_tuple=data_tuple)
+
+        # Analyse the execution outcome
+        if select_cursor.rowcount > 0:
+            # Results came back for this particular ontologyId. For this method, the information of the device that made the measurement is irrelevant. Create a dictionary entry for the ontologyId parameter and populate the list of dictionaries
+            # with the data retrieved
+            result_dict[variable_list[i]] = []
+
+            # Process the database records
+            record = select_cursor.fetchone()
+
+            while record:
+                # Check if the filtering flag is set
+                if filter_nones:
+                    # And if so, check if the current record has a None as its value
+                    if record[1] is None:
+                        # If so, grab the next record and skip the rest of this cycle
+                        record = select_cursor.fetchone()
+                        continue
+
+                result_dict[variable_list[i]].append(
+                    {
+                        "timestamp": str(int(record[0].timestamp())),
+                        "value": str(record[1])
+                    }
+                )
+
+                # Grab the next record in line
+                record = select_cursor.fetchone()
+
+    # All done it seems. Close down the database access elements and return the results so far
+    select_cursor.close()
+    cnx.close()
+    return result_dict
 
 
 def retrieve_asset_id(asset_name):
     """
     This method receives the name of an asset and infers the associated id from it by consulting the respective database table.
-    :param asset_name: (str) The name of the asset to retrieve from ambiosensing_thingsboard.tb_tenant_assets. This method can only implement the limited searching capabilities provided by the MySQL database. If these are not enough to retrieve an unique record associated to the asset name provided, the method 'fails' (even though there might be a matching record in the database but with some different uppercase/lowercase combination than the one provided) and returns 'None' in that case.
+    :param asset_name: (str) The name of the asset to retrieve from ambiosensing_thingsboard.tb_tenant_assets. This method can only implement the limited searching capabilities provided by the MySQL database. If these are not enough to retrieve an
+    unique record associated to the asset name provided, the method 'fails' (even though there might be a matching record in the database but with some different uppercase/lowercase combination than the one provided) and returns 'None' in that case.
     :raise utils.InputValidationException: If the input argument fails the data type validation.
     :raise mysql_utils.MySQLDatabaseException: If any errors occur when accessing the database.
     :return asset_id: (str) If a unique match was found to the provided assed_name. None otherwise.

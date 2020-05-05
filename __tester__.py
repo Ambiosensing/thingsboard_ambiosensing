@@ -10,10 +10,26 @@ sql_gen = False
 date_converter = False
 table_creator = False
 device_types = False
-asset_info = True
+asset_info = False
+device_data = True
 
 
 def __main__():
+    if device_data:
+        from mysql_database.python_database_modules import mysql_asset_controller as mac
+        import datetime
+        import json
+
+        base_date = datetime.datetime(2020, 4, 28, 20, 0, 0)
+        time_interval = datetime.timedelta(hours=6)
+        variable_list = ['carbon_dioxide', 'temperature', 'chocolate']
+        asset_name = 'TheFactory_SandingRoom'
+        asset_id = '77f3b910-685d-11ea-971a-c108b8f2be6f'
+
+        results = mac.get_asset_env_data(base_date=base_date, time_interval=time_interval, variable_list=variable_list, asset_name=asset_name, asset_id=asset_id)
+
+        print(json.dumps(results))
+
     if asset_info:
         from mysql_database.python_database_modules import mysql_asset_controller as mac
         valid_name = 'TheFactory_CommonAreas'
