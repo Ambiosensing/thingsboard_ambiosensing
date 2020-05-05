@@ -1,5 +1,5 @@
 auth_ctrl = False
-ent_rel = True
+ent_rel = False
 asset_ctrl = False
 mysql_device = False
 attr_device = False
@@ -10,9 +10,30 @@ sql_gen = False
 date_converter = False
 table_creator = False
 device_types = False
+asset_info = True
 
 
 def __main__():
+    if asset_info:
+        from mysql_database.python_database_modules import mysql_asset_controller as mac
+        valid_name = 'TheFactory_CommonAreas'
+        valid_id = 'e76a6be0-685d-11ea-971a-c108b8f2be6f'
+
+        invalid_name = 'TheFactory_Graveyard'
+        invalid_id = 'e76a6be0-685d-11ea-971a-c108b8f2be6e'
+
+        db_name = mac.retrieve_asset_name(asset_id=valid_id)
+        print("Valid name: {0}, retrieved db name: {1}".format(str(valid_name), str(db_name)))
+
+        db_id = mac.retrieve_asset_id(asset_name=valid_name)
+        print("Valid id = {0}\nID from db = {1}".format(str(valid_id), str(db_id)))
+
+        db_name = mac.retrieve_asset_name(asset_id=invalid_id)
+        print("Invalid name: {0}, retrieved db name: {1}".format(str(invalid_name), str(db_name)))
+
+        db_id = mac.retrieve_asset_id(asset_name=invalid_name)
+        print("Invalid_id: {0}, Id retrieved from invalid name: {1}".format(str(invalid_id), str(db_id)))
+
     if device_types:
         from ThingsBoard_REST_API import tb_device_controller
 

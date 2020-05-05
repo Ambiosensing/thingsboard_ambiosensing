@@ -1,10 +1,264 @@
 """ Place holder for methods related to the interface between the MySQL database (MySQL internal Ambiosensing database) and the data obtained from service calls placed to the API group asset-controller"""
 
-import proj_config
+import user_config, proj_config
 import utils
+import ambi_logger
+import datetime
 from ThingsBoard_REST_API import tb_asset_controller
 from mysql_database.python_database_modules import database_table_updater
 from mysql_database.python_database_modules import mysql_utils
+
+
+def get_asset_env_data(base_date, time_interval, variable_list, asset_name=None, asset_id=None):
+    """
+    Use this method to retrieve the environmental data between two dates specified by the pair base_date and time_interval, for each of the variables indicated in the variables list and for an asset identified by at least one of the elements in
+    the pair asset_name/asset_id.
+    :param base_date: (datetime.datetime) The date for which to start the retrieval window, i.e., this one is the newest end of the time window.
+    :param time_interval: (datetime.timedelta) A timedelta object that is going to be subtracted to the base_date provided in order to establish a valid operational window.
+    :param variable_list: (list of str) A list with the variable names (ontology names) that are to be retrieved from the respective database table. Each one of the elements in the list provided is going to be validated against the 'official'
+    list
+    in proj_config.ontology_names.
+    :param asset_name: (str) The name of the asset entity from where the data is to be retrieved from. This method expects either this parameter or the respective id to be provided and does not execute unless at least one of them is present.
+    :param asset_id:(str) The id string associated to an asset element in the database, i.e., the 32 byte hexadecimal string in the usual 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx' format. This method expects either this element or the asset name to
+    be provided before continuing. If none are present, the respective Exception is raised.
+    :raise utils.InputValidationException: If any of the inputs fails the initial data type validation or if none of the asset identifiers (name or id) are provided.
+    :raise mysql_utils.MySQLDatabaseException: If any errors occur during the database accesses.
+    :return response (dict): This method returns a response dictionary in a format that is expected to be serialized and returned as a REST API response further on. For this method, the response dictionary has the following format:
+        response =
+            {
+                env_variable_1: [
+                    {
+                        timestamp_1: <str>,
+                        value_1: <str>
+                    },
+                    {
+                        timestamp_2: <str>.
+                        value_2: <str>
+                    },
+                    ...,
+                    {
+                        timestamp_N: <str>,
+                        value_N: <str>
+                    }
+                ],
+                env_variable_2: [
+                    {
+                        timestamp_1: <str>,
+                        value_1: <str>
+                    },
+                    {
+                        timestamp_2: <str>.
+                        value_2: <str>
+                    },
+                    ...,
+                    {
+                        timestamp_N: <str>,
+                        value_N: <str>
+                    }
+                ],
+                ...
+                env_variable_N: [
+                    {
+                        timestamp_1: <str>,
+                        value_1: <str>
+                    },
+                    {
+                        timestamp_2: <str>.
+                        value_2: <str>
+                    },
+                    ...,
+                    {
+                        timestamp_N: <str>,
+                        value_N: <str>
+                    }
+                ]
+            }
+    """
+    log = ambi_logger.get_logger(__name__)
+
+    # Validate inputs
+
+    # Check if at least one element from the pair asset_name/asset_id was provided
+    if not asset_name and not asset_id:
+        error_msg = "Missing both asset name and asset id from the input parameters. Cannot continue until at least one of these is provided."
+        log.error(error_msg)
+        raise utils.InputValidationException(message=error_msg)
+
+    if asset_name:
+        utils.validate_input_type(asset_name, str)
+
+    if asset_id:
+        utils.validate_id(entity_id=asset_id)
+
+    utils.validate_input_type(base_date, datetime.datetime)
+    utils.validate_input_type(time_interval, datetime.timedelta)
+
+    if base_date > datetime.datetime.now():
+        error_msg = "The base date provided: {0} is invalid! Please provide a past date to continue...".format(str(base_date))
+        log.error(error_msg)
+        raise utils.InputValidationException(message=error_msg)
+
+    if base_date - time_interval >= datetime.datetime.now():
+        error_msg = "The time interval provided: {0} is invalid! Please provide a positive value for this parameter to continue...".format(str(time_interval))
+        log.error(error_msg)
+        raise utils.InputValidationException(message=error_msg)
+
+    utils.validate_input_type(variable_list, list)
+    for i in range(0, len(variable_list)):
+        # Check inf the element is indeed a str as expected
+        utils.validate_input_type(variable_list[i], str)
+        # Take the change to normalize it to all lowercase characters
+        variable_list[i] = variable_list[i].lower()
+
+        # And check if it is indeed a valid element
+        if variable_list[i] not in proj_config.ontology_names:
+            log.warning("Attention: the environmental variable name provided: {0} is not among the ones supported:\n{1}\nRemoving it from the variable list...".format(
+                str(variable_list[i]),
+                str(proj_config.ontology_names)
+            ))
+            variable_list.remove(variable_list[i])
+
+    # Check if the last operation didn't emptied the whole environmental variable list
+    if len(variable_list) == 0:
+        error_msg = "The variable list is empty! Cannot continue until at least one valid environmental variable is provided"
+        log.error(error_msg)
+        raise utils.InputValidationException(message=error_msg)
+
+    # Initial input validation cleared. Before moving any further, implement the database access objects and use them to retrieve a unique, single name/id pair for the asset in question
+    database_name = user_config.access_info['mysql_database']['database']
+    asset_table_name = proj_config.mysql_db_tables['tenant_assets']
+
+    cnx = mysql_utils.connect_db(database_name=database_name)
+    select_cursor = cnx.cursor(buffered=True)
+
+    # TODO: Continue from here
+
+
+def retrieve_asset_id(asset_name):
+    """
+    This method receives the name of an asset and infers the associated id from it by consulting the respective database table.
+    :param asset_name: (str) The name of the asset to retrieve from ambiosensing_thingsboard.tb_tenant_assets. This method can only implement the limited searching capabilities provided by the MySQL database. If these are not enough to retrieve an unique record associated to the asset name provided, the method 'fails' (even though there might be a matching record in the database but with some different uppercase/lowercase combination than the one provided) and returns 'None' in that case.
+    :raise utils.InputValidationException: If the input argument fails the data type validation.
+    :raise mysql_utils.MySQLDatabaseException: If any errors occur when accessing the database.
+    :return asset_id: (str) If a unique match was found to the provided assed_name. None otherwise.
+    """
+    log = ambi_logger.get_logger(__name__)
+
+    # Validate the input
+    utils.validate_input_type(asset_name, str)
+
+    # Prepare the database access elements
+    database_name = user_config.access_info['mysql_database']['database']
+    table_name = proj_config.mysql_db_tables['tenant_assets']
+
+    cnx = mysql_utils.connect_db(database_name=database_name)
+    select_cursor = cnx.cursor(buffered=True)
+
+    sql_select = """SELECT entityType, id FROM """ + str(table_name) + """ WHERE name = %s;"""
+
+    select_cursor = mysql_utils.run_sql_statement(cursor=select_cursor, sql_statement=sql_select, data_tuple=(asset_name,))
+
+    # Analyse the execution
+    if select_cursor.rowcount is 0:
+        log.warning("No records returned from {0}.{1} using asset_name = {2}".format(str(database_name), str(table_name), str(asset_name)))
+        select_cursor.close()
+        cnx.close()
+        return None
+    elif select_cursor.rowcount > 1:
+        log.warning("{0}.{1} returned {2} records for asset_name = {3}. Cannot continue...".format(
+            str(database_name),
+            str(table_name),
+            str(select_cursor.rowcount),
+            str(asset_name)
+        ))
+        select_cursor.close()
+        cnx.close()
+        return None
+    else:
+        # Got a single result back. Check if the entityType matches the expected one
+        record = select_cursor.fetchone()
+        if record[0] != 'ASSET':
+            error_msg = "The record returned from {0}.{1} using asset_name = {2} has a wrong entityType. Got a {3}, expected an 'ASSET'".format(
+                str(database_name),
+                str(table_name),
+                str(asset_name),
+                str(record[0])
+            )
+            log.error(msg=error_msg)
+            select_cursor.close()
+            cnx.close()
+            return None
+        else:
+            # All is well. Return the retrieved id after validation
+            asset_id = record[1]
+            utils.validate_id(entity_id=asset_id)
+
+            # If the parameter returned survived the last battery of validations, all seems OK. Return the result
+            select_cursor.close()
+            cnx.close()
+            return asset_id
+
+
+def retrieve_asset_name(asset_id):
+    """
+    This method mirrors the last one in the sense that it receives an asset_id and returns the associated name, if any.
+    :param asset_id: (str) A 32-byte hexadecimal string in the expected xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx format. This element is configured in the database as the primary key, which means that this method should never receive multiple records.
+    :raise utils.InputValidationException: If the the input argument fails the initial data type validation
+    :raise mysql_utils.MySQLDatabaseException: If any errors occur when consulting the database.
+    :return asset_name: (str) If an unique match was found, None otherwise
+    """
+    log = ambi_logger.get_logger(__name__)
+
+    # Validate the input
+    utils.validate_id(entity_id=asset_id)
+
+    # Prepare the database access elements
+    database_name = user_config.access_info['mysql_database']['database']
+    table_name = proj_config.mysql_db_tables['tenant_assets']
+
+    cnx = mysql_utils.connect_db(database_name=database_name)
+    select_cursor = cnx.cursor(buffered=True)
+
+    sql_select = """SELECT entityType, name FROM """ + str(table_name) + """ WHERE id = %s;"""
+    select_cursor = mysql_utils.run_sql_statement(cursor=select_cursor, sql_statement=sql_select, data_tuple=(asset_id,))
+
+    # Analyse the execution
+    if select_cursor.rowcount is 0:
+        log.warning("No records returned from {0}.{1} using asset_id = {2}".format(str(database_name), str(table_name), str(asset_id)))
+        select_cursor.close()
+        cnx.close()
+        return None
+    elif select_cursor.rowcount > 1:
+        log.warning("{0}.{1} returned {2} records using asset_id = {3}. Cannot continue...".format(
+            str(database_name),
+            str(table_name),
+            str(select_cursor.rowcount),
+            str(asset_id)
+        ))
+        select_cursor.close()
+        cnx.close()
+        return None
+    else:
+        # A single return came back. Process it then
+        record = select_cursor.fetchone()
+        if record[0] != 'ASSET':
+            error_msg = "The record returned from {0}.{1} using asset id = {2} has a wrong entityType. Got a {3}, expected an 'ASSET'".format(
+                str(database_name),
+                str(table_name),
+                str(select_cursor.rowcount),
+                str(record[0])
+            )
+            log.error(msg=error_msg)
+            select_cursor.close()
+            cnx.close()
+            return None
+        else:
+            # All is good so far. Check if the name returned is indeed a str and return it if so
+            asset_name = record[1]
+            utils.validate_input_type(asset_name, str)
+            select_cursor.close()
+            cnx.close()
+            return asset_name
 
 
 def update_tenant_assets_table():
