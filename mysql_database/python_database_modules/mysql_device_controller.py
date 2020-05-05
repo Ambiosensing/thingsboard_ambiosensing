@@ -182,3 +182,21 @@ def get_device_credentials(device_name):
 
         # All done. Return the final structure then
         return result[0], result[1], timeseriesKeys_list
+
+
+def get_device_types():
+    """
+    Simplest method around. Useful for basic tests. This method simply executes and returns the results of the API call to the corresponding ThingsBoard API remote service.
+    :return response: (dict) A dictionary with all the supported device types
+    """
+    log = ambi_logger.get_logger(__name__)
+
+    response = tb_device_controller.getDeviceTypes()
+
+    if response.status_code != 200:
+        error_msg = "Received a HTTP {0} with the message {1}".format(str(response.status_code), str(eval(response.text)['message']))
+        log.error(msg=error_msg)
+        raise utils.ServiceEndpointException(message=error_msg)
+
+    return eval(utils.translate_postgres_to_python(response.text))
+

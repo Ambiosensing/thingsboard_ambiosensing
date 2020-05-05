@@ -9,9 +9,9 @@ db_add = False
 sql_gen = False
 date_converter = False
 table_creator = False
-device_types = False
+device_types = True
 asset_info = False
-device_data = True
+device_data = False
 
 
 def __main__():
@@ -51,11 +51,11 @@ def __main__():
         print("Invalid_id: {0}, Id retrieved from invalid name: {1}".format(str(invalid_id), str(db_id)))
 
     if device_types:
-        from ThingsBoard_REST_API import tb_device_controller
+        from mysql_database.python_database_modules import mysql_device_controller as mdc
 
-        result = tb_device_controller.getDeviceTypes()
+        result = mdc.get_device_types()
 
-        print(str(result.text))
+        print(str(result))
 
     if date_converter:
         from mysql_database.python_database_modules import mysql_utils

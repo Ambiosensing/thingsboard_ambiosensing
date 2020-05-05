@@ -1,6 +1,7 @@
 """ Place holder for methods related to the interface between the MySQL database (MySQL internal Ambiosensing database) and the data obtained from service calls placed to the API group asset-controller"""
 
-import user_config, proj_config
+import user_config
+import proj_config
 import utils
 import ambi_logger
 import datetime
@@ -253,7 +254,7 @@ def retrieve_asset_id(asset_name):
     unique record associated to the asset name provided, the method 'fails' (even though there might be a matching record in the database but with some different uppercase/lowercase combination than the one provided) and returns 'None' in that case.
     :raise utils.InputValidationException: If the input argument fails the data type validation.
     :raise mysql_utils.MySQLDatabaseException: If any errors occur when accessing the database.
-    :return asset_id: (str) If a unique match was found to the provided assed_name. None otherwise.
+    :return asset_id: (str) If a unique match was found to the provided asset_name. None otherwise.
     """
     log = ambi_logger.get_logger(__name__)
 
