@@ -10,12 +10,12 @@ from mysql_database.python_database_modules import database_table_updater
 from mysql_database.python_database_modules import mysql_utils
 
 
-def get_asset_env_data(base_date, time_interval, variable_list, asset_name=None, asset_id=None, filter_nones=True):
+def get_asset_env_data(start_date, end_date, variable_list, asset_name=None, asset_id=None, filter_nones=True):
     """
     Use this method to retrieve the environmental data between two dates specified by the pair base_date and time_interval, for each of the variables indicated in the variables list and for an asset identified by at least one of the elements in
     the pair asset_name/asset_id.
-    :param base_date: (datetime.datetime) The date for which to start the retrieval window, i.e., this one is the newest end of the time window.
-    :param time_interval: (datetime.timedelta) A timedelta object that is going to be subtracted to the base_date provided in order to establish a valid operational window.
+    :param start_date: (datetime.datetime) A datetime.datetime object denoting the beginning (the oldest date element) of the time window for data  retrieval
+    :param end_date: (datetime.datetime) A datetime.datetime object denoting the end (the newest date element) of the time window for data retrieval.
     :param variable_list: (list of str) A list with the variable names (ontology names) that are to be retrieved from the respective database table. Each one of the elements in the list provided is going to be validated against the 'official'
     list
     in proj_config.ontology_names.
@@ -92,17 +92,22 @@ def get_asset_env_data(base_date, time_interval, variable_list, asset_name=None,
     if asset_id:
         utils.validate_id(entity_id=asset_id)
 
-    utils.validate_input_type(base_date, datetime.datetime)
-    utils.validate_input_type(time_interval, datetime.timedelta)
+    utils.validate_input_type(start_date, datetime.datetime)
+    utils.validate_input_type(end_date, datetime.datetime)
 
-    if base_date > datetime.datetime.now():
-        error_msg = "The base date provided: {0} is invalid! Please provide a past date to continue...".format(str(base_date))
+    if start_date > datetime.datetime.now():
+        error_msg = "The start date provided: {0} is invalid! Please provide a past date to continue...".format(str(start_date))
         log.error(error_msg)
         raise utils.InputValidationException(message=error_msg)
 
-    if base_date - time_interval >= datetime.datetime.now():
-        error_msg = "The time interval provided: {0} is invalid! Please provide a positive value for this parameter to continue...".format(str(time_interval))
+    if end_date > datetime.datetime.now():
+        error_msg = "The end date provided: {0} is invalid! Please provide a past or current date to continue....".format(str(end_date))
         log.error(error_msg)
+        raise utils.InputValidationException(message=error_msg)
+
+    if start_date >= end_date:
+        error_msg = "Invalid time window for data retrieval provided: {0} -> {1}. Cannot continue until a start_date < end_date is provided!".format(str(start_date), str(end_date))
+        log.error(msg=error_msg)
         raise utils.InputValidationException(message=error_msg)
 
     utils.validate_input_type(variable_list, list)
@@ -209,7 +214,7 @@ def get_asset_env_data(base_date, time_interval, variable_list, asset_name=None,
         sql_select = """SELECT timestamp, value FROM """ + str(device_data_table_name) + """ WHERE ontologyId = %s AND (""" + str(device_where_str) + """) AND (timestamp >= %s AND timestamp <= %s);"""
 
         # Prepare the data tuple by joining together the current ontologyId with all the deviceIds retrieved from before
-        data_tuple = tuple([variable_list[i]] + device_id_list + [base_date - time_interval] + [base_date])
+        data_tuple = tuple([variable_list[i]] + device_id_list + [start_date] + [end_date])
 
         select_cursor = mysql_utils.run_sql_statement(cursor=select_cursor, sql_statement=sql_select, data_tuple=data_tuple)
 

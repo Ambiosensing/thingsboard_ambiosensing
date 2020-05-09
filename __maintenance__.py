@@ -7,6 +7,7 @@ from mysql_database.python_database_modules import mysql_asset_controller
 from mysql_database.python_database_modules import mysql_device_controller
 from mysql_database.python_database_modules import mysql_telemetry_controller
 from mysql_database.python_database_modules import mysql_utils
+from mysql_database.python_database_modules import mysql_entity_relation_controller
 import proj_config
 import user_config
 import utils
@@ -23,6 +24,8 @@ def __main__():
 
     # And finish with the device table since this operation requires data from the previous tables
     mysql_device_controller.update_devices_table()
+
+    mysql_entity_relation_controller.update_asset_devices_table()
 
 
 def reset_context():

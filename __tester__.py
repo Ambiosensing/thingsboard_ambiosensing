@@ -9,9 +9,9 @@ db_add = False
 sql_gen = False
 date_converter = False
 table_creator = False
-device_types = True
+device_types = False
 asset_info = False
-device_data = False
+device_data = True
 
 
 def __main__():
@@ -20,13 +20,13 @@ def __main__():
         import datetime
         import json
 
-        base_date = datetime.datetime(2020, 4, 28, 20, 0, 0)
-        time_interval = datetime.timedelta(hours=6)
+        start_date = datetime.datetime(2020, 4, 28, 10, 0, 0)
+        end_date = datetime.datetime(2020, 4, 28, 20, 0, 0)
         variable_list = ['carbon_dioxide', 'temperature', 'chocolate']
-        asset_name = 'TheFactory_SandingRoom'
+        asset_name = 'TheFactory_OfficeStore'
         asset_id = '77f3b910-685d-11ea-971a-c108b8f2be6f'
 
-        results = mac.get_asset_env_data(base_date=base_date, time_interval=time_interval, variable_list=variable_list, asset_name=asset_name, asset_id=asset_id)
+        results = mac.get_asset_env_data(start_date=start_date, end_date=end_date, variable_list=variable_list, asset_name=asset_name, asset_id=asset_id)
 
         print(json.dumps(results))
 
