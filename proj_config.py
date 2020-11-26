@@ -59,8 +59,10 @@ else:
 double_record_msg = "Duplicate entry"
 
 # --------------------------------------------- DATA MODEL ----------------------------------------------------------------------------------
-# This list contains the 'official' names for every measurement category being watched as a way to establish an ontology around this. This list is needed to filter out device attributes that are returned but are not relevant for this case
-ontology_names = ['temperature', 'humidity', 'carbon_dioxide', 'volatile_organic_compounds']
+# This list contains the 'official' names for every measurement category being watched as a way to establish an
+# ontology around this. This list is needed to filter out device attributes that are returned but are not relevant
+# for this case
+ontology_names = ['temperature', 'humidity', 'carbon_dioxide', 'volatile_organic_compounds', 'lux', 'power']
 
 # Use this parameter as default time window to retrieve environmental data from the remote server
 default_collection_time_limit = datetime.timedelta(hours=24)
