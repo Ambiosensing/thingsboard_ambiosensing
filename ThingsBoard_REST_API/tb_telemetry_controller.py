@@ -428,12 +428,16 @@ def getLatestTimeseries(device_name, timeseries_keys_filter=None):
 
 def getAttributes(entityType=None, entityId=None, deviceName=None, keys=None):
     """
-    GET method to retrieve all server-type attributes configured for the device identified by the pair entityType/entityId or deviceName provided. This method requires either the entityType/entityId pair or the deviceName to be provided to execute
+    GET method to retrieve all server-type attributes configured for the device identified by the pair
+    entityType/entityId or deviceName provided. This method requires either the entityType/entityId pair or the
+    deviceName to be provided to execute
     this method. If insufficient data is provided, the relevant Exception shall be raised.
     :param entityType (str) - The entity type of the object whose attributes are to be retrieved.
     :param entityId (str) - The id string that identifies the device whose attributes are to be retrieved.
     :param deviceName (str) - The name of the device that can be used to retrieve the entityType/entityId.
-    :param keys (list of str) - Each attribute returned is a key-value pair. Use this argument to provide a key based filter, i.e., if this list is set, only attributes whose keys match any of the list elements are to be returned.
+    :param keys (list of str) - Each attribute returned is a key-value pair.
+    Use this argument to provide a key based filter, i.e., if this list is set,
+    only attributes whose keys match any of the list elements are to be returned.
     :raise utils.InputValidationException - If any of the inputs has the wrong data type or the method doesn't have the necessary data to execute.
     :raise utils.ServiceEndpointException - If problem occur when accessing the remote API
     :return attribute_dictionary (dict) - A dictionary with the retrieved attributes in the following format:
@@ -444,8 +448,10 @@ def getAttributes(entityType=None, entityId=None, deviceName=None, keys=None):
             ...
             'attribute_N_key': 'attribute_N_value'
         }
-        where the keys in the dictionary are the ontology-specific names (official names) and the respective values are the timeseries keys being measured by the device that map straight into those ontology names.
-        If the device identified by the argument data does exist but doesn't have any attributes configured, this method returns None instead.
+        where the keys in the dictionary are the ontology-specific names (official names) and the respective values
+        are the timeseries keys being measured by the device that map straight into those ontology names.
+        If the device identified by the argument data does exist but doesn't have any attributes configured,
+        this method returns None instead.
     """
     log = ambi_logger.get_logger(__name__)
 

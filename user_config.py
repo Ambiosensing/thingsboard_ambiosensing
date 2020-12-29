@@ -16,8 +16,11 @@ import os
 # execution. I can use this to detect if a 'telltale' element is present in the return string, namely the home folder path in the development server ('/home/uninova')
 
 # NOTE: The access credentials for the local installation are the same as for the remote one, so it should be just a matter of changing the host's endpoints and the whole thing should still work
-thingsboard_host = "http://10.0.1.2" if '/home/uninova' in os.getcwd() else "http://62.48.174.118"
-thingsboard_port = 5044
+# thingsboard_host = "http://10.0.1.2" if '/home/uninova' in os.getcwd() else "http://62.48.174.118" # Sines
+# thingsboard_port = 5044
+
+thingsboard_host = "http://10.0.1.2" if '/home/uninova' in os.getcwd() else "http://54.73.170.126"  # AWS
+thingsboard_port = 8080
 
 local_host = "http://localhost"
 local_port = 8080
@@ -35,9 +38,14 @@ access_info = {
         'password': 'sysadmin'
     },
 
-    'tenant_admin': {
+    'tenant_admin_sines': {
         'username': 'rdlalmeida@gmail.com' if remote_server else 'rdl.almeida@campus.fct.unl.pt',
         'password': 'ambiosensing2019'
+    },
+
+    'tenant_admin': {
+        'username': 'tenant@thingsboard.org',
+        'password': 'tenant'
     },
 
     'customer_user': {
@@ -53,9 +61,9 @@ access_info = {
     'mysql_database': {
         'host': 'localhost',
         'port': 3306,
-        'username': 'ambiosensing',
+        'username': 'ambiosensing', # 'root',
         'password': 'ambiosensing2019',
-        'database': 'ambiosensing_thingsboard'
+        'database': 'ambiosensing_thingsboard' #'ambiosensing_bd'
     }
 }
 

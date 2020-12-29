@@ -88,6 +88,7 @@ def populate_device_data_table(collection_time_limit=None, device_name_list=None
 
     # Define the time window before going into the main while loop
     end_date = datetime.datetime.now().replace(microsecond=0)
+    # end_date = datetime.datetime(year=2020, month=7, day=10, hour=0, minute=0, second=0)
     if type(collection_time_limit) == datetime.datetime:
         start_date = collection_time_limit
     else:
@@ -97,7 +98,7 @@ def populate_device_data_table(collection_time_limit=None, device_name_list=None
     device_record = select_cursor.fetchone()
 
     # Establish a limit of records so that it can be possible to retrieve multiple pages of results, if needed
-    limit = 1000
+    limit = 1000000
 
     while device_record:
         # Start by fetching the device's attributes, if any exist

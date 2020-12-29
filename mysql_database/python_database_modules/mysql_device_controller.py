@@ -23,11 +23,14 @@ def update_devices_table(customer_name=False):
     """
     module_table_key = 'devices'
     # Use the same limit value for both calls
-    limit = 50
+    # limit = 50
+    pageSize = 100
+    page = 0
     update_devices_log = ambi_logger.get_logger(__name__)  # __name__ is a method fingerprint (from python native) and contains a unique path
 
     # Get the base response using just tenant data
-    tenant_response = tb_device_controller.getTenantDevices(limit=limit)
+    # tenant_response = tb_device_controller.getTenantDevices(limit=limit)
+    tenant_response = tb_device_controller.getTenantDevices(pageSize=pageSize, page=page)
 
     # Translate the stuff that comes from the ThingsBoard API as PostGres-speak to Python-speak before forwarding the data
     tenant_response_dict = eval(utils.translate_postgres_to_python(tenant_response.text))  # Converts the response.text into a dictionary (eval is a python native method :D )

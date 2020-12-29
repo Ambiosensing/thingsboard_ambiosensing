@@ -30,7 +30,8 @@ def getDeviceTypes():
     return response
 
 
-def getTenantDevices(type=None, textSearch=None, idOffset=None, textOffset=None, limit=10):
+#def getTenantDevices(type=None, textSearch=None, idOffset=None, textOffset=None, limit=10):
+def getTenantDevices(type=None, textSearch=None, sortProperty=None, sortOrder=None, pageSize=10, page=10):
     """GET method to retrieve the list of devices with their associations, namely Tenants and Customers. The indexer of the returned list is the DEVICE (or its id to be more precise).
     @:type user_types allowed for this service: CUSTOMER_USER
     @:param type (str) - Use this field to narrow down the type of device to return. The type referred in this field is the custom device type defined by the user upon its creation (e.g., 'Thermometer', 'Water meter' and so on) and this field is
@@ -91,20 +92,28 @@ def getTenantDevices(type=None, textSearch=None, idOffset=None, textOffset=None,
 
     # Validate inputs
     # Start by the mandatory ones (only the limit)
-    utils.validate_input_type(limit, int)
+    # utils.validate_input_type(limit, int)
+    utils.validate_input_type(pageSize, int)
+    utils.validate_input_type(page, int)
+
     # And then go for the optional ones
     if type:
         utils.validate_input_type(type, str)
     if textSearch:
         utils.validate_input_type(textSearch, str)
-    if idOffset:
-        utils.validate_input_type(idOffset, str)
-    if textOffset:
-        utils.validate_input_type(textOffset, str)
+    # if idOffset:
+    #    utils.validate_input_type(idOffset, str)
+    # if textOffset:
+    #    utils.validate_input_type(textOffset, str)
+    if sortProperty:
+        utils.validate_input_type(sortProperty, str)
+    if sortOrder:
+        utils.validate_input_type(sortOrder, str)
 
     # Check the number passed in limit: zero or negative values are not allowed by the API
-    if limit <= 0:
-        error_msg = "Invalid limit provided: {0}. Please provide a positive, greater than zero limit value!".format(str(limit))
+    # if limit <= 0:
+    if pageSize <= 0 or page < 0:
+        error_msg = "Invalid page or page size provided: {0}. Please provide a positive, greater than zero page or page size value!".format(str(pageSize))
         tenant_device_log.error(error_msg)
         raise utils.InputValidationException(message=error_msg)
 
@@ -123,6 +132,7 @@ def getTenantDevices(type=None, textSearch=None, idOffset=None, textOffset=None,
         url_textSearch = "textSearch=" + urllib.parse.quote(textSearch.encode('UTF-8')).replace('/', '%2F')
         url_strings.append(url_textSearch)
 
+    """
     if idOffset:
         url_idOffset = "idOffset=" + urllib.parse.quote(idOffset.encode('UTF-8')).replace('/', '%2F')
         url_strings.append(url_idOffset)
@@ -130,8 +140,19 @@ def getTenantDevices(type=None, textSearch=None, idOffset=None, textOffset=None,
     if textOffset:
         url_textOffset = "textOffset=" + urllib.parse.quote(textOffset.encode('UTF-8')).replace('/', '%2F')
         url_strings.append(url_textOffset)
+    """
+    if sortProperty:
+        url_sortProperty = "sortProperty=" + urllib.parse.quote(sortProperty.encode('UTF-8')).replace('/', '%2F')
+        url_strings.append(url_sortProperty)
 
-    url_strings.append("limit=" + str(limit))
+    if sortOrder:
+        url_sortOrder = "sortOrder=" + urllib.parse.quote(sortOrder.encode('UTF-8')).replace('/', '%2F')
+        url_strings.append(url_sortOrder)
+
+    # url_strings.append("limit=" + str(limit))
+
+    url_strings.append("pageSize=" + str(pageSize))
+    url_strings.append("page=" + str(page))
 
     # Concatenate all the url_strings elements into single string, each individual element separated by '&' as expected by the remote API and appended to the base service endpoint
     service_endpoint += '&'.join(url_strings)

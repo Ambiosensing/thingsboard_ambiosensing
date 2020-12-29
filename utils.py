@@ -528,6 +528,8 @@ def extract_all_key_value_pairs_from_dictionary(input_dictionary, current_value_
             extract_all_key_value_pairs_from_dictionary(input_dictionary=input_dictionary[key], current_value_dict=current_value_dict)
         # Otherwise, just keep appending values to the current_value_list
         else:
+            if input_dictionary[key] is 'DEVICE_PROFILE':
+                return current_value_dict
             current_value_dict[key] = input_dictionary[key]
 
     # Once the for is done, I'm also too. Send the list back

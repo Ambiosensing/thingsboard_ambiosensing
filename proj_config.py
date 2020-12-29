@@ -22,7 +22,8 @@ mysql_db_tables = {
 }
 # --------------------------------------------- TYPE VALIDATION ----------------------------------------------------------------------------------
 # Allowed entityTypes in the ThingsBoard platform
-valid_entity_types = ["TENANT", "CUSTOMER", "USER", "DASHBOARD", "ASSET", "DEVICE", "ALARM", "RULE_CHAIN", "RULE_NODE", "ENTITY_VIEW", "WIDGETS_BUNDLE", "WIDGETS_TYPE"]
+valid_entity_types = ["TENANT", "CUSTOMER", "USER", "DASHBOARD", "ASSET", "DEVICE", "ALARM", "RULE_CHAIN", "RULE_NODE",
+                      "ENTITY_VIEW", "WIDGETS_BUNDLE", "WIDGETS_TYPE"]
 
 # Allowed relation types
 valid_relation_type = ["COMMON", "ALARM", "DASHBOARD", "RULE_CHAIN", "RULE_NODE"]
