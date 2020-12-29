@@ -14,20 +14,15 @@ def __main__():
     #use this parameter to fetch since the beginning
     #collection_interval = datetime.datetime(year=2020, month=5, day=1, hour=0, minute=0, second=0)
 
-    # mysql_device_controller.update_devices_table(customer_name=False)
+    mysql_device_controller.update_devices_table(customer_name=False)
 
     # Set with the device names of all the remote prototypes that are currently monitoring the factory
     device_name_list = [
-        'Raspberry-0041',      # fictitious device (testing new TB instance)
-        'Thermostat T2',
-        'Test Device A1',
-        'Test Device A2',
-        'Test Device A3',
-        'Test Device B1',
-        'Test Device C1',
-        'DHT11 Demo Device',
-        'Raspberry Pi Demo Device',
-        'Thermostat T1'
+        'Raspberry-00038',
+        'Raspberry-00039',
+        'Raspberry-00040',
+        'Raspberry-00041',      # fictitious device (testing new TB instance)
+        'Raspberry-00042'
     ]
 
     mysql_telemetry_controller.populate_device_data_table(

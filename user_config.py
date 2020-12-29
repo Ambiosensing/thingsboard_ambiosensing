@@ -19,7 +19,7 @@ import os
 # thingsboard_host = "http://10.0.1.2" if '/home/uninova' in os.getcwd() else "http://62.48.174.118" # Sines
 # thingsboard_port = 5044
 
-thingsboard_host = "http://10.0.1.2" if '/home/uninova' in os.getcwd() else "http://54.73.170.126"  # AWS
+thingsboard_host = "http://54.73.170.126"  # AWS
 thingsboard_port = 8080
 
 local_host = "http://localhost"
