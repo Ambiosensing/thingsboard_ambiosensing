@@ -59,7 +59,7 @@ access_info = {
         'password': 'ambiosensing2019'
     },
 
-    'mysql_database_SERVER': {
+    'mysql_database': {
         'host': 'localhost',
         'port': 3306,
         'username': 'ambiosensing', # 'root',
@@ -67,7 +67,7 @@ access_info = {
         'database': 'ambiosensing_thingsboard' #'ambiosensing_bd'
     },
 
-    'mysql_database': {
+    'mysql_database_faf': {
         'host': 'localhost',
         'port': 3306,
         'username': 'root',
