@@ -9,7 +9,7 @@ def __main__():
     # Use this parameter to fetch the last hour of data
     # collection_interval = datetime.timedelta(hours=5110)
     # collection_interval = datetime.timedelta(minutes=2)
-    collection_interval = datetime.timedelta(hours=1)
+    collection_interval = datetime.timedelta(minutes=3)
 
     #use this parameter to fetch since the beginning
     #collection_interval = datetime.datetime(year=2020, month=5, day=1, hour=0, minute=0, second=0)
@@ -22,7 +22,26 @@ def __main__():
         'Raspberry-00039',
         'Raspberry-00040',
         'Raspberry-00041',      # fictitious device (testing new TB instance)
-        'Raspberry-00042'
+        'Raspberry-00042',
+        'Rasp_00080',
+        'Raspberry-00073',
+        'Raspberry-00074',
+        'Raspberry-00075',
+        'Raspberry-00076',
+        'Raspberry-00077',
+        'Raspberry-00078',
+        'Raspberry-00079',
+        'Raspberry-00080',
+        'Raspberry-00081',
+        'Raspberry-00082',
+        'Raspberry-00083',
+        'Raspberry-00084',
+        'Raspberry-00085',
+        'Raspberry-00086',
+        'Raspberry-00087',
+        'Raspberry-00088',
+        'Raspberry-00089',
+        'LoadTestDevice'
     ]
 
     mysql_telemetry_controller.populate_device_data_table(
